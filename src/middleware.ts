@@ -85,7 +85,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|icons|manifest.json|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
-  ],
+  // Match every path EXCEPT: API routes, Next internals, Vercel internals, anything with a file extension.
+  // This must include `/` so next-intl can rewrite it to the default locale.
+  matcher: ['/((?!api|trpc|_next|_vercel|.*\\..*).*)'],
 };

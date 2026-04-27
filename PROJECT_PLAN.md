@@ -13,8 +13,9 @@
 
 ## 📍 Current Status
 
-**Phase:** Phase 0 — Setup & Foundation
-**Next action:** ตั้งค่า Supabase project + push code ขึ้น GitHub แล้ว deploy Vercel ครั้งแรก
+**Phase:** Phase 2 complete — debugging deploy
+**Live URL:** https://lumenfi.vercel.app (deploy สำเร็จแล้ว แต่กำลังแก้ routing 404)
+**Next action:** แก้ middleware matcher แล้ว push — รอ Vercel auto-deploy ใหม่
 
 ---
 
@@ -64,11 +65,13 @@
 - [x] **i18n (Thai + English)** — next-intl setup, [locale] routing, messages files, language switcher
 - [ ] **[NEXT]** สร้าง Supabase project ที่ supabase.com
 - [ ] รัน `DATABASE_SCHEMA.sql` ใน Supabase SQL Editor
-- [ ] เพิ่ม `.env.local` ด้วย Supabase URL + anon key
-- [ ] `npm install` แล้วทดสอบ `npm run dev` local
-- [ ] Push ขึ้น GitHub repo (private)
-- [ ] เชื่อม Vercel กับ repo + ตั้ง env variables
-- [ ] Deploy ครั้งแรก ✅
+- [x] เพิ่ม `.env.local` ด้วย Supabase URL + anon key
+- [x] `npm install` แล้วทดสอบ `npm run dev` local
+- [x] Push ขึ้น GitHub repo (private) — `github.com/Lovertr/lumenfi`
+- [x] เชื่อม Vercel กับ repo + ตั้ง env variables (Supabase URL/keys, APP_NAME, etc.)
+- [x] Deploy ครั้งแรกผ่าน build (แก้ 3 รอบ — JSON syntax, Database type, implicit any)
+- [ ] **[NEXT]** แก้ middleware matcher → fix 404 ที่ root URL
+- [ ] อัพเดท `NEXT_PUBLIC_APP_URL` เป็น Vercel URL จริง + Redeploy
 
 ### 🔐 Phase 1 — Auth & User Profile
 **เป้าหมาย:** ผู้ใช้สมัคร/login ได้ + มีหน้า profile
@@ -81,9 +84,9 @@
 - [x] Server actions: signInWithEmail, signUpWithEmail, signInWithGoogle, signOut
 - [x] UI components: Input, Label, GoogleButton, LoginForm, SignupForm
 - [x] Form validation + error mapping (Zod schemas)
-- [ ] **[NEXT]** หน้า `/forgot-password` + `/reset-password`
+- [x] Logout button ใน UI (อยู่บน dashboard + accounts header)
+- [ ] หน้า `/forgot-password` + `/reset-password`
 - [ ] หน้า `/settings/profile` (แก้ชื่อ, สกุลเงินหลัก, timezone)
-- [ ] Logout button ใน UI
 - [ ] Auth hook (`useUser`)
 
 ### 💵 Phase 2 — Accounts & Categories
@@ -309,4 +312,11 @@ finance-app/
 - ✅ Setup i18n (next-intl): ไทย default + อังกฤษ, restructure routes ใต้ [locale]
 - ✅ สร้าง LogoMark + Wordmark React components, LanguageSwitcher
 - ✅ Translate landing page + dashboard ทั้ง 2 ภาษา
-- 📌 **Next:** `npm install` → ทดสอบ local → สร้าง Supabase project → deploy แรก → Phase 1 (Auth)
+- ✅ **Phase 1 (Auth):** Login + Signup pages, server actions, Google OAuth, callback route
+- ✅ **Phase 2 (Accounts):** List page + Add page + type picker + color picker + server actions
+- ✅ **Logout button** บน dashboard และ accounts header
+- ✅ **Supabase project** สร้างเสร็จ + รัน DATABASE_SCHEMA.sql + Storage bucket "receipts"
+- ✅ **GitHub repo** `github.com/Lovertr/lumenfi` (private)
+- ✅ **Vercel deploy** สำเร็จ — `lumenfi.vercel.app` (build ผ่าน, แก้ 3 รอบ)
+- 🐛 พบ 404 ที่ root URL — แก้ middleware matcher (จะ deploy ใหม่)
+- 📌 **Next:** ยืนยัน root URL ใช้ได้ → ลอง signup จริง → Phase 3 (Transactions)
