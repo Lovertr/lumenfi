@@ -24,10 +24,13 @@
 แอปบริหารการเงินส่วนตัวครบวงจร — รายรับ-รายจ่าย หนี้สิน การลงทุน เป้าหมาย พร้อม AI Advisor (BYO API key) ออกแบบ Mobile-First แต่เป็น Web App (PWA) เพื่อใช้ได้ทั้งมือถือและเดสก์ท็อป
 
 **Differentiator:**
-- AI ใช้ API key ของผู้ใช้เอง → privacy + ไม่มีค่าใช้จ่าย subscription
+- AI ใช้ API key ของผู้ใช้เอง → privacy + ลดค่า inference
 - รองรับหลาย provider (Anthropic, OpenAI, Gemini)
 - Local-first option (ตัวเลือกเก็บข้อมูลในเครื่อง)
 - ใช้ N8N ทำงาน background (recurring, OCR, reminders)
+
+**💰 Business Model:** Freemium — มี Subscription เก็บเงินเมื่อระบบเสร็จสมบูรณ์
+- รายละเอียด tier + ราคา → ดู Phase 14 (Subscription & Billing) ด้านล่าง
 
 ---
 
@@ -70,7 +73,8 @@
 - [x] Push ขึ้น GitHub repo (private) — `github.com/Lovertr/lumenfi`
 - [x] เชื่อม Vercel กับ repo + ตั้ง env variables (Supabase URL/keys, APP_NAME, etc.)
 - [x] Deploy ครั้งแรกผ่าน build (แก้ 3 รอบ — JSON syntax, Database type, implicit any)
-- [ ] **[NEXT]** แก้ middleware matcher → fix 404 ที่ root URL
+- [x] แก้ middleware matcher (2 รอบ) — ยังไม่ผ่าน
+- [ ] **[NEXT]** เปลี่ยน `localePrefix: 'as-needed'` → `'always'` แก้ 404 — รอ test
 - [ ] อัพเดท `NEXT_PUBLIC_APP_URL` เป็น Vercel URL จริง + Redeploy
 
 ### 🔐 Phase 1 — Auth & User Profile
@@ -210,9 +214,42 @@
 - [ ] Multi-currency
 - [ ] Bank API integration (Open Banking ไทย)
 - [ ] Receipt warranty tracker
-- [ ] Subscription detector
+- [ ] Subscription detector (ให้ผู้ใช้ track subscription ของตัวเอง)
 - [ ] Gamification (streak, badges)
 - [ ] Education hub
+
+### 💳 Phase 14 — Subscription & Billing (Monetization) 💰
+**เป้าหมาย:** เก็บเงินจากผู้ใช้แบบ subscription เมื่อระบบเสร็จสมบูรณ์ — เริ่มหลัง MVP launch ผ่าน beta phase
+
+**Tier ที่วางไว้ (ร่าง — ปรับได้):**
+
+| Tier | ราคา/เดือน | ฟีเจอร์ |
+|------|-----------|---------|
+| **Free** | 0 ฿ | ข้อมูลพื้นฐาน 1 บัญชี, transactions, goals 1 อัน, AI ใช้ API key เอง |
+| **Pro** | 99-199 ฿ | บัญชีไม่จำกัด, OCR ใส่บิล, advanced reports, รวม subscription detector, Family wallet 1 คน |
+| **Premium** | 299-499 ฿ | ทุกฟีเจอร์ Pro + Bank API integration + AI ใช้ key ระบบ (ฟรี) + priority support + Family wallet 5 คน |
+
+**งานที่ต้องทำ:**
+- [ ] เลือก payment provider (ตัวเลือก: Stripe Thailand, Omise, PromptPay+QR, App Store/Play Store IAP)
+- [ ] DB schema: `subscriptions`, `payment_methods`, `invoices`, `feature_entitlements`
+- [ ] หน้า `/pricing` — เปรียบเทียบ tier
+- [ ] หน้า `/settings/billing` — จัดการ subscription, view invoice, change plan
+- [ ] Webhook รับ payment events (subscription created/updated/canceled/payment failed)
+- [ ] Feature gating logic — ตรวจ entitlement ทุกครั้งที่ใช้ฟีเจอร์ paid
+- [ ] Upgrade prompt UI — เมื่อ free user ถึง limit
+- [ ] Trial period (free 14 วัน Pro)
+- [ ] Promo code / referral system
+- [ ] Email receipt + invoice PDF
+- [ ] Tax handling (VAT 7% ไทย)
+- [ ] GDPR-style refund flow
+- [ ] Analytics: MRR, churn, LTV tracking
+
+**เปิดให้ตัดสินใจ (Open Decisions):**
+- ราคา Pro tier ที่เหมาะกับ Thai market? (99-199 ฿ ?)
+- Payment provider — ตลาดไทยอย่างเดียว vs global พร้อมเลย?
+- เปิด trial 14 วันฟรีไหม?
+- จะใช้ App Store / Play Store IAP เพิ่มไหม (เก็บค่า 30%)?
+- Lifetime deal เมื่อ launch แรกๆ?
 
 ---
 
