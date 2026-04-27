@@ -85,7 +85,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Match every path EXCEPT: API routes, Next internals, Vercel internals, anything with a file extension.
-  // This must include `/` so next-intl can rewrite it to the default locale.
-  matcher: ['/((?!api|trpc|_next|_vercel|.*\\..*).*)'],
+  // Official next-intl matcher pattern — explicitly includes `/` literal.
+  matcher: [
+    // 1) Redirect root to default locale
+    '/',
+    // 2) Match all locale-prefixed paths (set cookie to remember locale)
+    '/(en|th)/:path*',
+    // 3) Match all other paths (add missing locale prefix)
+    '/((?!api|_next|_vercel|.*\\..*).*)',
+  ],
 };
