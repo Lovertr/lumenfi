@@ -75,9 +75,9 @@
 - [x] Deploy ครั้งแรกผ่าน build (แก้ 3 รอบ — JSON syntax, Database type, implicit any)
 - [x] แก้ middleware matcher (2 รอบ) — ยังไม่ผ่าน
 - [x] เปลี่ยน `localePrefix: 'as-needed'` → `'always'` — ยังไม่ผ่าน
-- [x] เพิ่ม `src/app/page.tsx` redirect `/` → `/th` (explicit page handler)
-- [x] เพิ่ม `next.config.js` redirects for all unprefixed paths (edge-level)
-- [ ] **[NEXT]** Push test รอบสุดท้าย — ใช้ multi-layer defense
+- [x] ลอง `src/app/page.tsx` redirect — fail (ขัดกับ root layout ใน `[locale]`)
+- [x] เพิ่ม `next.config.js` redirects ครบทุก path รวม `/` → `/th` (edge-level)
+- [ ] **[NEXT]** Push test — config redirects น่าจะทำงานแน่
 - [ ] อัพเดท `NEXT_PUBLIC_APP_URL` เป็น Vercel URL จริง + Redeploy
 
 ### 🔐 Phase 1 — Auth & User Profile

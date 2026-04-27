@@ -21,6 +21,7 @@ const nextConfig = {
   // Belt-and-suspenders for routes that might not get a locale prefix from middleware.
   async redirects() {
     return [
+      { source: '/', destination: '/th', permanent: false },
       { source: '/login', destination: '/th/login', permanent: false },
       { source: '/signup', destination: '/th/signup', permanent: false },
       { source: '/dashboard', destination: '/th/dashboard', permanent: false },
