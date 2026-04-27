@@ -74,7 +74,10 @@
 - [x] เชื่อม Vercel กับ repo + ตั้ง env variables (Supabase URL/keys, APP_NAME, etc.)
 - [x] Deploy ครั้งแรกผ่าน build (แก้ 3 รอบ — JSON syntax, Database type, implicit any)
 - [x] แก้ middleware matcher (2 รอบ) — ยังไม่ผ่าน
-- [ ] **[NEXT]** เปลี่ยน `localePrefix: 'as-needed'` → `'always'` แก้ 404 — รอ test
+- [x] เปลี่ยน `localePrefix: 'as-needed'` → `'always'` — ยังไม่ผ่าน
+- [x] เพิ่ม `src/app/page.tsx` redirect `/` → `/th` (explicit page handler)
+- [x] เพิ่ม `next.config.js` redirects for all unprefixed paths (edge-level)
+- [ ] **[NEXT]** Push test รอบสุดท้าย — ใช้ multi-layer defense
 - [ ] อัพเดท `NEXT_PUBLIC_APP_URL` เป็น Vercel URL จริง + Redeploy
 
 ### 🔐 Phase 1 — Auth & User Profile
