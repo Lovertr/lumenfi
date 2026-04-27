@@ -76,8 +76,9 @@
 - [x] แก้ middleware matcher (2 รอบ) — ยังไม่ผ่าน
 - [x] เปลี่ยน `localePrefix: 'as-needed'` → `'always'` — ยังไม่ผ่าน
 - [x] ลอง `src/app/page.tsx` redirect — fail (ขัดกับ root layout ใน `[locale]`)
-- [x] เพิ่ม `next.config.js` redirects ครบทุก path รวม `/` → `/th` (edge-level)
-- [ ] **[NEXT]** Push test — config redirects น่าจะทำงานแน่
+- [x] เพิ่ม `next.config.js` redirects ครบทุก path รวม `/` → `/th` — fail (ทุก URL 404 รวม `/th` ที่ build แล้ว)
+- [x] Simplify middleware — strip custom auth, ใช้ minimal next-intl ตาม docs
+- [ ] **[NEXT]** Push minimal — ถ้า `/th` ใช้ได้ค่อยเพิ่ม auth check ใน `(app)/layout.tsx`
 - [ ] อัพเดท `NEXT_PUBLIC_APP_URL` เป็น Vercel URL จริง + Redeploy
 
 ### 🔐 Phase 1 — Auth & User Profile
