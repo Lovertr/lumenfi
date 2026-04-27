@@ -1,0 +1,21 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- R3: Bezel Coin — round gold coin with serif "L" inside hexagonal prism frame -->
+  <defs>
+    <linearGradient id="r3-bezel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="50%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#78350F"/>
+    </linearGradient>
+    <radialGradient id="r3-coin" cx="35%" cy="32%" r="80%">
+      <stop offset="0%" stop-color="#FEF3C7"/>
+      <stop offset="50%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="#0F172A"/>
+  <polygon points="100,28 165,65 165,135 100,172 35,135 35,65" fill="url(#r3-bezel)"/>
+  <polygon points="100,28 165,65 165,135 100,172 35,135 35,65" fill="none" stroke="#FCD34D" stroke-width="0.7" opacity="0.5"/>
+  <circle cx="100" cy="100" r="44" fill="url(#r3-coin)"/>
+  <circle cx="100" cy="100" r="38" fill="none" stroke="#92400E" stroke-width="0.7" opacity="0.5"/>
+  <text x="100" y="118" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-weight="700" fill="#7C2D12">L</text>
+</svg>

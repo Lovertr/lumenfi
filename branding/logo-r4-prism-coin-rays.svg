@@ -1,0 +1,44 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- R4: Prism Coin with Light Rays — diamond + coin + subtle radiating light beams (premium + lumen + AI hint) -->
+  <defs>
+    <linearGradient id="r4-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7"/><stop offset="100%" stop-color="#FBBF24"/>
+    </linearGradient>
+    <linearGradient id="r4-mid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="r4-deep" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+    <linearGradient id="r4-shadow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#78350F"/>
+    </linearGradient>
+    <radialGradient id="r4-coin" cx="35%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="40%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </radialGradient>
+    <radialGradient id="r4-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FCD34D" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#FCD34D" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="#0F172A"/>
+  <circle cx="100" cy="100" r="80" fill="url(#r4-glow)"/>
+  <g stroke="#FBBF24" stroke-width="1.2" stroke-linecap="round" opacity="0.45">
+    <line x1="100" y1="14" x2="100" y2="22"/>
+    <line x1="100" y1="178" x2="100" y2="186"/>
+    <line x1="14" y1="100" x2="22" y2="100"/>
+    <line x1="178" y1="100" x2="186" y2="100"/>
+    <line x1="38" y1="38" x2="44" y2="44"/>
+    <line x1="156" y1="156" x2="162" y2="162"/>
+    <line x1="38" y1="162" x2="44" y2="156"/>
+    <line x1="156" y1="44" x2="162" y2="38"/>
+  </g>
+  <polygon points="100,36 100,100 42,100" fill="url(#r4-light)"/>
+  <polygon points="100,36 158,100 100,100" fill="url(#r4-mid)"/>
+  <polygon points="42,100 100,100 100,164" fill="url(#r4-deep)"/>
+  <polygon points="100,100 158,100 100,164" fill="url(#r4-shadow)"/>
+  <circle cx="100" cy="100" r="22" fill="url(#r4-coin)"/>
+  <path d="M94 94 L96 98 L100 100 L96 102 L94 106 L92 102 L88 100 L92 98 Z" fill="#FFFFFF" opacity="0.95"/>
+</svg>

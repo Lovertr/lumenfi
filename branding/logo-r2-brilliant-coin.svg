@@ -1,0 +1,32 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- R2: Brilliant-Cut Hex Coin — hexagonal coin with 6 internal prism facets (top view of cut diamond) -->
+  <defs>
+    <linearGradient id="r2-1" x1="50%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#FEF3C7"/>
+    </linearGradient>
+    <linearGradient id="r2-2" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="r2-3" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+    <linearGradient id="r2-4" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#78350F"/>
+    </linearGradient>
+    <linearGradient id="r2-5" x1="100%" y1="50%" x2="0%" y2="50%">
+      <stop offset="0%" stop-color="#B45309"/><stop offset="100%" stop-color="#92400E"/>
+    </linearGradient>
+    <linearGradient id="r2-6" x1="50%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#FBBF24"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="#0F172A"/>
+  <polygon points="100,100 100,30 160,65" fill="url(#r2-1)"/>
+  <polygon points="100,100 160,65 160,135" fill="url(#r2-2)"/>
+  <polygon points="100,100 160,135 100,170" fill="url(#r2-3)"/>
+  <polygon points="100,100 100,170 40,135" fill="url(#r2-4)"/>
+  <polygon points="100,100 40,135 40,65" fill="url(#r2-5)"/>
+  <polygon points="100,100 40,65 100,30" fill="url(#r2-6)"/>
+  <polygon points="100,30 160,65 160,135 100,170 40,135 40,65" fill="none" stroke="#92400E" stroke-width="0.5" opacity="0.4"/>
+  <circle cx="100" cy="100" r="3.5" fill="#FFFFFF" opacity="0.85"/>
+</svg>

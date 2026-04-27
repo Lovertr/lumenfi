@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumenfi — Shine Comparison</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #FAFAF9;
+    color: #0A0F1F;
+    padding: 32px 16px 80px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 40px; }
+  h1 { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.03em; }
+  .subtitle { color: #64748B; margin-top: 8px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 56px;
+  }
+  .card {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 20px;
+    padding: 24px;
+    transition: transform 0.15s, box-shadow 0.2s;
+    text-align: center;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.10); }
+  .stage {
+    background: linear-gradient(135deg, #1A1F2E 0%, #0A0F1F 100%);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 16px;
+  }
+  .stage img { width: 100%; max-width: 220px; height: auto; }
+  .pill {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: 0.04em;
+  }
+  .pill.a { background: #DBEAFE; color: #1D4ED8; }
+  .pill.b { background: #FEF3C7; color: #92400E; }
+  .pill.c { background: #D1FAE5; color: #065F46; }
+  .name { font-size: 1.05rem; font-weight: 600; margin-bottom: 6px; }
+  .desc { color: #64748B; font-size: 0.85rem; line-height: 1.55; min-height: 60px; }
+
+  .pros-cons {
+    margin-top: 14px;
+    text-align: left;
+    border-top: 1px solid #F1F5F9;
+    padding-top: 14px;
+  }
+  .pros-cons .row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 0.8rem; }
+  .pros-cons .icon { font-weight: 700; flex-shrink: 0; width: 18px; }
+  .pros-cons .pro .icon { color: #10B981; }
+  .pros-cons .con .icon { color: #F59E0B; }
+  .pros-cons .text { color: #475569; }
+
+  .side-by-side {
+    background: linear-gradient(135deg, #1A1F2E 0%, #0A0F1F 100%);
+    border-radius: 24px;
+    padding: 60px 32px;
+    margin-bottom: 56px;
+  }
+  .side-by-side h2 { color: white; text-align: center; margin-bottom: 32px; font-size: 1.25rem; font-weight: 600; }
+  .side-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    align-items: center;
+  }
+  .side-cell { text-align: center; }
+  .side-cell img { width: 100%; max-width: 180px; height: auto; }
+  .side-cell .label { color: #94A3B8; font-size: 0.8rem; margin-top: 12px; letter-spacing: 0.05em; }
+
+  .with-wordmark {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+  .with-wordmark h2 { font-size: 1.15rem; margin-bottom: 24px; }
+  .wm-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 20px;
+    border-radius: 16px;
+    background: #0A0F1F;
+    margin-bottom: 12px;
+  }
+  .wm-row img { width: 72px; height: 72px; flex-shrink: 0; }
+  .wm-row .wm { font-size: 2rem; font-weight: 700; letter-spacing: -0.04em; color: white; }
+  .wm-row .wm .fi { color: #F59E0B; font-weight: 800; }
+  .wm-row .ver { color: #94A3B8; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+
+  @media (max-width: 720px) {
+    h1 { font-size: 1.75rem; }
+    .side-row { grid-template-columns: 1fr; gap: 24px; }
+    .wm-row .wm { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Shine Placement Comparison</h1>
+    <p class="subtitle">เลือกที่ชอบที่สุด — A, B, หรือ C</p>
+  </header>
+
+  <!-- BIG SIDE BY SIDE -->
+  <div class="side-by-side">
+    <h2>เปรียบเทียบ 3 แบบ บน Dark Background</h2>
+    <div class="side-row">
+      <div class="side-cell">
+        <img src="logo-final.svg" alt="Variant A">
+        <div class="label">A — Coin Shine (เดิม)</div>
+      </div>
+      <div class="side-cell">
+        <img src="logo-final-B.svg" alt="Variant B">
+        <div class="label">B — Prism Corner Shine</div>
+      </div>
+      <div class="side-cell">
+        <img src="logo-final-C.svg" alt="Variant C">
+        <div class="label">C — Both Shines</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAILS -->
+  <div class="grid">
+
+    <!-- A -->
+    <div class="card">
+      <div class="stage"><img src="logo-final.svg" alt="A"></div>
+      <span class="pill a">A · Coin Shine</span>
+      <div class="name">เดิม — แสงสะท้อนที่เหรียญ</div>
+      <p class="desc">เน้นเหรียญเป็น hero — แสงตกที่เหรียญ ทำให้ดูเป็นโลหะมีคุณค่า</p>
+      <div class="pros-cons">
+        <div class="row pro"><span class="icon">+</span><span class="text">เหรียญดูเป็นโลหะ 3D ชัด</span></div>
+        <div class="row pro"><span class="icon">+</span><span class="text">โฟกัสที่ "L" brand mark</span></div>
+        <div class="row con"><span class="icon">!</span><span class="text">ปริซึมเรียบ ไม่มีแสงเฉพาะจุด</span></div>
+      </div>
+    </div>
+
+    <!-- B -->
+    <div class="card">
+      <div class="stage"><img src="logo-final-B.svg" alt="B"></div>
+      <span class="pill b">B · Prism Corner Shine</span>
+      <div class="name">ใหม่ — แสงตกที่มุมบนปริซึม</div>
+      <p class="desc">ปริซึมดูเป็นเพชรเจียรไนสะท้อนแสงจากด้านบน เหรียญเป็น matte gold</p>
+      <div class="pros-cons">
+        <div class="row pro"><span class="icon">+</span><span class="text">ปริซึมเหมือนเพชรจริง refraction</span></div>
+        <div class="row pro"><span class="icon">+</span><span class="text">ลำดับสายตา: ปริซึม → เหรียญ → L</span></div>
+        <div class="row con"><span class="icon">!</span><span class="text">เหรียญดูแบนกว่า ไม่ 3D เท่า A</span></div>
+      </div>
+    </div>
+
+    <!-- C -->
+    <div class="card">
+      <div class="stage"><img src="logo-final-C.svg" alt="C"></div>
+      <span class="pill c">C · Both</span>
+      <div class="name">รวม — แสงทั้งปริซึมและเหรียญ</div>
+      <p class="desc">ทั้งคู่สะท้อนแสง ดูหรูหราที่สุด เหมือนเครื่องประดับเพชรเหรียญทอง</p>
+      <div class="pros-cons">
+        <div class="row pro"><span class="icon">+</span><span class="text">หรูหราที่สุด rich detail</span></div>
+        <div class="row pro"><span class="icon">+</span><span class="text">ทั้งปริซึมและเหรียญดู 3D</span></div>
+        <div class="row con"><span class="icon">!</span><span class="text">อาจ busy เกินที่ขนาดเล็ก (favicon)</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- WITH WORDMARK -->
+  <div class="with-wordmark">
+    <h2>คู่กับ Wordmark</h2>
+    <div class="wm-row">
+      <img src="logo-final.svg" alt="A">
+      <div>
+        <div class="ver">Variant A</div>
+        <span class="wm">Lumen<span class="fi">fi</span></span>
+      </div>
+    </div>
+    <div class="wm-row">
+      <img src="logo-final-B.svg" alt="B">
+      <div>
+        <div class="ver">Variant B</div>
+        <span class="wm">Lumen<span class="fi">fi</span></span>
+      </div>
+    </div>
+    <div class="wm-row">
+      <img src="logo-final-C.svg" alt="C">
+      <div>
+        <div class="ver">Variant C</div>
+        <span class="wm">Lumen<span class="fi">fi</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCALE TEST -->
+  <div class="with-wordmark">
+    <h2>ดูที่ขนาดเล็ก (Favicon Test)</h2>
+    <div style="display:flex; gap:32px; justify-content:center; flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="display:flex; gap:8px; align-items:flex-end; justify-content:center;">
+          <img src="logo-final.svg" alt="A" style="width:16px; height:16px;">
+          <img src="logo-final.svg" alt="A" style="width:24px; height:24px;">
+          <img src="logo-final.svg" alt="A" style="width:32px; height:32px;">
+          <img src="logo-final.svg" alt="A" style="width:48px; height:48px;">
+        </div>
+        <div style="margin-top:8px; font-size:0.75rem; color:#64748B;">A — Coin Shine</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="display:flex; gap:8px; align-items:flex-end; justify-content:center;">
+          <img src="logo-final-B.svg" alt="B" style="width:16px; height:16px;">
+          <img src="logo-final-B.svg" alt="B" style="width:24px; height:24px;">
+          <img src="logo-final-B.svg" alt="B" style="width:32px; height:32px;">
+          <img src="logo-final-B.svg" alt="B" style="width:48px; height:48px;">
+        </div>
+        <div style="margin-top:8px; font-size:0.75rem; color:#64748B;">B — Prism Shine</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="display:flex; gap:8px; align-items:flex-end; justify-content:center;">
+          <img src="logo-final-C.svg" alt="C" style="width:16px; height:16px;">
+          <img src="logo-final-C.svg" alt="C" style="width:24px; height:24px;">
+          <img src="logo-final-C.svg" alt="C" style="width:32px; height:32px;">
+          <img src="logo-final-C.svg" alt="C" style="width:48px; height:48px;">
+        </div>
+        <div style="margin-top:8px; font-size:0.75rem; color:#64748B;">C — Both</div>
+      </div>
+    </div>
+  </div>
+
+  <footer style="text-align:center; margin-top:48px; color:#94A3B8; font-size:0.85rem;">
+    Lumenfi · Shine Variants · 2026
+  </footer>
+</div>
+</body>
+</html>

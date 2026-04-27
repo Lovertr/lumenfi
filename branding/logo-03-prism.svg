@@ -1,0 +1,29 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Concept 3: Prism — diamond refracting light. Multiple facets = comprehensive (ครบทุกอย่าง) -->
+  <defs>
+    <linearGradient id="prismLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="prismTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="prismRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1E40AF"/>
+    </linearGradient>
+    <linearGradient id="prismBottom" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E40AF"/>
+      <stop offset="100%" stop-color="#312E81"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="#0F172A"/>
+  <!-- 4 facets of the diamond -->
+  <polygon points="100,40 100,100 50,100" fill="url(#prismTop)"/>
+  <polygon points="100,40 150,100 100,100" fill="url(#prismRight)" opacity="0.9"/>
+  <polygon points="50,100 100,100 100,160" fill="url(#prismLeft)" opacity="0.85"/>
+  <polygon points="100,100 150,100 100,160" fill="url(#prismBottom)" opacity="0.95"/>
+  <!-- Subtle highlight -->
+  <line x1="100" y1="40" x2="100" y2="160" stroke="#FCD34D" stroke-width="1.5" opacity="0.6"/>
+</svg>

@@ -1,0 +1,200 @@
+{
+  "Common": {
+    "appName": "Lumenfi",
+    "tagline": "Light up your finances",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "back": "Back",
+    "next": "Next",
+    "viewAll": "View all",
+    "search": "Search",
+    "currency": "$"
+  },
+
+  "Landing": {
+    "heroTitle1": "Manage your money",
+    "heroTitle2": "with a plan",
+    "heroSubtitle": "All-in-one personal finance app — income, expenses, debt, investments, goals, with an AI advisor that uses your own API key.",
+    "ctaPrimary": "Get started free",
+    "ctaSecondary": "Sign in",
+    "ctaNote": "Free · No credit card · End-to-end encrypted with RLS",
+    "featuresTitle": "Core features",
+    "featuresSubtitle": "Everything you need to take control of your finances",
+    "ctaFinalTitle": "Ready to get started?",
+    "ctaFinalSubtitle": "Log your first transaction in under 30 seconds",
+    "ctaFinalButton": "Create free account",
+    "footer": "© 2026 Lumenfi · Built with Next.js + Supabase"
+  },
+
+  "Features": {
+    "income": {
+      "title": "Income & Expenses",
+      "desc": "Log transactions, scan receipts, upload photos, auto-categorize"
+    },
+    "debt": {
+      "title": "Debt Management",
+      "desc": "Track every debt, calculate Avalanche/Snowball payoff strategies"
+    },
+    "investment": {
+      "title": "Investments",
+      "desc": "Track stocks, funds, crypto, gold portfolios with real-time P/L"
+    },
+    "goals": {
+      "title": "Financial Goals",
+      "desc": "Emergency fund, home down payment, retirement — track every goal"
+    },
+    "ai": {
+      "title": "AI Advisor (BYO Key)",
+      "desc": "Bring your own API key and chat with AI for personalized advice"
+    },
+    "netWorth": {
+      "title": "Net Worth Tracker",
+      "desc": "See your full financial health, DTI, savings rate, and score"
+    }
+  },
+
+  "Nav": {
+    "home": "Home",
+    "transactions": "Activity",
+    "add": "Add",
+    "ai": "AI",
+    "more": "More"
+  },
+
+  "Dashboard": {
+    "greeting": "Hi there",
+    "subtitle": "Let's check your finances",
+    "netWorth": "Net Worth",
+    "monthChange": "this month",
+    "monthIncome": "Income this month",
+    "monthExpense": "Spend this month",
+    "healthSection": "Financial health",
+    "savingsRate": "Savings Rate",
+    "savingsRateHint": "of your income saved",
+    "dti": "DTI Ratio",
+    "dtiHint": "debt-to-income",
+    "emergencyFund": "Emergency Fund",
+    "emergencyFundHint": "months of expenses covered",
+    "topCategories": "Top spending categories",
+    "monthsLabel": "months",
+    "quickActions": {
+      "debts": "Debts",
+      "investments": "Investments",
+      "goals": "Goals",
+      "accounts": "Accounts"
+    },
+    "aiCta": {
+      "title": "Try the AI Advisor",
+      "subtitle": "Add your API key and get personalized financial advice"
+    },
+    "mockNotice": {
+      "title": "Sample data",
+      "body": "This page still shows mock data — see PROJECT_PLAN.md for Phase 2-4"
+    }
+  },
+
+  "Auth": {
+    "login": "Sign in",
+    "signup": "Sign up",
+    "logout": "Sign out",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "passwordHint": "Use at least 8 characters",
+    "confirmPassword": "Confirm password",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "Enter your full name",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "orContinueWith": "Or continue with",
+    "google": "Google",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Sign in to manage your finances",
+    "signupTitle": "Create your account",
+    "signupSubtitle": "Start managing your money smarter today",
+    "submitLogin": "Sign in",
+    "submitSignup": "Create free account",
+    "submitting": "Working on it...",
+    "termsAgree": "By signing up you agree to our",
+    "terms": "Terms",
+    "and": "and",
+    "privacy": "Privacy Policy",
+    "checkEmail": "Check your email",
+    "checkEmailMessage": "We've sent a confirmation link to your email. Click the link to verify your account.",
+    "errors": {
+      "invalid_credentials": "Invalid email or password",
+      "user_exists": "An account with this email already exists",
+      "weak_password": "Password is too short (min 8 characters)",
+      "passwords_dont_match": "Passwords don't match",
+      "invalid_email": "Invalid email format",
+      "name_required": "Please enter your name",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+
+  "Settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "language": "Language",
+    "currency": "Currency",
+    "ai": "AI Settings",
+    "privacy": "Privacy",
+    "exportData": "Export data",
+    "deleteAccount": "Delete account"
+  },
+
+  "Accounts": {
+    "title": "My Accounts",
+    "subtitle": "Manage bank accounts, cash, credit cards",
+    "totalAssets": "Total assets",
+    "totalLiabilities": "Total liabilities",
+    "addAccount": "Add account",
+    "addAccountTitle": "Add new account",
+    "addAccountSubtitle": "Choose a type and starting balance",
+    "noAccounts": "No accounts yet",
+    "noAccountsHint": "Start by adding your first account",
+    "form": {
+      "name": "Account name",
+      "namePlaceholder": "e.g. Chase Checking",
+      "type": "Type",
+      "initialBalance": "Starting balance",
+      "initialBalanceHint": "Current balance in this account",
+      "currency": "Currency",
+      "color": "Color",
+      "icon": "Icon",
+      "creditLimit": "Credit limit",
+      "creditLimitHint": "Maximum credit available",
+      "statementDay": "Statement day",
+      "dueDay": "Due day",
+      "includeInNetWorth": "Include in Net Worth",
+      "submit": "Save",
+      "submitting": "Saving..."
+    },
+    "types": {
+      "cash": "Cash",
+      "bank": "Bank account",
+      "credit_card": "Credit card",
+      "e_wallet": "E-wallet",
+      "savings": "Savings",
+      "other": "Other"
+    },
+    "errors": {
+      "name_required": "Please enter an account name",
+      "type_required": "Please choose a type",
+      "invalid_balance": "Invalid balance",
+      "generic": "Something went wrong. Please try again."
+    }
+  }
+
+  "Language": {
+    "th": "ไทย",
+    "en": "English",
+    "switch": "Switch language"
+  }
+}

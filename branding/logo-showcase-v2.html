@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumenfi — Logo V2 (Prism + Coin)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #FAFAF9;
+    color: #0F172A;
+    padding: 32px 16px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 40px; }
+  h1 { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.02em; }
+  .subtitle { color: #64748B; margin-top: 8px; font-size: 0.95rem; }
+  .v2-tag { display:inline-block; padding:4px 12px; background:#F59E0B; color:white; border-radius:999px; font-size:0.75rem; font-weight:600; margin-top:8px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 48px;
+  }
+  .card {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 20px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .logo-box {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    background: #F8FAFC;
+  }
+  .logo-box svg { width: 140px; height: 140px; }
+  .concept-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #FEF3C7;
+    color: #92400E;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .concept-name { font-size: 1.05rem; font-weight: 600; margin-bottom: 4px; }
+  .concept-desc { color: #64748B; font-size: 0.85rem; line-height: 1.5; margin-bottom: 10px; }
+  .traits { display: flex; flex-wrap: wrap; gap: 5px; }
+  .trait { font-size: 0.7rem; padding: 3px 7px; background: #F1F5F9; border-radius: 6px; color: #475569; }
+
+  .pair-section { margin-top: 56px; padding-top: 32px; border-top: 1px solid #E2E8F0; }
+  .pair-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  .pair-card {
+    background: #0F172A;
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .pair-card.light { background: white; border: 1px solid #E2E8F0; }
+  .pair-svg { flex-shrink: 0; }
+  .pair-svg svg { width: 80px; height: 80px; }
+  .wm-text { font-size: 2.75rem; font-weight: 700; letter-spacing: -0.04em; }
+  .wm-light { color: #FFFFFF; }
+  .wm-dark { color: #0F172A; }
+  .wm-fi { color: #F59E0B; font-weight: 800; }
+  .pair-label {
+    color: #94A3B8;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .pair-card.light .pair-label { color: #64748B; }
+
+  .compare-section {
+    margin-top: 48px;
+    padding: 24px;
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+  }
+  .compare-section h2 { font-size: 1.25rem; margin-bottom: 16px; }
+  .compare-row { display: grid; grid-template-columns: 80px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid #F1F5F9; align-items: center; }
+  .compare-row:last-child { border: none; }
+  .compare-row svg { width: 60px; height: 60px; }
+  .compare-row .name { font-weight: 600; }
+  .compare-row .why { color: #64748B; font-size: 0.85rem; margin-top: 2px; }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 1.75rem; }
+    .pair-card { flex-direction: column; text-align: center; }
+    .wm-text { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Lumenfi — Logo V2</h1>
+    <p class="subtitle">Prism + Coin · Gold Spectrum</p>
+    <span class="v2-tag">VERSION 2</span>
+  </header>
+
+  <div class="grid">
+
+    <!-- R1 -->
+    <div class="card">
+      <div class="logo-box">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="r1a-light" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="100%" stop-color="#FBBF24"/></linearGradient>
+            <linearGradient id="r1a-mid" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>
+            <linearGradient id="r1a-deep" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient>
+            <linearGradient id="r1a-shadow" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#78350F"/></linearGradient>
+            <radialGradient id="r1a-coin" cx="35%" cy="35%" r="70%"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="55%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#B45309"/></radialGradient>
+          </defs>
+          <rect width="200" height="200" rx="44" fill="#0F172A"/>
+          <polygon points="100,32 100,100 38,100" fill="url(#r1a-light)"/>
+          <polygon points="100,32 162,100 100,100" fill="url(#r1a-mid)"/>
+          <polygon points="38,100 100,100 100,168" fill="url(#r1a-deep)"/>
+          <polygon points="100,100 162,100 100,168" fill="url(#r1a-shadow)"/>
+          <circle cx="100" cy="100" r="24" fill="url(#r1a-coin)"/>
+          <text x="100" y="112" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="800" fill="#0F172A">L</text>
+        </svg>
+      </div>
+      <span class="concept-tag">R1 Prism + Coin</span>
+      <h3 class="concept-name">ปริซึมเหรียญ</h3>
+      <p class="concept-desc">ปริซึม 4 หน้า + เหรียญทอง "L" ตรงกลาง = แสง + เงิน + แบรนด์ ครบในตัวเดียว สมดุลที่สุด</p>
+      <div class="traits"><span class="trait">Balanced</span><span class="trait">Brand-mark</span><span class="trait">Premium</span></div>
+    </div>
+
+    <!-- R2 -->
+    <div class="card">
+      <div class="logo-box">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="r2a-1" x1="50%" y1="100%" x2="50%" y2="0%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#FEF3C7"/></linearGradient>
+            <linearGradient id="r2a-2" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>
+            <linearGradient id="r2a-3" x1="50%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient>
+            <linearGradient id="r2a-4" x1="50%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#78350F"/></linearGradient>
+            <linearGradient id="r2a-5" x1="100%" y1="50%" x2="0%" y2="50%"><stop offset="0%" stop-color="#B45309"/><stop offset="100%" stop-color="#92400E"/></linearGradient>
+            <linearGradient id="r2a-6" x1="50%" y1="100%" x2="50%" y2="0%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#FBBF24"/></linearGradient>
+          </defs>
+          <rect width="200" height="200" rx="44" fill="#0F172A"/>
+          <polygon points="100,100 100,30 160,65" fill="url(#r2a-1)"/>
+          <polygon points="100,100 160,65 160,135" fill="url(#r2a-2)"/>
+          <polygon points="100,100 160,135 100,170" fill="url(#r2a-3)"/>
+          <polygon points="100,100 100,170 40,135" fill="url(#r2a-4)"/>
+          <polygon points="100,100 40,135 40,65" fill="url(#r2a-5)"/>
+          <polygon points="100,100 40,65 100,30" fill="url(#r2a-6)"/>
+          <circle cx="100" cy="100" r="3.5" fill="#FFFFFF" opacity="0.85"/>
+        </svg>
+      </div>
+      <span class="concept-tag">R2 Brilliant Coin</span>
+      <h3 class="concept-name">เหรียญเจียรไน</h3>
+      <p class="concept-desc">รูปทรงเหรียญหกเหลี่ยม + เจียรไนแบบเพชร 6 หน้า — ดู crypto-coin tech-forward สวยที่ขนาดเล็กสุด</p>
+      <div class="traits"><span class="trait">Modern</span><span class="trait">Crypto-vibe</span><span class="trait">Iconic</span></div>
+    </div>
+
+    <!-- R3 -->
+    <div class="card">
+      <div class="logo-box">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="r3a-bezel" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="50%" stop-color="#D97706"/><stop offset="100%" stop-color="#78350F"/></linearGradient>
+            <radialGradient id="r3a-coin" cx="35%" cy="32%" r="80%"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="50%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#B45309"/></radialGradient>
+          </defs>
+          <rect width="200" height="200" rx="44" fill="#0F172A"/>
+          <polygon points="100,28 165,65 165,135 100,172 35,135 35,65" fill="url(#r3a-bezel)"/>
+          <circle cx="100" cy="100" r="44" fill="url(#r3a-coin)"/>
+          <circle cx="100" cy="100" r="38" fill="none" stroke="#92400E" stroke-width="0.7" opacity="0.5"/>
+          <text x="100" y="118" text-anchor="middle" font-family="Georgia, serif" font-size="46" font-weight="700" fill="#7C2D12">L</text>
+        </svg>
+      </div>
+      <span class="concept-tag">R3 Bezel Coin</span>
+      <h3 class="concept-name">เหรียญในกรอบหกเหลี่ยม</h3>
+      <p class="concept-desc">เหรียญทอง serif "L" ในกรอบหกเหลี่ยม — heritage feel สื่อ "ความน่าเชื่อถือแบบธนาคารเก่า" + รวยแบบ Old Money</p>
+      <div class="traits"><span class="trait">Heritage</span><span class="trait">Trust</span><span class="trait">Banking</span></div>
+    </div>
+
+    <!-- R4 -->
+    <div class="card">
+      <div class="logo-box">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="r4a-light" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="100%" stop-color="#FBBF24"/></linearGradient>
+            <linearGradient id="r4a-mid" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>
+            <linearGradient id="r4a-deep" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient>
+            <linearGradient id="r4a-shadow" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#78350F"/></linearGradient>
+            <radialGradient id="r4a-coin" cx="35%" cy="35%" r="75%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="40%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#B45309"/></radialGradient>
+            <radialGradient id="r4a-glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FCD34D" stop-opacity="0.35"/><stop offset="100%" stop-color="#FCD34D" stop-opacity="0"/></radialGradient>
+          </defs>
+          <rect width="200" height="200" rx="44" fill="#0F172A"/>
+          <circle cx="100" cy="100" r="80" fill="url(#r4a-glow)"/>
+          <g stroke="#FBBF24" stroke-width="1.2" stroke-linecap="round" opacity="0.45">
+            <line x1="100" y1="14" x2="100" y2="22"/><line x1="100" y1="178" x2="100" y2="186"/>
+            <line x1="14" y1="100" x2="22" y2="100"/><line x1="178" y1="100" x2="186" y2="100"/>
+            <line x1="38" y1="38" x2="44" y2="44"/><line x1="156" y1="156" x2="162" y2="162"/>
+            <line x1="38" y1="162" x2="44" y2="156"/><line x1="156" y1="44" x2="162" y2="38"/>
+          </g>
+          <polygon points="100,36 100,100 42,100" fill="url(#r4a-light)"/>
+          <polygon points="100,36 158,100 100,100" fill="url(#r4a-mid)"/>
+          <polygon points="42,100 100,100 100,164" fill="url(#r4a-deep)"/>
+          <polygon points="100,100 158,100 100,164" fill="url(#r4a-shadow)"/>
+          <circle cx="100" cy="100" r="22" fill="url(#r4a-coin)"/>
+          <path d="M94 94 L96 98 L100 100 L96 102 L94 106 L92 102 L88 100 L92 98 Z" fill="#FFFFFF" opacity="0.95"/>
+        </svg>
+      </div>
+      <span class="concept-tag">R4 Prism + Coin + Rays</span>
+      <h3 class="concept-name">ปริซึมเหรียญส่องแสง</h3>
+      <p class="concept-desc">R1 + รังสีรอบทิศ + แสงเรืองอ่อนๆ — สื่อ "ทุกฟีเจอร์ครบ" + AI insight + lumen ตรงตัวที่สุด</p>
+      <div class="traits"><span class="trait">Most-meaning</span><span class="trait">AI-feel</span><span class="trait">Premium</span></div>
+    </div>
+
+  </div>
+
+  <!-- Pairing with Wordmark -->
+  <section class="pair-section">
+    <h2 style="text-align:center; margin-bottom:24px; font-size:1.5rem;">ลองคู่กับ Wordmark — R1</h2>
+
+    <div class="pair-grid">
+      <!-- Dark mode -->
+      <div class="pair-card">
+        <div class="pair-svg">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="pdark-l" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="100%" stop-color="#FBBF24"/></linearGradient>
+              <linearGradient id="pdark-m" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>
+              <linearGradient id="pdark-d" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient>
+              <linearGradient id="pdark-s" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#78350F"/></linearGradient>
+              <radialGradient id="pdark-c" cx="35%" cy="35%" r="70%"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="55%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#B45309"/></radialGradient>
+            </defs>
+            <polygon points="100,32 100,100 38,100" fill="url(#pdark-l)"/>
+            <polygon points="100,32 162,100 100,100" fill="url(#pdark-m)"/>
+            <polygon points="38,100 100,100 100,168" fill="url(#pdark-d)"/>
+            <polygon points="100,100 162,100 100,168" fill="url(#pdark-s)"/>
+            <circle cx="100" cy="100" r="24" fill="url(#pdark-c)"/>
+            <text x="100" y="112" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="800" fill="#0F172A">L</text>
+          </svg>
+        </div>
+        <div>
+          <p class="pair-label">Dark Mode</p>
+          <span class="wm-text wm-light">Lumen<span class="wm-fi">fi</span></span>
+        </div>
+      </div>
+
+      <!-- Light mode -->
+      <div class="pair-card light">
+        <div class="pair-svg">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="plight-l" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="100%" stop-color="#FBBF24"/></linearGradient>
+              <linearGradient id="plight-m" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>
+              <linearGradient id="plight-d" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient>
+              <linearGradient id="plight-s" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#78350F"/></linearGradient>
+              <radialGradient id="plight-c" cx="35%" cy="35%" r="70%"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="55%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#B45309"/></radialGradient>
+            </defs>
+            <polygon points="100,32 100,100 38,100" fill="url(#plight-l)"/>
+            <polygon points="100,32 162,100 100,100" fill="url(#plight-m)"/>
+            <polygon points="38,100 100,100 100,168" fill="url(#plight-d)"/>
+            <polygon points="100,100 162,100 100,168" fill="url(#plight-s)"/>
+            <circle cx="100" cy="100" r="24" fill="url(#plight-c)"/>
+            <text x="100" y="112" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="800" fill="#0F172A">L</text>
+          </svg>
+        </div>
+        <div>
+          <p class="pair-label">Light Mode</p>
+          <span class="wm-text wm-dark">Lumen<span class="wm-fi">fi</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick compare -->
+  <section class="compare-section">
+    <h2>ตัดสินใจเร็วๆ</h2>
+
+    <div class="compare-row">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="cr1-l" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="100%" stop-color="#FBBF24"/></linearGradient>
+          <linearGradient id="cr1-m" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>
+          <linearGradient id="cr1-d" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient>
+          <linearGradient id="cr1-s" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#78350F"/></linearGradient>
+        </defs>
+        <rect width="200" height="200" rx="44" fill="#0F172A"/>
+        <polygon points="100,32 100,100 38,100" fill="url(#cr1-l)"/>
+        <polygon points="100,32 162,100 100,100" fill="url(#cr1-m)"/>
+        <polygon points="38,100 100,100 100,168" fill="url(#cr1-d)"/>
+        <polygon points="100,100 162,100 100,168" fill="url(#cr1-s)"/>
+        <circle cx="100" cy="100" r="24" fill="#FBBF24"/>
+        <text x="100" y="112" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="800" fill="#0F172A">L</text>
+      </svg>
+      <div>
+        <div class="name">R1 ปริซึมเหรียญ ⭐</div>
+        <div class="why">เลือกถ้าอยาก: balance ที่สุด + brand mark "L" ชัด + ใช้ทุก context ได้</div>
+      </div>
+    </div>
+
+    <div class="compare-row">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="200" height="200" rx="44" fill="#0F172A"/>
+        <polygon points="100,100 100,30 160,65" fill="#FEF3C7"/>
+        <polygon points="100,100 160,65 160,135" fill="#FBBF24"/>
+        <polygon points="100,100 160,135 100,170" fill="#F59E0B"/>
+        <polygon points="100,100 100,170 40,135" fill="#B45309"/>
+        <polygon points="100,100 40,135 40,65" fill="#92400E"/>
+        <polygon points="100,100 40,65 100,30" fill="#D97706"/>
+      </svg>
+      <div>
+        <div class="name">R2 เหรียญเจียรไน</div>
+        <div class="why">เลือกถ้าอยาก: tech-forward / crypto-vibe / unique ที่สุด ไม่มี "L"</div>
+      </div>
+    </div>
+
+    <div class="compare-row">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="200" height="200" rx="44" fill="#0F172A"/>
+        <polygon points="100,28 165,65 165,135 100,172 35,135 35,65" fill="#D97706"/>
+        <circle cx="100" cy="100" r="44" fill="#FBBF24"/>
+        <text x="100" y="118" text-anchor="middle" font-family="Georgia, serif" font-size="46" font-weight="700" fill="#7C2D12">L</text>
+      </svg>
+      <div>
+        <div class="name">R3 เหรียญในกรอบ</div>
+        <div class="why">เลือกถ้าอยาก: heritage / trust / Old Money / banking feel</div>
+      </div>
+    </div>
+
+    <div class="compare-row">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="cr4-g"><stop offset="0%" stop-color="#FCD34D" stop-opacity="0.35"/><stop offset="100%" stop-color="#FCD34D" stop-opacity="0"/></radialGradient>
+        </defs>
+        <rect width="200" height="200" rx="44" fill="#0F172A"/>
+        <circle cx="100" cy="100" r="80" fill="url(#cr4-g)"/>
+        <g stroke="#FBBF24" stroke-width="1.2" stroke-linecap="round" opacity="0.45">
+          <line x1="100" y1="14" x2="100" y2="22"/><line x1="100" y1="178" x2="100" y2="186"/>
+          <line x1="14" y1="100" x2="22" y2="100"/><line x1="178" y1="100" x2="186" y2="100"/>
+        </g>
+        <polygon points="100,36 100,100 42,100" fill="#FEF3C7"/>
+        <polygon points="100,36 158,100 100,100" fill="#FBBF24"/>
+        <polygon points="42,100 100,100 100,164" fill="#F59E0B"/>
+        <polygon points="100,100 158,100 100,164" fill="#B45309"/>
+        <circle cx="100" cy="100" r="22" fill="#FCD34D"/>
+      </svg>
+      <div>
+        <div class="name">R4 ปริซึมเหรียญส่องแสง</div>
+        <div class="why">เลือกถ้าอยาก: AI feel ชัด + lumen ตรงตัว + storytelling เยอะ</div>
+      </div>
+    </div>
+  </section>
+
+  <footer style="text-align:center; margin-top:48px; color:#94A3B8; font-size:0.85rem;">
+    Lumenfi · Logo V2 · 2026
+  </footer>
+</div>
+</body>
+</html>

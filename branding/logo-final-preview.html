@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumenfi — Final Logo Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #FAFAF9;
+    color: #0A0F1F;
+    padding: 32px 16px 80px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 48px; }
+  h1 { font-size: 2.5rem; font-weight: 700; letter-spacing: -0.03em; }
+  .subtitle { color: #64748B; margin-top: 8px; font-size: 1rem; }
+  .badge { display:inline-block; padding:5px 14px; background: linear-gradient(135deg,#FBBF24,#D97706); color:white; border-radius:999px; font-size:0.8rem; font-weight:600; margin-top:12px; letter-spacing:0.02em; }
+  h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 18px; letter-spacing: -0.01em; }
+
+  .hero-card {
+    background: linear-gradient(135deg, #0A0F1F 0%, #1E293B 100%);
+    border-radius: 24px;
+    padding: 60px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+  }
+  .hero-card svg.logo-mark { width: 200px; height: 200px; }
+  .hero-wm {
+    font-size: 4.5rem;
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    color: white;
+  }
+  .hero-wm .fi { color: #F59E0B; font-weight: 800; }
+
+  .section { margin-bottom: 56px; }
+
+  .pair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .pair-card {
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .pair-card.dark { background: #0A0F1F; }
+  .pair-card.light { background: white; border: 1px solid #E2E8F0; }
+  .pair-card svg { width: 72px; height: 72px; flex-shrink: 0; }
+  .pair-wm { font-size: 2rem; font-weight: 700; letter-spacing: -0.04em; }
+  .pair-wm .fi { color: #F59E0B; font-weight: 800; }
+  .pair-wm.lumen-light { color: white; }
+  .pair-wm.lumen-dark { color: #0A0F1F; }
+  .pair-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+  .pair-card.dark .pair-label { color: #94A3B8; }
+  .pair-card.light .pair-label { color: #64748B; }
+
+  .sizes-card {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .sizes-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .size-item { text-align: center; }
+  .size-item .label { color: #64748B; font-size: 0.75rem; margin-top: 8px; font-family: 'SF Mono', Menlo, monospace; }
+
+  .stack-card {
+    background: #0A0F1F;
+    border-radius: 16px;
+    padding: 56px 32px;
+    text-align: center;
+  }
+  .stack-card svg { width: 120px; height: 120px; margin-bottom: 16px; }
+  .stack-card .wm { font-size: 2.5rem; font-weight: 700; letter-spacing: -0.04em; color: white; display:block; }
+  .stack-card .wm .fi { color: #F59E0B; font-weight: 800; }
+  .stack-card .tagline { color: #94A3B8; font-size: 0.9rem; margin-top: 6px; letter-spacing: 0.02em; }
+
+  .what-changed {
+    background: #FEF3C7;
+    border: 1px solid #FBBF24;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 48px;
+  }
+  .what-changed h3 { color: #92400E; font-size: 1rem; margin-bottom: 12px; }
+  .what-changed ul { list-style: none; padding: 0; }
+  .what-changed li { padding: 4px 0 4px 24px; position: relative; color: #78350F; font-size: 0.9rem; }
+  .what-changed li::before { content: '✓'; position: absolute; left: 0; font-weight: 700; color: #D97706; }
+
+  @media (max-width: 720px) {
+    h1 { font-size: 1.75rem; }
+    .hero-wm { font-size: 2.5rem; }
+    .hero-card { padding: 40px 20px; gap: 16px; }
+    .hero-card svg.logo-mark { width: 130px; height: 130px; }
+    .pair-grid { grid-template-columns: 1fr; }
+    .pair-wm { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SVG Symbol (reused) -->
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <symbol id="logo" viewBox="0 0 200 200">
+      <defs>
+        <linearGradient id="L-light" x1="20%" y1="20%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FFFBEB"/><stop offset="55%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#FBBF24"/></linearGradient>
+        <linearGradient id="L-mid" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#D97706"/></linearGradient>
+        <linearGradient id="L-deep" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#7C2D12"/></linearGradient>
+        <linearGradient id="L-shadow" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#B45309"/><stop offset="100%" stop-color="#1C0701"/></linearGradient>
+        <radialGradient id="L-coin" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFFBEB"/><stop offset="40%" stop-color="#FCD34D"/><stop offset="80%" stop-color="#B45309"/><stop offset="100%" stop-color="#7C2D12"/></radialGradient>
+        <radialGradient id="L-shine" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.75"/><stop offset="60%" stop-color="#FFFFFF" stop-opacity="0.15"/><stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+        <radialGradient id="L-aura"><stop offset="0%" stop-color="#FCD34D" stop-opacity="0.22"/><stop offset="55%" stop-color="#FCD34D" stop-opacity="0.06"/><stop offset="100%" stop-color="#FCD34D" stop-opacity="0"/></radialGradient>
+        <radialGradient id="L-spark"><stop offset="0%" stop-color="#FCD34D" stop-opacity="0.55"/><stop offset="100%" stop-color="#FCD34D" stop-opacity="0"/></radialGradient>
+      </defs>
+      <rect width="200" height="200" rx="44" fill="#0A0F1F"/>
+      <circle cx="100" cy="100" r="88" fill="url(#L-aura)"/>
+      <g>
+        <circle cx="50" cy="50" r="15" fill="url(#L-spark)"/>
+        <path d="M50 36 L52.5 47.5 L64 50 L52.5 52.5 L50 64 L47.5 52.5 L36 50 L47.5 47.5 Z" fill="#FFFBEB"/>
+        <circle cx="150" cy="50" r="15" fill="url(#L-spark)"/>
+        <path d="M150 36 L152.5 47.5 L164 50 L152.5 52.5 L150 64 L147.5 52.5 L136 50 L147.5 47.5 Z" fill="#FFFBEB"/>
+        <circle cx="50" cy="150" r="15" fill="url(#L-spark)"/>
+        <path d="M50 136 L52.5 147.5 L64 150 L52.5 152.5 L50 164 L47.5 152.5 L36 150 L47.5 147.5 Z" fill="#FFFBEB"/>
+        <circle cx="150" cy="150" r="15" fill="url(#L-spark)"/>
+        <path d="M150 136 L152.5 147.5 L164 150 L152.5 152.5 L150 164 L147.5 152.5 L136 150 L147.5 147.5 Z" fill="#FFFBEB"/>
+      </g>
+      <polygon points="100,28 100,100 34,100" fill="url(#L-light)"/>
+      <polygon points="100,28 166,100 100,100" fill="url(#L-mid)"/>
+      <polygon points="34,100 100,100 100,172" fill="url(#L-deep)"/>
+      <polygon points="100,100 166,100 100,172" fill="url(#L-shadow)"/>
+      <polygon points="100,28 166,100 100,172 34,100" fill="none" stroke="#FCD34D" stroke-width="0.6" opacity="0.45"/>
+      <line x1="100" y1="28" x2="100" y2="172" stroke="#FEF3C7" stroke-width="0.4" opacity="0.35"/>
+      <line x1="34" y1="100" x2="166" y2="100" stroke="#FEF3C7" stroke-width="0.4" opacity="0.25"/>
+      <circle cx="100" cy="100" r="38" fill="url(#L-coin)"/>
+      <circle cx="100" cy="100" r="36" fill="none" stroke="#451A03" stroke-width="0.8" opacity="0.6"/>
+      <circle cx="100" cy="100" r="32.5" fill="none" stroke="#451A03" stroke-width="0.5" opacity="0.4"/>
+      <ellipse cx="90" cy="86" rx="13" ry="7" fill="url(#L-shine)" transform="rotate(-25 90 86)"/>
+      <text x="100" y="119" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-weight="700" fill="#1C0701">L</text>
+      <rect x="3" y="3" width="194" height="194" rx="41" fill="none" stroke="#D97706" stroke-width="0.7" opacity="0.3"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="container">
+
+  <header>
+    <h1>Lumenfi</h1>
+    <p class="subtitle">Final Logo · Premium Edition</p>
+    <span class="badge">PREMIUM</span>
+  </header>
+
+  <div class="what-changed">
+    <h3>🎨 ปรับจาก R1 เดิม</h3>
+    <ul>
+      <li>เหรียญใหญ่ขึ้น (r=24 → r=38)</li>
+      <li>ตัว L ใหญ่ขึ้นและเปลี่ยนเป็น serif Georgia (font-size 28 → 46)</li>
+      <li>ประกายแสง 4 มุม พร้อม glow halo</li>
+      <li>เพิ่ม specular shine บนเหรียญ (ดูเป็นโลหะจริง)</li>
+      <li>เพิ่มวงแหวน engraving 2 ชั้นรอบเหรียญ</li>
+      <li>เพิ่ม golden aura รอบ prism (เหมือนเปล่งแสง)</li>
+      <li>เพิ่ม inner border ขอบทอง (picture frame effect)</li>
+      <li>Gradient ลึกขึ้น dramatic ขึ้น (highlight ขาว → shadow ดำเข้ม)</li>
+    </ul>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero-card">
+    <svg class="logo-mark"><use href="#logo"/></svg>
+    <span class="hero-wm">Lumen<span class="fi">fi</span></span>
+  </div>
+
+  <!-- DARK + LIGHT PAIRINGS -->
+  <section class="section">
+    <h2>Logo + Wordmark</h2>
+    <div class="pair-grid">
+      <div class="pair-card dark">
+        <svg><use href="#logo"/></svg>
+        <div>
+          <p class="pair-label">Dark</p>
+          <span class="pair-wm lumen-light">Lumen<span class="fi">fi</span></span>
+        </div>
+      </div>
+      <div class="pair-card light">
+        <svg><use href="#logo"/></svg>
+        <div>
+          <p class="pair-label">Light</p>
+          <span class="pair-wm lumen-dark">Lumen<span class="fi">fi</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STACKED -->
+  <section class="section">
+    <h2>Stacked Lockup</h2>
+    <div class="stack-card">
+      <svg><use href="#logo"/></svg><br>
+      <span class="wm">Lumen<span class="fi">fi</span></span>
+      <div class="tagline">Light up your finances</div>
+    </div>
+  </section>
+
+  <!-- SIZES -->
+  <section class="section">
+    <h2>Scale Test (Favicon → App Icon)</h2>
+    <div class="sizes-card">
+      <div class="sizes-row">
+        <div class="size-item"><svg style="width:16px;height:16px;"><use href="#logo"/></svg><div class="label">16px</div></div>
+        <div class="size-item"><svg style="width:24px;height:24px;"><use href="#logo"/></svg><div class="label">24px</div></div>
+        <div class="size-item"><svg style="width:32px;height:32px;"><use href="#logo"/></svg><div class="label">32px</div></div>
+        <div class="size-item"><svg style="width:48px;height:48px;"><use href="#logo"/></svg><div class="label">48px</div></div>
+        <div class="size-item"><svg style="width:64px;height:64px;"><use href="#logo"/></svg><div class="label">64px</div></div>
+        <div class="size-item"><svg style="width:96px;height:96px;"><use href="#logo"/></svg><div class="label">96px</div></div>
+        <div class="size-item"><svg style="width:128px;height:128px;"><use href="#logo"/></svg><div class="label">128px</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ON DEVICES MOCK -->
+  <section class="section">
+    <h2>Phone Home Screen Preview</h2>
+    <div style="display:flex; justify-content:center;">
+      <div style="background: linear-gradient(180deg, #18181B 0%, #27272A 100%); padding:40px 30px; border-radius:36px; width:280px;">
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px;">
+          <div style="background:#3B82F6; aspect-ratio:1; border-radius:14px;"></div>
+          <div style="background:#10B981; aspect-ratio:1; border-radius:14px;"></div>
+          <div style="background:#EF4444; aspect-ratio:1; border-radius:14px;"></div>
+          <div style="background:#8B5CF6; aspect-ratio:1; border-radius:14px;"></div>
+          <div style="aspect-ratio:1;"><svg style="width:100%;height:100%;border-radius:14px;"><use href="#logo"/></svg></div>
+          <div style="background:#06B6D4; aspect-ratio:1; border-radius:14px;"></div>
+          <div style="background:#F59E0B; aspect-ratio:1; border-radius:14px;"></div>
+          <div style="background:#EC4899; aspect-ratio:1; border-radius:14px;"></div>
+        </div>
+        <p style="text-align:center; color:white; font-size:10px; margin-top:24px;">Lumenfi · บริหารเงิน</p>
+      </div>
+    </div>
+  </section>
+
+  <footer style="text-align:center; margin-top:64px; color:#94A3B8; font-size:0.8rem;">
+    Lumenfi · Final Logo · 2026
+  </footer>
+</div>
+</body>
+</html>

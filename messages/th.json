@@ -1,0 +1,200 @@
+{
+  "Common": {
+    "appName": "Lumenfi",
+    "tagline": "ส่องสว่างเงินของคุณ",
+    "loading": "กำลังโหลด...",
+    "save": "บันทึก",
+    "cancel": "ยกเลิก",
+    "delete": "ลบ",
+    "edit": "แก้ไข",
+    "add": "เพิ่ม",
+    "back": "ย้อนกลับ",
+    "next": "ถัดไป",
+    "viewAll": "ดูทั้งหมด",
+    "search": "ค้นหา",
+    "currency": "฿"
+  },
+
+  "Landing": {
+    "heroTitle1": "บริหารการเงิน",
+    "heroTitle2": "อย่างมีแผน",
+    "heroSubtitle": "แอปบริหารการเงินส่วนตัวครบวงจร — รายรับ-รายจ่าย หนี้สิน การลงทุน เป้าหมาย พร้อม AI Advisor ที่ใช้ API key ของคุณเอง",
+    "ctaPrimary": "เริ่มใช้งานฟรี",
+    "ctaSecondary": "เข้าสู่ระบบ",
+    "ctaNote": "ฟรี · ไม่ต้องผูกบัตรเครดิต · ข้อมูลเข้ารหัสด้วย RLS",
+    "featuresTitle": "ฟีเจอร์หลัก",
+    "featuresSubtitle": "ทุกอย่างที่ต้องมีเพื่อบริหารเงินส่วนตัว",
+    "ctaFinalTitle": "พร้อมเริ่มต้นแล้วหรือยัง?",
+    "ctaFinalSubtitle": "เริ่มบันทึกรายการแรกได้ภายใน 30 วินาที",
+    "ctaFinalButton": "สร้างบัญชีฟรี",
+    "footer": "© 2026 Lumenfi · Built with Next.js + Supabase"
+  },
+
+  "Features": {
+    "income": {
+      "title": "รายรับ-รายจ่าย",
+      "desc": "บันทึกธุรกรรม สแกนบิล อัพโหลดรูป จัดหมวดอัตโนมัติ"
+    },
+    "debt": {
+      "title": "จัดการหนี้สิน",
+      "desc": "ติดตามทุกหนี้ คำนวณกลยุทธ์ใช้หนี้ Avalanche/Snowball"
+    },
+    "investment": {
+      "title": "การลงทุน",
+      "desc": "ติดตามพอร์ตหุ้น กองทุน คริปโต ทอง ดู P/L แบบ real-time"
+    },
+    "goals": {
+      "title": "เป้าหมายการเงิน",
+      "desc": "เก็บเงินสำรอง ดาวน์บ้าน เกษียณ — ติดตามทุกเป้าได้"
+    },
+    "ai": {
+      "title": "AI Advisor (BYO Key)",
+      "desc": "ใส่ API key เอง คุยกับ AI ขอคำแนะนำการเงินของคุณเอง"
+    },
+    "netWorth": {
+      "title": "Net Worth Tracker",
+      "desc": "ดูสุขภาพการเงินรวม คะแนนสุขภาพ DTI Savings Rate"
+    }
+  },
+
+  "Nav": {
+    "home": "หน้าหลัก",
+    "transactions": "รายการ",
+    "add": "เพิ่ม",
+    "ai": "AI",
+    "more": "เพิ่มเติม"
+  },
+
+  "Dashboard": {
+    "greeting": "สวัสดี",
+    "subtitle": "มาดูฐานะการเงินกัน",
+    "netWorth": "Net Worth (ฐานะรวม)",
+    "monthChange": "เดือนนี้",
+    "monthIncome": "รายรับเดือนนี้",
+    "monthExpense": "รายจ่ายเดือนนี้",
+    "healthSection": "สุขภาพการเงิน",
+    "savingsRate": "Savings Rate",
+    "savingsRateHint": "ของรายได้ที่ออมได้",
+    "dti": "DTI Ratio",
+    "dtiHint": "ภาระหนี้ต่อรายได้",
+    "emergencyFund": "Emergency Fund",
+    "emergencyFundHint": "เงินสำรองฉุกเฉิน",
+    "topCategories": "หมวดที่ใช้เยอะสุด",
+    "monthsLabel": "เดือน",
+    "quickActions": {
+      "debts": "หนี้สิน",
+      "investments": "การลงทุน",
+      "goals": "เป้าหมาย",
+      "accounts": "บัญชี"
+    },
+    "aiCta": {
+      "title": "ลองคุยกับ AI Advisor",
+      "subtitle": "ใส่ API key ของคุณ แล้วขอคำแนะนำการเงินได้"
+    },
+    "mockNotice": {
+      "title": "ข้อมูลตัวอย่าง",
+      "body": "หน้านี้ยังเป็น mock data — ดู PROJECT_PLAN.md เพื่อทำ Phase 2-4 ต่อ"
+    }
+  },
+
+  "Auth": {
+    "login": "เข้าสู่ระบบ",
+    "signup": "สมัครสมาชิก",
+    "logout": "ออกจากระบบ",
+    "email": "อีเมล",
+    "emailPlaceholder": "you@example.com",
+    "password": "รหัสผ่าน",
+    "passwordPlaceholder": "อย่างน้อย 8 ตัวอักษร",
+    "passwordHint": "ใช้อย่างน้อย 8 ตัวอักษร",
+    "confirmPassword": "ยืนยันรหัสผ่าน",
+    "fullName": "ชื่อ-นามสกุล",
+    "fullNamePlaceholder": "กรอกชื่อ-นามสกุลของคุณ",
+    "forgotPassword": "ลืมรหัสผ่าน?",
+    "noAccount": "ยังไม่มีบัญชี?",
+    "haveAccount": "มีบัญชีอยู่แล้ว?",
+    "orContinueWith": "หรือเข้าสู่ระบบด้วย",
+    "google": "Google",
+    "loginTitle": "ยินดีต้อนรับกลับ",
+    "loginSubtitle": "เข้าสู่ระบบเพื่อจัดการการเงินของคุณ",
+    "signupTitle": "สร้างบัญชีใหม่",
+    "signupSubtitle": "เริ่มต้นบริหารการเงินอย่างฉลาดวันนี้",
+    "submitLogin": "เข้าสู่ระบบ",
+    "submitSignup": "สร้างบัญชีฟรี",
+    "submitting": "กำลังดำเนินการ...",
+    "termsAgree": "การสมัครหมายถึงคุณยอมรับ",
+    "terms": "ข้อตกลงการใช้งาน",
+    "and": "และ",
+    "privacy": "นโยบายความเป็นส่วนตัว",
+    "checkEmail": "เช็คอีเมลของคุณ",
+    "checkEmailMessage": "เราส่งลิงก์ยืนยันไปที่อีเมลของคุณแล้ว คลิกลิงก์ในอีเมลเพื่อยืนยันบัญชี",
+    "errors": {
+      "invalid_credentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+      "user_exists": "อีเมลนี้มีบัญชีอยู่แล้ว",
+      "weak_password": "รหัสผ่านสั้นเกินไป (อย่างน้อย 8 ตัว)",
+      "passwords_dont_match": "รหัสผ่านไม่ตรงกัน",
+      "invalid_email": "รูปแบบอีเมลไม่ถูกต้อง",
+      "name_required": "กรุณากรอกชื่อ",
+      "generic": "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง"
+    }
+  },
+
+  "Settings": {
+    "title": "ตั้งค่า",
+    "profile": "โปรไฟล์",
+    "language": "ภาษา",
+    "currency": "สกุลเงิน",
+    "ai": "AI Settings",
+    "privacy": "ความเป็นส่วนตัว",
+    "exportData": "ส่งออกข้อมูล",
+    "deleteAccount": "ลบบัญชี"
+  },
+
+  "Accounts": {
+    "title": "บัญชีของฉัน",
+    "subtitle": "จัดการบัญชีธนาคาร เงินสด บัตรเครดิต",
+    "totalAssets": "สินทรัพย์รวม",
+    "totalLiabilities": "หนี้สินรวม",
+    "addAccount": "เพิ่มบัญชี",
+    "addAccountTitle": "เพิ่มบัญชีใหม่",
+    "addAccountSubtitle": "ระบุประเภทและยอดเริ่มต้น",
+    "noAccounts": "ยังไม่มีบัญชี",
+    "noAccountsHint": "เริ่มต้นด้วยการเพิ่มบัญชีแรกของคุณ",
+    "form": {
+      "name": "ชื่อบัญชี",
+      "namePlaceholder": "เช่น KBank เงินเดือน",
+      "type": "ประเภท",
+      "initialBalance": "ยอดเริ่มต้น",
+      "initialBalanceHint": "ยอดปัจจุบันในบัญชี",
+      "currency": "สกุลเงิน",
+      "color": "สี",
+      "icon": "ไอคอน",
+      "creditLimit": "วงเงินบัตร",
+      "creditLimitHint": "วงเงินสูงสุดที่ใช้ได้",
+      "statementDay": "วันสรุปยอด",
+      "dueDay": "วันครบกำหนด",
+      "includeInNetWorth": "รวมใน Net Worth",
+      "submit": "บันทึก",
+      "submitting": "กำลังบันทึก..."
+    },
+    "types": {
+      "cash": "เงินสด",
+      "bank": "บัญชีธนาคาร",
+      "credit_card": "บัตรเครดิต",
+      "e_wallet": "e-Wallet",
+      "savings": "ออมทรัพย์",
+      "other": "อื่นๆ"
+    },
+    "errors": {
+      "name_required": "กรุณากรอกชื่อบัญชี",
+      "type_required": "กรุณาเลือกประเภท",
+      "invalid_balance": "ยอดเงินไม่ถูกต้อง",
+      "generic": "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง"
+    }
+  }
+
+  "Language": {
+    "th": "ไทย",
+    "en": "English",
+    "switch": "เปลี่ยนภาษา"
+  }
+}
