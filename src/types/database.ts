@@ -1,44 +1,46 @@
 /**
- * Supabase database types
+ * Supabase database types — permissive stub
  *
- * After applying DATABASE_SCHEMA.sql, regenerate types via:
+ * Replace with auto-generated strict types later via:
  *   npx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/database.ts
  *
- * For now, this is a minimal stub so TypeScript compiles.
+ * For now this stub gives Supabase client just enough structure to type-check
+ * insert/select/update without erroring on per-column types.
  */
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+type AnyRow = Record<string, any>;
+
+interface PermissiveTable {
+  Row: AnyRow;
+  Insert: AnyRow;
+  Update: AnyRow;
+  Relationships: any[];
+}
+
 export interface Database {
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          id: string;
-          email: string;
-          full_name: string | null;
-          avatar_url: string | null;
-          default_currency: string;
-          timezone: string;
-          locale: string;
-          monthly_income_target: number | null;
-          monthly_expense_target: number | null;
-          ai_provider: string | null;
-          ai_api_key_encrypted: string | null;
-          ai_endpoint: string | null;
-          ai_privacy_mode: boolean;
-          onboarded: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: Partial<Database['public']['Tables']['profiles']['Row']> & { id: string; email: string };
-        Update: Partial<Database['public']['Tables']['profiles']['Row']>;
-      };
-      // Other tables will be auto-generated via supabase CLI
-      [key: string]: any;
+      profiles: PermissiveTable;
+      accounts: PermissiveTable;
+      categories: PermissiveTable;
+      transactions: PermissiveTable;
+      recurring_templates: PermissiveTable;
+      debts: PermissiveTable;
+      debt_payments: PermissiveTable;
+      investments: PermissiveTable;
+      investment_transactions: PermissiveTable;
+      goals: PermissiveTable;
+      goal_contributions: PermissiveTable;
+      ai_conversations: PermissiveTable;
+      ai_messages: PermissiveTable;
+      notifications: PermissiveTable;
+      net_worth_snapshots: PermissiveTable;
     };
-    Views: { [key: string]: any };
-    Functions: { [key: string]: any };
-    Enums: { [key: string]: any };
+    Views: Record<string, { Row: AnyRow }>;
+    Functions: Record<string, any>;
+    Enums: Record<string, string>;
+    CompositeTypes: Record<string, any>;
   };
 }
