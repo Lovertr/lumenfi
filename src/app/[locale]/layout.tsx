@@ -29,9 +29,9 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
+// Force dynamic rendering to bypass any static file serving issues on Vercel.
+// Once /th confirmed working, can switch back to static via generateStaticParams.
+export const dynamic = 'force-dynamic';
 
 export default async function LocaleLayout({
   children,
