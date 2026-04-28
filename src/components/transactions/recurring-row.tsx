@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
-import { Pause, Play, Trash2, TrendingDown, TrendingUp, Target as TargetIcon, Wallet } from 'lucide-react';
+import { Pause, Play, Trash2, Pencil, TrendingDown, TrendingUp, Target as TargetIcon, Wallet } from 'lucide-react';
+import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toggleRecurring, deleteRecurring } from '@/app/[locale]/(app)/transactions/actions';
@@ -72,6 +73,11 @@ export function RecurringRow({ r, nextDate }: { r: Recurring; nextDate: string }
           <span className={`text-sm font-bold ${isExpense ? 'text-red-600' : 'text-green-600'}`}>
             {isExpense ? '-' : '+'}{formatTHB(Number(r.amount), { compact: true })}
           </span>
+          <Button asChild size="icon" variant="ghost" className="h-8 w-8" aria-label={t('edit')}>
+            <Link href={`/recurring/${r.id}/edit`}>
+              <Pencil className="h-4 w-4" />
+            </Link>
+          </Button>
           <form action={toggleRecurring}>
             <input type="hidden" name="id" value={r.id} />
             <input type="hidden" name="is_active" value={(!r.is_active).toString()} />

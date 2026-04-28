@@ -7,6 +7,7 @@ import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { formatTHB } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/server';
 import { Plus, Target, ArrowLeft, Pencil } from 'lucide-react';
+import { QuickContribute } from '@/components/goals/quick-contribute';
 
 interface Goal {
   id: string;
@@ -124,48 +125,51 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
             const achieved = current >= target;
 
             return (
-              <Link key={goal.id} href={`/goals/${goal.id}/edit`}>
-                <Card className="transition-all hover:border-primary/40 hover:shadow-sm active:scale-[0.99]">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-2xl"
-                        style={{ backgroundColor: `${goal.color}1A` }}
-                      >
-                        {goal.icon}
+              <Card key={goal.id} className="transition-all hover:border-primary/40 hover:shadow-sm">
+                <CardContent className="p-4">
+                  <Link href={`/goals/${goal.id}/edit`} className="flex items-start gap-3">
+                    <div
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-2xl"
+                      style={{ backgroundColor: `${goal.color}1A` }}
+                    >
+                      {goal.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold truncate">{goal.name}</p>
+                        <Pencil className="h-4 w-4 shrink-0 text-muted-foreground" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="font-semibold truncate">{goal.name}</p>
-                          <Pencil className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        </div>
-                        <div className="mt-2 flex items-baseline justify-between text-sm">
-                          <span className="font-bold">{formatTHB(current, { compact: true })}</span>
-                          <span className="text-xs text-muted-foreground">
-                            / {formatTHB(target, { compact: true })}
+                      <div className="mt-2 flex items-baseline justify-between text-sm">
+                        <span className="font-bold">{formatTHB(current, { compact: true })}</span>
+                        <span className="text-xs text-muted-foreground">
+                          / {formatTHB(target, { compact: true })}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${percent}%`, backgroundColor: goal.color }}
+                        />
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">{percent.toFixed(0)}%</span>
+                        {achieved ? (
+                          <span className="font-medium text-success">✓ {t('achieved')}</span>
+                        ) : monthlyRequired ? (
+                          <span className="text-muted-foreground">
+                            {t('monthlyRequired')}: {formatTHB(monthlyRequired, { compact: true })}
                           </span>
-                        </div>
-                        <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
-                          <div
-                            className="h-full rounded-full transition-all"
-                            style={{ width: `${percent}%`, backgroundColor: goal.color }}
-                          />
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">{percent.toFixed(0)}%</span>
-                          {achieved ? (
-                            <span className="font-medium text-success">✓ {t('achieved')}</span>
-                          ) : monthlyRequired ? (
-                            <span className="text-muted-foreground">
-                              {t('monthlyRequired')}: {formatTHB(monthlyRequired, { compact: true })}
-                            </span>
-                          ) : null}
-                        </div>
+                        ) : null}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                  </Link>
+                  {!isLinked && (
+                    <div className="mt-3 border-t pt-2">
+                      <QuickContribute goalId={goal.id} isLinked={!!isLinked} />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             );
           })}
         </div>

@@ -312,7 +312,8 @@
       "custom": "Custom"
     },
     "editTitle": "Edit Goal",
-    "manageHint": "Tap a goal to edit, adjust current amount, or delete — you can also link transactions to goals in the add transaction page"
+    "manageHint": "Tap a goal to edit, adjust current amount, or delete — you can also link transactions to goals in the add transaction page",
+    "contribute": "Add money"
   },
   "Debts": {
     "title": "Debts",
@@ -468,6 +469,11 @@
     "notifDenied": "Notifications blocked — enable in browser/device settings",
     "notifUnsupported": "This device/browser does not support notifications",
     "vapidMissing": "Push server (VAPID) not configured — notifications will only fire while app is open",
-    "localTestNotif": "Notifications working!"
+    "localTestNotif": "Notifications working!",
+    "editTitle": "Edit recurring",
+    "save": "Save",
+    "edit": "Edit",
+    "typeLockHint": "Transaction type is locked (cannot change after creation)",
+    "createNewIfChange": "To change, delete and create a new one"
   }
 }
