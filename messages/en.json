@@ -600,7 +600,16 @@
     "analyzing": "AI thinking...",
     "noAiKey": "AI key not set — go to AI Advisor → Settings",
     "noSnapshot": "No financial data — add transactions so AI can analyze",
-    "aiFailed": "AI failed, try again"
+    "aiFailed": "AI failed, try again",
+    "aiContextTitle": "AI will use this data",
+    "ctxIncomeExpense": "Income/expense",
+    "ctxCashFlow": "Cash Flow",
+    "ctxDebts": "Debts",
+    "ctxGoals": "Goals",
+    "ctxBudgets": "Budgets",
+    "items": "items",
+    "categories": "categories",
+    "noEmergencyFund": "no emergency fund yet"
   },
   "Scan": {
     "title": "Scan Receipt with AI",

@@ -600,7 +600,16 @@
     "analyzing": "AI กำลังคิด...",
     "noAiKey": "ยังไม่ได้ตั้งค่า AI API Key — ไปที่ AI Advisor → Settings",
     "noSnapshot": "ยังไม่มีข้อมูลทางการเงิน — เพิ่มรายการรับ/จ่ายเพื่อให้ AI วิเคราะห์ได้",
-    "aiFailed": "AI วิเคราะห์ไม่ได้ ลองใหม่อีกครั้ง"
+    "aiFailed": "AI วิเคราะห์ไม่ได้ ลองใหม่อีกครั้ง",
+    "aiContextTitle": "AI จะใช้ข้อมูลเหล่านี้ในการวิเคราะห์",
+    "ctxIncomeExpense": "รายรับ-รายจ่าย",
+    "ctxCashFlow": "Cash Flow",
+    "ctxDebts": "หนี้",
+    "ctxGoals": "เป้าหมาย",
+    "ctxBudgets": "งบประมาณ",
+    "items": "รายการ",
+    "categories": "หมวด",
+    "noEmergencyFund": "ยังไม่มีกองทุนฉุกเฉิน"
   },
   "Scan": {
     "title": "สแกนใบเสร็จด้วย AI",

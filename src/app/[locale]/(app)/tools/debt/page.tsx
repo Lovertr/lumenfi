@@ -4,6 +4,7 @@ import { ArrowLeft, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DebtCalculator } from '@/components/tools/debt-calculator';
 import { createClient } from '@/lib/supabase/server';
+import { getCashFlowAnalysis } from '@/lib/queries/cashflow';
 
 interface Debt {
   id: string;
@@ -136,6 +137,32 @@ async function getFinancialSnapshot() {
     };
   });
 
+  // Goals
+  const { data: goalsRes } = await supabase
+    .from('goals')
+    .select('id, name, target_amount, current_amount, deadline, is_emergency_fund, linked_account_ids')
+    .eq('user_id', user.id)
+    .eq('status', 'active');
+  const goals = (goalsRes ?? []).map((g: any) => ({
+    name: g.name,
+    target: Number(g.target_amount),
+    current: Number(g.current_amount),
+    deadline: g.deadline,
+    is_emergency_fund: !!g.is_emergency_fund,
+    is_linked: Array.isArray(g.linked_account_ids) && g.linked_account_ids.length > 0,
+    monthly_required: g.deadline ? (() => {
+      const months = Math.max(1, (new Date(g.deadline).getFullYear() - now.getFullYear()) * 12 + (new Date(g.deadline).getMonth() - now.getMonth()));
+      const remaining = Math.max(0, Number(g.target_amount) - Number(g.current_amount));
+      return Math.round(remaining / months);
+    })() : null,
+  }));
+
+  // Cash flow analysis (re-use existing query)
+  let cashflow: any = null;
+  try {
+    cashflow = await getCashFlowAnalysis();
+  } catch {}
+
   return {
     monthly_income: avgIncome,
     monthly_expense_total: avgExpense,
@@ -145,6 +172,16 @@ async function getFinancialSnapshot() {
     total_assets: Math.round(totalAssets),
     active_months: activeMonths,
     budget_categories: budgetCategories,
+    goals,
+    cashflow: cashflow ? {
+      status: cashflow.status,
+      status_reason: cashflow.statusReason,
+      months_of_runway: cashflow.monthsOfRunway,
+      avg_monthly_net: cashflow.avgMonthlyNet,
+      projected_net_30: cashflow.projectedNet30,
+      upcoming_fixed_expense: cashflow.upcomingFixedExpense,
+      upcoming_fixed_income: cashflow.upcomingFixedIncome,
+    } : null,
   };
 }
 

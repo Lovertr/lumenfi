@@ -39,6 +39,24 @@ interface FinancialSnapshot {
   total_assets: number;
   active_months: number;
   budget_categories?: { name: string; budget: number; spent: number }[];
+  goals?: {
+    name: string;
+    target: number;
+    current: number;
+    deadline: string | null;
+    is_emergency_fund: boolean;
+    is_linked: boolean;
+    monthly_required: number | null;
+  }[];
+  cashflow?: {
+    status: 'healthy' | 'tight' | 'critical';
+    status_reason: string;
+    months_of_runway: number;
+    avg_monthly_net: number;
+    projected_net_30: number;
+    upcoming_fixed_expense: number;
+    upcoming_fixed_income: number;
+  } | null;
 }
 
 type Strategy = 'avalanche' | 'snowball';
@@ -443,6 +461,24 @@ export function DebtCalculator({
       {/* AI advisor */}
       <Card>
         <CardContent className="p-4">
+          {snapshot && (
+            <div className="mb-3 rounded-lg border border-purple-200 bg-purple-50/50 p-2.5 text-[11px]">
+              <p className="mb-1 font-semibold text-purple-900">{t('aiContextTitle')}</p>
+              <ul className="space-y-0.5 text-purple-900/80">
+                <li>· {t('ctxIncomeExpense')}: <span className="font-mono">{formatTHB(snapshot.monthly_income)}/เดือน − {formatTHB(snapshot.monthly_expense_total)}</span></li>
+                {snapshot.cashflow && (
+                  <li>· {t('ctxCashFlow')}: <span className={cn('font-semibold', snapshot.cashflow.status === 'critical' ? 'text-red-600' : snapshot.cashflow.status === 'tight' ? 'text-amber-600' : 'text-green-700')}>{snapshot.cashflow.status === 'critical' ? '✗ วิกฤต' : snapshot.cashflow.status === 'tight' ? '⚠ ตึง' : '✓ แข็งแรง'}</span> · runway {snapshot.cashflow.months_of_runway.toFixed(1)} {t('months')}</li>
+                )}
+                <li>· {t('ctxDebts')}: {validDebts.length} {t('items')} · ผ่อน {formatTHB(snapshot.existing_debt_payments)}/เดือน</li>
+                {snapshot.goals && snapshot.goals.length > 0 && (
+                  <li>· {t('ctxGoals')}: {snapshot.goals.length} {t('items')} ({snapshot.goals.filter((g) => g.is_emergency_fund).length > 0 ? '🛡️ มีกองทุนฉุกเฉิน' : t('noEmergencyFund')})</li>
+                )}
+                {snapshot.budget_categories && snapshot.budget_categories.length > 0 && (
+                  <li>· {t('ctxBudgets')}: {snapshot.budget_categories.length} {t('categories')}</li>
+                )}
+              </ul>
+            </div>
+          )}
           <div className="flex items-center justify-between gap-2">
             <p className="flex items-center gap-1.5 text-sm font-semibold">
               <Brain className="h-4 w-4 text-purple-600" />

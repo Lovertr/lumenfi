@@ -128,6 +128,26 @@ interface DebtForAI {
   rate_type?: string | null;
 }
 
+interface GoalSnapshot {
+  name: string;
+  target: number;
+  current: number;
+  deadline: string | null;
+  is_emergency_fund: boolean;
+  is_linked: boolean;
+  monthly_required: number | null;
+}
+
+interface CashflowSnapshot {
+  status: 'healthy' | 'tight' | 'critical';
+  status_reason: string;
+  months_of_runway: number;
+  avg_monthly_net: number;
+  projected_net_30: number;
+  upcoming_fixed_expense: number;
+  upcoming_fixed_income: number;
+}
+
 interface FinancialSnapshot {
   monthly_income: number;
   monthly_expense_total: number;
@@ -137,6 +157,8 @@ interface FinancialSnapshot {
   total_assets: number;
   active_months: number;
   budget_categories?: { name: string; budget: number; spent: number }[];
+  goals?: GoalSnapshot[];
+  cashflow?: CashflowSnapshot | null;
 }
 
 export async function analyzeDebtSituation(
@@ -178,6 +200,25 @@ export async function analyzeDebtSituation(
     `${i + 1}. ${d.name} (${d.type}): ฿${d.balance.toLocaleString()} · ${d.rate}%/ปี · ผ่อน ฿${d.monthly_payment.toLocaleString()}/เดือน${d.rate_type ? ` · ${d.rate_type}` : ''}`
   ).join('\n');
 
+  const cashflowText = snapshot.cashflow ? `
+
+**Cash Flow ปัจจุบัน:**
+- สถานะ: ${snapshot.cashflow.status === 'healthy' ? '✓ แข็งแรง' : snapshot.cashflow.status === 'tight' ? '⚠ ตึง' : '✗ วิกฤต'} (${snapshot.cashflow.status_reason})
+- เงินสดสำรองอยู่ได้: ${snapshot.cashflow.months_of_runway.toFixed(1)} เดือน (จากการใช้จ่ายปกติ)
+- สุทธิเฉลี่ย/เดือน: ฿${Math.round(snapshot.cashflow.avg_monthly_net).toLocaleString()}
+- คาดการณ์ 30 วันข้างหน้า: ฿${Math.round(snapshot.cashflow.projected_net_30).toLocaleString()}
+- ค่าใช้จ่ายประจำที่จะมา: ฿${Math.round(snapshot.cashflow.upcoming_fixed_expense).toLocaleString()}/เดือน
+- รายรับประจำที่จะเข้า: ฿${Math.round(snapshot.cashflow.upcoming_fixed_income).toLocaleString()}/เดือน
+` : '';
+
+  const goalsText = snapshot.goals && snapshot.goals.length > 0 ? `
+
+**เป้าหมายของผู้ใช้ (${snapshot.goals.length} อัน):**
+${snapshot.goals.map((g, i) => `${i + 1}. ${g.name}${g.is_emergency_fund ? ' 🛡️ (กองทุนฉุกเฉิน)' : ''}: ฿${g.current.toLocaleString()} / ฿${g.target.toLocaleString()} (${Math.round((g.current / g.target) * 100)}%)${g.deadline ? ` · กำหนด ${g.deadline}` : ''}${g.monthly_required ? ` · ต้องเก็บ ฿${g.monthly_required.toLocaleString()}/เดือน` : ''}${g.is_linked ? ' · ผูกบัญชี (auto-sync)' : ''}`).join('\n')}
+
+📌 ช่วยพิจารณาให้ชัดว่าเป้าหมายไหนควร: ลด/ยืด/ล้มเลิก/รักษาไว้ เพื่อปลดหนี้ก่อน
+` : '';
+
   const budgetText = snapshot.budget_categories && snapshot.budget_categories.length > 0
     ? '\n\n**งบประมาณรายเดือน:**\n' + snapshot.budget_categories.map((b) =>
         `- ${b.name}: ใช้ ฿${b.spent.toLocaleString()} / งบ ฿${b.budget.toLocaleString()} (${b.budget > 0 ? Math.round((b.spent / b.budget) * 100) : 0}%)`
@@ -214,6 +255,20 @@ export async function analyzeDebtSituation(
 - เช่น "ลดอาหารนอกบ้าน ฿3,000/เดือน"
 - หรือ "ยกเลิก subscription ที่ไม่ใช้"
 
+## 💰 ผลกระทบต่อ Cash Flow
+- วิเคราะห์ว่าจ่ายเพิ่มเดือนละ X กระทบ runway/เงินเหลือใช้แค่ไหน
+- ถ้า Cash Flow ติดลบหรือ runway < 3 เดือน → เตือนว่าอาจสร้างหนี้ใหม่
+- เสนอจำนวนที่ปลอดภัยสำหรับ "จ่ายเพิ่ม" ที่ไม่กระทบ Cash Flow
+
+## 🎯 เป้าหมายที่ต้องปรับ
+- ดูเป้าหมายแต่ละอันของผู้ใช้ (ที่จะแนบมา)
+- บอกชัดๆ ว่าควร:
+  * "ลดเป้าหมาย X จาก Y → Z" (ถ้าวงเงินสูงเกิน)
+  * "ยืดเวลาเป้าหมาย X จาก Y → Z" (ถ้ากำหนดเร็วเกิน)
+  * "ล้มเลิก/พักเป้าหมาย X" (ถ้าหนี้สำคัญกว่ามาก)
+  * "เป้าหมาย X ห้ามแตะ — เป็น Emergency Fund" (สำคัญที่สุด)
+- ระบุเหตุผลและตัวเลขชัดๆ ทุกครั้ง
+
 ## 📅 กรอบเวลา (Timeline)
 - ปลดหนี้ทั้งหมดใน X เดือน/ปี
 - Milestone รายไตรมาส
@@ -241,7 +296,7 @@ ${debtList}
 - หนี้รวม: ฿${snapshot.total_debt.toLocaleString()} (${monthsToCover.toFixed(1)} เท่าของรายได้/เดือน)
 - สินทรัพย์รวม: ฿${snapshot.total_assets.toLocaleString()}
 - เงินสดที่เข้าถึงได้: ฿${snapshot.cash_available.toLocaleString()}
-${budgetText}
+${budgetText}${cashflowText}${goalsText}
 
 **กลยุทธ์ที่เลือก:** ${chosenStrategy === 'avalanche' ? 'Avalanche (ดอกสูงก่อน)' : 'Snowball (ก้อนเล็กก่อน)'}
 **จ่ายเพิ่ม/เดือน:** ฿${extra_per_month.toLocaleString()}
