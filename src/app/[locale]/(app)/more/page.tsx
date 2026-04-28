@@ -13,7 +13,7 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
   const items = [
     { href: '/investments', icon: TrendingUp, key: 'investments', color: 'text-green-600 bg-green-50' },
     { href: '/categories', icon: FolderOpen, key: 'categories', color: 'text-orange-600 bg-orange-50' },
-    { href: '/ai', icon: Brain, key: 'ai', color: 'text-purple-600 bg-purple-50' },
+    { href: '/ai/settings', icon: Brain, key: 'ai', color: 'text-purple-600 bg-purple-50' },
     { href: '/reports', icon: FileBarChart, key: 'reports', color: 'text-cyan-600 bg-cyan-50' },
     { href: '/settings', icon: SettingsIcon, key: 'settings', color: 'text-slate-600 bg-slate-100' },
   ] as const;
@@ -47,6 +47,4 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
           })}
         </CardContent>
       </Card>
-    </div>
-  );
-}
+    </div

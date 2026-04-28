@@ -14,6 +14,7 @@ import {
   Settings,
   FolderOpen,
   FileBarChart,
+  Activity,
 } from 'lucide-react';
 import { LogoMark, Wordmark } from '@/components/brand/logo-mark';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,7 @@ export function DesktopSidebar() {
   const primary = [
     { href: '/dashboard', icon: Home, label: tNav('home') },
     { href: '/transactions', icon: ListChecks, label: tNav('transactions') },
+    { href: '/cashflow', icon: Activity, label: 'Cash Flow' },
     { href: '/accounts', icon: Wallet, label: tDash('quickActions.accounts') },
     { href: '/debts', icon: CreditCard, label: tDash('quickActions.debts') },
     { href: '/goals', icon: Target, label: tDash('quickActions.goals') },
@@ -103,9 +105,3 @@ function NavLink({
           ? 'bg-primary/10 text-primary'
           : 'text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
-    >
-      <Icon className="h-4 w-4" />
-      {label}
-    </Link>
-  );
-}

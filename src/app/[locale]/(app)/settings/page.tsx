@@ -28,7 +28,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
 
   const items = [
     { href: '/settings/profile', icon: User, label: t('profile'), desc: t('profileDesc'), color: 'text-blue-600 bg-blue-50' },
-    { href: '/ai', icon: Brain, label: t('ai'), desc: t('aiDesc'), color: 'text-purple-600 bg-purple-50' },
+    { href: '/ai/settings', icon: Brain, label: t('ai'), desc: t('aiDesc'), color: 'text-purple-600 bg-purple-50' },
     { href: '/settings/privacy', icon: Shield, label: t('privacy'), desc: '', color: 'text-emerald-600 bg-emerald-50' },
     { href: '/settings/export', icon: Download, label: t('exportData'), desc: '', color: 'text-cyan-600 bg-cyan-50' },
   ];
@@ -100,6 +100,4 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
       <div className="pt-2">
         <LogoutButton variant="outline" showLabel />
       </div>
-    </div>
-  );
-}
+    </div

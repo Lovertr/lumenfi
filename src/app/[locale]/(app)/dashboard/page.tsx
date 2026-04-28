@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Wallet,
   CreditCard,
+  Activity,
 } from 'lucide-react';
 
 function HealthBadge({ score }: { score: number }) {
@@ -190,7 +191,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <QuickAction href="/cashflow" icon={Activity} label="Cash Flow" color="text-cyan-600 bg-cyan-50" />
         <QuickAction href="/debts" icon={CreditCard} label={t('quickActions.debts')} count={data.debtsCount} color="text-red-600 bg-red-50" />
         <QuickAction href="/investments" icon={TrendingUp} label={t('quickActions.investments')} color="text-green-600 bg-green-50" />
         <QuickAction href="/goals" icon={Target} label={t('quickActions.goals')} count={data.goalsCount} color="text-purple-600 bg-purple-50" />
@@ -260,12 +262,4 @@ function QuickAction({
             <p className="font-medium">{label}</p>
             {count !== undefined && count > 0 && (
               <p className="text-xs text-muted-foreground lg:mt-0.5">
-                {count} {count === 1 ? 'item' : 'items'}
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
+                {count} {count === 1 ? 'item
