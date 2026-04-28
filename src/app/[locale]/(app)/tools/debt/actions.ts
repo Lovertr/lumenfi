@@ -53,6 +53,53 @@ export async function saveDebtPlan(formData: FormData) {
   return { ok: true };
 }
 
+
+// Quick-create debt from the calculator (lighter form than /debts/new)
+export async function quickCreateDebt(formData: FormData): Promise<{ ok: boolean; error?: string; id?: string }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'unauthorized' };
+
+  const name = (formData.get('name') as string)?.trim();
+  const type = (formData.get('type') as string) || 'other';
+  const balanceStr = (formData.get('balance') as string)?.replace(/,/g, '') ?? '0';
+  const balance = parseFloat(balanceStr);
+  const rateStr = (formData.get('rate') as string) ?? '0';
+  const rate = parseFloat(rateStr);
+  const minStr = (formData.get('min_payment') as string)?.replace(/,/g, '') ?? '0';
+  const minPayment = parseFloat(minStr) || 0;
+
+  if (!name || isNaN(balance) || balance <= 0 || isNaN(rate)) {
+    return { ok: false, error: 'invalid' };
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabase
+    .from('debts')
+    .insert({
+      user_id: user.id,
+      name,
+      type,
+      original_principal: balance,
+      current_balance: balance,
+      interest_rate: rate,
+      monthly_payment: minPayment > 0 ? minPayment : null,
+      start_date: today,
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('quickCreateDebt:', error);
+    return { ok: false, error: 'db_error' };
+  }
+
+  revalidatePath('/debts');
+  revalidatePath('/dashboard');
+  revalidatePath('/tools/debt');
+  return { ok: true, id: data?.id };
+}
+
 export async function deactivateDebtPlan() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();

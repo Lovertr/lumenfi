@@ -12,11 +12,74 @@ export const FINANCE_EXPERTISE_TH = `
 - ที่เก็บ: บัญชีออมทรัพย์ดอกเบี้ยสูง / กองทุนตลาดเงิน (เข้าถึงได้ใน 1-3 วัน)
 - ห้าม: ลงทุนหุ้น/ฟันด์เสี่ยง เพราะอาจขาดทุนตอนต้องใช้
 
-**การจัดการหนี้ (Debt Management)**
-- Debt Avalanche (คณิตศาสตร์ดีสุด): ใช้หนี้ดอกเบี้ยสูงสุดก่อน (บัตรเครดิต 16-28% → ผ่อนรถ → กยศ.)
-- Debt Snowball (จิตวิทยาดี): ใช้หนี้ก้อนเล็กสุดก่อน เพื่อสร้างแรงใจ
-- หลัก DTI: หนี้รวม / รายได้ ไม่ควรเกิน 40% (ไทย MRR เฉลี่ย 6-7%)
-- ห้าม: กู้หนี้ใหม่มาใช้หนี้เก่าโดยไม่ลดดอกเบี้ย, ผ่อนแค่ขั้นต่ำบัตรเครดิต (ดอก 16-18%)
+**การจัดการหนี้ (Debt Management) — ละเอียด**
+*กลยุทธ์ปลดหนี้:*
+- Debt Avalanche (คณิตศาสตร์ดีสุด): ใช้หนี้ดอกเบี้ยสูงสุดก่อน — ประหยัดดอกที่สุด เหมาะคนที่ใจถึง
+- Debt Snowball (จิตวิทยาดี): ใช้หนี้ก้อนเล็กสุดก่อน — สร้าง momentum เห็นความก้าวหน้าเร็ว
+- Debt Consolidation (รวมหนี้): รวมหนี้หลายก้อนเป็นก้อนเดียว ดอกต่ำลง ผ่อนง่ายขึ้น (เช่น สินเชื่อบุคคลดอก 12-15% รวมแทนบัตรเครดิต 16-28%)
+
+*อัตราดอกเบี้ยอ้างอิง (ไทย):*
+- บัตรเครดิต: 16-18% ต่อปี (ผ่อนขั้นต่ำดอก 18-20%)
+- Cash Advance: 18-28% + ค่าธรรมเนียม 3-5% ต่อครั้ง — ห้ามใช้ยกเว้นฉุกเฉิน
+- สินเชื่อบุคคล: 14-25% (Bank), 25-36% (Non-bank/Krungsri Consumer/etc.)
+- สินเชื่อรถ: 2.5-7% (ตัว Effective rate ดูจริงไม่ใช่ Flat rate ที่โฆษณา)
+- สินเชื่อบ้าน: MRR-2.5% ถึง MRR (MRR ปัจจุบันธนาคารใหญ่ 7-8%)
+- กยศ.: 1% ต่อปี (ดอกถูกมาก ไม่ต้องรีบโปะ ใช้เงินไปออมที่ผลตอบแทนสูงกว่าดีกว่า)
+- หนี้นอกระบบ: 3-20% ต่อเดือน (36-240% ต่อปี) — เร่งปลดที่สุดทุกวิถีทาง
+
+*หลัก DTI (Debt-to-Income):*
+- < 30%: สุขภาพการเงินดี กู้เพิ่มได้
+- 30-40%: ปลอดภัย แต่ระวัง
+- 40-50%: เริ่มเสี่ยง ห้ามกู้เพิ่ม โฟกัสปลดหนี้
+- > 50%: วิกฤต ต้องลดหนี้ด่วน อาจต้อง consolidate/refinance/restructure
+
+*สำหรับสินเชื่อบ้าน:*
+- กฎ 28/36: ผ่อนบ้าน ≤ 28% ของรายได้ก่อนภาษี, หนี้ทั้งหมด ≤ 36%
+- ธปท. ปัจจุบันคุม LTV: บ้านหลังที่ 1 LTV 90-100%, หลังที่ 2 LTV 80-90%, หลังที่ 3+ LTV 70%
+
+**การรีไฟแนนซ์ (Refinance) — ความเชี่ยวชาญ**
+*สินเชื่อบ้าน รีไฟแนนซ์:*
+- เวลาที่เหมาะ: หลังผ่อน 3 ปี (พ้น lock-in period — ก่อนนี้โดนค่าปรับ 1-3% ของวงเงิน)
+- คุ้มเมื่อ: ดอกใหม่ต่ำกว่าเดิม ≥ 0.5% และจะอยู่ต่อ ≥ 3 ปี
+- ค่าใช้จ่ายที่ต้องคิด: ค่าจดจำนอง 1% ของวงเงิน, ค่าประเมิน 3,000-5,000 บาท, ค่าอากร 0.05%, ค่า MRTA (ถ้าซื้อใหม่)
+- เปรียบเทียบ effective rate ทั้ง 3 ปี ไม่ใช่แค่ปีแรก (ปีแรกธนาคารชอบให้ดอกถูก แล้วปี 2-3 ขึ้น)
+- ตัวอย่าง: หนี้บ้าน 3 ลบ ลดดอกจาก 6.5% → 5.5% = ประหยัดดอก ~30,000/ปี ค่าใช้จ่าย refinance ~30,000 = คืนทุนใน 1 ปี
+
+*สินเชื่อรถ รีไฟแนนซ์:*
+- ทำได้แต่มักไม่คุ้มเพราะมูลค่ารถลดลง LTV เพิ่ม
+- กรณีคุ้ม: ดอกเบี้ยปัจจุบันสูง > 5% และเหลือผ่อนอีก > 3 ปี
+
+*บัตรเครดิต/สินเชื่อบุคคล รวมหนี้:*
+- ใช้สินเชื่อบุคคลที่ดอกต่ำกว่ามาปลดบัตรเครดิต (เช่น KTC P-Loan 18% รวมหนี้บัตร 22%)
+- ใช้บัตรเครดิตธนาคารอื่นที่มีโปรโมชัน 0% นาน 6-10 เดือนเพื่อย้ายยอด
+- ระวัง: ค่าธรรมเนียมโอนยอด 1-3% และดอกหลังหมดโปรอาจสูงกว่าเดิม
+
+**การปรับโครงสร้างหนี้ (Debt Restructuring)**
+- ติดต่อธนาคารโดยตรง ขอ:
+  1. ลดอัตราดอกเบี้ย (Rate reduction)
+  2. ขยายระยะเวลาผ่อน (Extend term) → ผ่อนรายเดือนถูกลง แต่ดอกรวมเพิ่ม
+  3. พักเงินต้น (Principal holiday) → จ่ายแค่ดอก 6-12 เดือน
+  4. ตัดเงินต้นบางส่วน (Haircut) — ใช้เฉพาะกรณีหนี้เสีย
+- ทางการ: คลินิกแก้หนี้ (โดย ธปท.) สำหรับลูกหนี้ NPL บัตรเครดิต/สินเชื่อบุคคล — ปรับโครงสร้างได้สูงสุด 10 ปี ดอก 4-7%
+- มีโปรแกรม "Debt Buddy" จากธนาคารใหญ่หลายแห่ง ช่วยรวมหนี้ทุกธนาคารเป็นก้อนเดียว
+
+**ลำดับความสำคัญในการปลดหนี้ที่แนะนำ:**
+1. หนี้นอกระบบ (ดอก 36%+) — ปลดด่วนที่สุด
+2. Cash advance / บัตรเครดิตที่ใช้เกินวงเงิน
+3. บัตรเครดิตปกติ (16-28%)
+4. สินเชื่อบุคคล (15-25%)
+5. ผ่อน 0% ที่กำลังใกล้หมดโปร (ดอกย้อนหลังโหด)
+6. สินเชื่อรถ (2.5-7%)
+7. สินเชื่อบ้าน (5-7%)
+8. กยศ. (1%) — ห้ามรีบโปะ เก็บไว้
+
+**ข้อผิดพลาดที่พบบ่อยเรื่องหนี้:**
+- ผ่อนแค่ขั้นต่ำบัตรเครดิต → ใช้ 25 ปีกว่าจะหมด ดอกท่วมเงินต้น
+- กู้ใหม่ปิดเก่าโดยไม่ลดดอก → ยอดเงินต้นเริ่มจาก 0 ใหม่ ดอกรวมเพิ่ม
+- เซ็นค้ำประกันให้เพื่อน/ครอบครัว → กลายเป็นหนี้ตัวเองถ้าผู้กู้หลักไม่จ่าย
+- รีไฟแนนซ์เพื่อเอาเงินไปใช้จ่ายฟุ่มเฟือย (Cash-out refi)
+- ใช้ Reverse mortgage ตอนยังไม่จำเป็น
+- ไม่อ่านสัญญา ไม่รู้ pre-payment penalty
 
 **การลดหย่อนภาษีไทย**
 - RMF (Retirement Mutual Fund): ลดหย่อนได้ 30% ของรายได้ ไม่เกิน 500,000 บาท/ปี (รวมกองทุนเกษียณ) ห้ามขายก่อน 55 ปีและถือ ≥ 5 ปี
@@ -73,11 +136,47 @@ Your financial expertise (apply when relevant):
 - Hold in: high-yield savings or money market funds (accessible in 1-3 days)
 - Never: stocks/risky assets — could be down when you need it
 
-**Debt Management**
-- Avalanche (math-optimal): pay highest interest rate first
-- Snowball (psychology): pay smallest balance first for momentum
-- DTI: total debt payments / income should stay under 40%
-- Avoid: minimum payments only on credit cards (16-18% APR in Thailand)
+**Debt Management — Detailed**
+*Strategies:*
+- Avalanche (math-optimal): highest rate first
+- Snowball (psychology): smallest balance first
+- Consolidation: combine multiple debts → single lower-rate loan
+
+*Thai rate references:*
+- Credit card: 16-28% APR (cash advance 18-28% + 3-5% fee)
+- Personal loan (bank): 14-25%; non-bank: 25-36%
+- Auto loan effective: 2.5-7% (NOT the advertised flat rate)
+- Mortgage: MRR-2.5 to MRR (MRR ~7-8% currently)
+- Student loan (กยศ): 1% — don't rush to pay off
+- Informal lenders: 36-240% APR — pay off fastest
+
+*DTI guidance:*
+- <30% healthy, 30-40% safe, 40-50% caution, >50% crisis
+
+**Refinance Expertise**
+*Mortgage refi:*
+- Best after year 3 (lock-in period ends; pre-payment penalty 1-3%)
+- Worth it if new rate ≥ 0.5% lower AND staying 3+ years
+- Costs: 1% mortgage registration fee, ฿3-5K appraisal, 0.05% stamp duty
+- Compare effective 3-year rate, not teaser year-1
+
+*Personal/credit card consolidation:*
+- Use lower-rate personal loan to clear high-rate cards
+- Balance transfer 0% promos: watch fees (1-3%) and post-promo rates
+
+**Debt Restructuring**
+- Negotiate with bank: rate reduction, term extension, principal holiday, haircut
+- Thai Debt Clinic (BoT) for NPL credit card/personal: up to 10-year restructure at 4-7%
+
+**Payoff Priority:**
+1. Informal (36%+) → 2. Cash advance → 3. Credit cards (16-28%) → 4. Personal loans (15-25%) → 5. Expiring 0% promos → 6. Auto loan → 7. Mortgage → 8. Student loan (don't rush)
+
+**Common Mistakes:**
+- Paying only credit card minimums (25+ years to clear)
+- Borrowing to pay off without lower rate
+- Co-signing loans for others
+- Cash-out refinance for lifestyle spending
+- Not reading pre-payment penalty clauses
 
 **Thai Tax Deductions**
 - RMF: 30% of income, max ฿500K/year combined with retirement funds; hold until age 55 + 5 years

@@ -67,6 +67,7 @@ export function DesktopSidebar() {
         { href: '/recurring', icon: Repeat, label: tMore('recurring') },
         { href: '/tools/tax', icon: Calculator, label: tMore('tax') },
         { href: '/tools/debt', icon: CreditCard, label: tMore('debtCalc') },
+        { href: '/tools/loan', icon: Calculator, label: tMore('loan') },
       ],
     },
     {

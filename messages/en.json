@@ -373,7 +373,9 @@
     "taxDesc": "Thai personal income tax tool",
     "debtCalc": "Debt Payoff Planner",
     "debtCalcDesc": "Avalanche vs Snowball strategies",
-    "scan": "Scan"
+    "scan": "Scan",
+    "loan": "Loan Simulator",
+    "loanDesc": "Calculate + AI feasibility advice"
   },
   "Investments": {
     "title": "Investments",
@@ -581,7 +583,11 @@
     "planSaved": "✓ Plan saved",
     "activePlan": "Active plan",
     "clearPlan": "Clear",
-    "autoLoadedFromDebts": "Auto-loaded {count} debts from your records — edit if needed"
+    "autoLoadedFromDebts": "Auto-loaded {count} debts from your records — edit if needed",
+    "quickAddTitle": "+ Add new debt (will be saved and shown on Debts page)",
+    "quickType": "Type",
+    "saveDebt": "Save",
+    "quickAddHint": "✓ Once saved, appears on Debts page and auto-loads into calculator"
   },
   "Scan": {
     "title": "Scan Receipt with AI",
@@ -612,5 +618,38 @@
     "error_unauthorized": "Please log in",
     "error_unknown": "Unknown error",
     "error_upload_failed": "Upload failed"
+  },
+  "Loan": {
+    "title": "Loan Simulator",
+    "subtitle": "Assess affordability + AI recommendation",
+    "loanDetails": "Loan details",
+    "amount": "Loan amount",
+    "rate": "Rate %/yr",
+    "rateHint": "Use effective rate, not flat",
+    "term": "Term (years)",
+    "reason": "Purpose",
+    "reasonPlaceholder": "e.g. home, renovation, car",
+    "yourFinances": "Your finances",
+    "monthlyIncome": "Monthly income",
+    "fixedExpenses": "Fixed expenses/mo",
+    "fixedHint": "Excluding existing debt payments",
+    "existingDebt": "Existing debt payments",
+    "totalDebt": "Total debt",
+    "monthlyPayment": "Payment/mo",
+    "totalInterest": "Total interest",
+    "newDTI": "New DTI",
+    "was": "was",
+    "disposableAfter": "Disposable after",
+    "verdictSafe": "✓ Safe to borrow — finances support it",
+    "verdictCaution": "⚠ Caution — borrowable but plan carefully",
+    "verdictRisk": "✗ High risk — not recommended",
+    "aiAnalysisTitle": "AI Advisor — should I borrow?",
+    "askAI": "Ask AI",
+    "regenerate": "Re-analyze",
+    "analyzing": "AI thinking...",
+    "aiHint": "AI analyzes all your numbers and gives case-specific advice",
+    "noAiKey": "AI API key not set — go to AI Advisor → Settings",
+    "aiFailed": "AI failed to analyze, try again",
+    "disclaimer": "Estimate only. Actual bank-offered rates may differ. Compare multiple banks before deciding."
   }
 }

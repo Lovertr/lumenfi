@@ -20,6 +20,7 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
     { href: '/budgets', icon: Wallet, key: 'budgets', label: t('budgets'), desc: t('budgetsDesc'), color: 'text-emerald-600 bg-emerald-50' },
     { href: '/tools/tax', icon: Calculator, key: 'tax', label: t('tax'), desc: t('taxDesc'), color: 'text-amber-600 bg-amber-50' },
     { href: '/tools/debt', icon: CreditCard, key: 'debtCalc', label: t('debtCalc'), desc: t('debtCalcDesc'), color: 'text-rose-600 bg-rose-50' },
+    { href: '/tools/loan', icon: Calculator, key: 'loan', label: t('loan'), desc: t('loanDesc'), color: 'text-indigo-600 bg-indigo-50' },
     { href: '/investments', icon: TrendingUp, key: 'investments', label: t('investments'), desc: t('investmentsDesc'), color: 'text-green-600 bg-green-50' },
     { href: '/categories', icon: FolderOpen, key: 'categories', label: t('categories'), desc: t('categoriesDesc'), color: 'text-orange-600 bg-orange-50' },
     { href: '/ai/settings', icon: Brain, key: 'ai', label: t('ai'), desc: t('aiDesc'), color: 'text-purple-600 bg-purple-50' },

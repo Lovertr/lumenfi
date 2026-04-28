@@ -6,9 +6,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Trophy, Snowflake, Mountain, Save, Target, CheckCircle2, X } from 'lucide-react';
+import { Plus, Trash2, Trophy, Snowflake, Mountain, Save, Target, CheckCircle2, X, Loader2 } from 'lucide-react';
 import { formatTHB, cn } from '@/lib/utils';
-import { saveDebtPlan, deactivateDebtPlan } from '@/app/[locale]/(app)/tools/debt/actions';
+import { saveDebtPlan, deactivateDebtPlan, quickCreateDebt } from '@/app/[locale]/(app)/tools/debt/actions';
+import { useRouter } from 'next/navigation';
 
 interface DebtItem {
   id: string;
@@ -154,12 +155,39 @@ export function DebtCalculator({
   const snowball = useMemo(() => simulate(validDebts, extraNum, 'snowball'), [validDebts, extraNum]);
   const chosen = chosenStrategy === 'avalanche' ? avalanche : snowball;
 
-  function addDebt() {
-    setDebts([
-      ...debts,
-      { id: `new-${Date.now()}`, name: `หนี้ #${debts.length + 1}`, balance: 100000, rate: 10, minPayment: 2000 },
-    ]);
+  const router = useRouter();
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newBalance, setNewBalance] = useState('');
+  const [newRate, setNewRate] = useState('');
+  const [newMin, setNewMin] = useState('');
+  const [newType, setNewType] = useState('credit_card');
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+
+  async function handleQuickCreate() {
+    setAddError(null);
+    if (!newName.trim() || !newBalance.trim() || !newRate.trim()) {
+      setAddError('กรุณากรอกข้อมูลให้ครบ');
+      return;
+    }
+    setAdding(true);
+    const fd = new FormData();
+    fd.append('name', newName);
+    fd.append('type', newType);
+    fd.append('balance', newBalance);
+    fd.append('rate', newRate);
+    fd.append('min_payment', newMin || '0');
+    const r = await quickCreateDebt(fd);
+    setAdding(false);
+    if (!r.ok) {
+      setAddError('เพิ่มหนี้ไม่สำเร็จ ลองใหม่');
+      return;
+    }
+    setShowAddForm(false);
+    setNewName(''); setNewBalance(''); setNewRate(''); setNewMin('');
     setSaved(false);
+    router.refresh(); // re-fetch initialDebts
   }
 
   function updateDebt(id: string, key: keyof DebtItem, value: string) {
@@ -217,10 +245,57 @@ export function DebtCalculator({
         <CardContent className="p-4">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-semibold">{t('debts')}</p>
-            <Button size="sm" variant="outline" onClick={addDebt}>
+            <Button size="sm" variant="outline" onClick={() => setShowAddForm((s) => !s)}>
               <Plus className="mr-1 h-3 w-3" /> {t('addDebt')}
             </Button>
           </div>
+          {showAddForm && (
+            <div className="mb-3 space-y-2 rounded-lg border-2 border-primary/30 bg-primary/5 p-3">
+              <p className="text-xs font-semibold text-primary">{t('quickAddTitle')}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="col-span-2">
+                  <p className="text-[10px] text-muted-foreground">{t('debtName')}</p>
+                  <Input value={newName} onChange={(e) => setNewName(e.target.value)} className="h-8 text-sm" placeholder="เช่น บัตรเครดิต KBank" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{t('quickType')}</p>
+                  <select value={newType} onChange={(e) => setNewType(e.target.value)} className="h-8 w-full rounded-md border bg-background px-2 text-sm">
+                    <option value="credit_card">บัตรเครดิต</option>
+                    <option value="personal_loan">สินเชื่อบุคคล</option>
+                    <option value="auto_loan">สินเชื่อรถ</option>
+                    <option value="mortgage">สินเชื่อบ้าน</option>
+                    <option value="student_loan">กยศ./การศึกษา</option>
+                    <option value="informal">หนี้นอกระบบ</option>
+                    <option value="installment_zero">ผ่อน 0%</option>
+                    <option value="other">อื่นๆ</option>
+                  </select>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{t('balance')}</p>
+                  <Input value={newBalance} onChange={(e) => setNewBalance(e.target.value)} className="h-8 text-sm" placeholder="50000" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{t('rate')}</p>
+                  <Input value={newRate} onChange={(e) => setNewRate(e.target.value)} className="h-8 text-sm" placeholder="18" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{t('minPayment')}</p>
+                  <Input value={newMin} onChange={(e) => setNewMin(e.target.value)} className="h-8 text-sm" placeholder="1000" />
+                </div>
+              </div>
+              {addError && <p className="text-[11px] text-destructive">{addError}</p>}
+              <div className="flex gap-2 pt-1">
+                <Button size="sm" onClick={handleQuickCreate} disabled={adding} className="flex-1">
+                  {adding ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Plus className="mr-1 h-3 w-3" />}
+                  {adding ? '...' : t('saveDebt')}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setShowAddForm(false); setAddError(null); }}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground">{t('quickAddHint')}</p>
+            </div>
+          )}
           {initialDebts.length > 0 && debts === seedDebts && (
             <p className="mb-2 rounded-md border bg-muted/30 px-2 py-1 text-[11px] text-muted-foreground">
               ✓ {t('autoLoadedFromDebts', { count: initialDebts.length })}
