@@ -1,0 +1,173 @@
+import { NextResponse } from 'next/server';
+import { createClient as createSbClient } from '@supabase/supabase-js';
+import webpush from 'web-push';
+
+// Force dynamic + Node runtime (web-push needs Node, not Edge)
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+interface RecurringRow {
+  id: string;
+  user_id: string;
+  type: 'income' | 'expense' | 'transfer';
+  amount: number;
+  day_of_month: number;
+  notify_days_before: number;
+  last_run_on: string | null;
+  last_notified_on: string | null;
+  note: string | null;
+  category?: { name: string; icon: string } | null;
+}
+
+interface PushSub {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+}
+
+function effectiveDay(year: number, month: number, day: number): string {
+  const last = new Date(year, month + 1, 0).getDate();
+  return new Date(year, month, Math.min(day, last)).toISOString().slice(0, 10);
+}
+
+function nextRunDate(dayOfMonth: number, lastRunOn: string | null, today = new Date()): string {
+  const y = today.getFullYear();
+  const m = today.getMonth();
+  const todayStr = today.toISOString().slice(0, 10);
+  const thisMonth = effectiveDay(y, m, dayOfMonth);
+  if (!lastRunOn || lastRunOn < thisMonth) return thisMonth;
+  return effectiveDay(y, m + 1, dayOfMonth);
+}
+
+function daysBetween(a: string, b: string): number {
+  return Math.floor((new Date(a).getTime() - new Date(b).getTime()) / 86400000);
+}
+
+export async function GET(req: Request) {
+  // Auth: Vercel Cron sends Authorization: Bearer <CRON_SECRET>
+  const auth = req.headers.get('authorization');
+  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const privateKey = process.env.VAPID_PRIVATE_KEY;
+  const subject = process.env.VAPID_SUBJECT;
+  if (!publicKey || !privateKey || !subject) {
+    return NextResponse.json({ error: 'vapid_not_configured' }, { status: 500 });
+  }
+
+  webpush.setVapidDetails(subject, publicKey, privateKey);
+
+  // Service-role client to query across users
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const supabase = createSbClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+
+  // Pull every active recurring with notify_enabled
+  const { data: rows, error } = await supabase
+    .from('recurring_transactions')
+    .select(`
+      id, user_id, type, amount, day_of_month, notify_days_before,
+      last_run_on, last_notified_on, note,
+      category:categories(name, icon)
+    `)
+    .eq('is_active', true)
+    .eq('notify_enabled', true);
+
+  if (error) {
+    console.error('cron query error', error);
+    return NextResponse.json({ error: 'db' }, { status: 500 });
+  }
+
+  const due: RecurringRow[] = (rows ?? []).filter((r: any) => {
+    const next = nextRunDate(r.day_of_month, r.last_run_on, today);
+    const days = daysBetween(next, todayStr);
+    return (
+      days >= 0 &&
+      days <= r.notify_days_before &&
+      (!r.last_notified_on || r.last_notified_on < next)
+    );
+  }) as any;
+
+  if (due.length === 0) {
+    return NextResponse.json({ ok: true, sent: 0, due: 0 });
+  }
+
+  // Group by user
+  const byUser = new Map<string, RecurringRow[]>();
+  for (const r of due) {
+    if (!byUser.has(r.user_id)) byUser.set(r.user_id, []);
+    byUser.get(r.user_id)!.push(r);
+  }
+
+  let sent = 0;
+  let failed = 0;
+
+  for (const [userId, userRows] of byUser) {
+    const { data: subs } = await supabase
+      .from('push_subscriptions')
+      .select('id, user_id, endpoint, p256dh, auth')
+      .eq('user_id', userId);
+    if (!subs || subs.length === 0) continue;
+
+    for (const r of userRows) {
+      const next = nextRunDate(r.day_of_month, r.last_run_on, today);
+      const days = daysBetween(next, todayStr);
+      const label =
+        r.category?.name ??
+        (r.type === 'income' ? 'รายรับ' : r.type === 'expense' ? 'รายจ่าย' : 'โอน');
+      const whenTh =
+        days === 0 ? 'วันนี้' : days === 1 ? 'พรุ่งนี้' : `อีก ${days} วัน`;
+      const payload = JSON.stringify({
+        title: 'Lumenfi · รายการประจำใกล้ถึงกำหนด',
+        body: `${r.category?.icon ?? '🔔'} ${label} ฿${Number(r.amount).toLocaleString()} · ${whenTh}`,
+        url: '/recurring',
+        tag: `lumenfi-recurring-${r.id}`,
+      });
+
+      let anySent = false;
+      for (const s of subs as PushSub[]) {
+        try {
+          await webpush.sendNotification(
+            { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+            payload,
+            { TTL: 60 * 60 * 24 }
+          );
+          sent++;
+          anySent = true;
+        } catch (e: any) {
+          failed++;
+          if (e?.statusCode === 410 || e?.statusCode === 404) {
+            // Subscription expired/removed — clean up
+            await supabase.from('push_subscriptions').delete().eq('id', s.id);
+          } else {
+            console.error('push send failed', e?.statusCode, e?.body);
+          }
+        }
+      }
+
+      if (anySent) {
+        await supabase
+          .from('recurring_transactions')
+          .update({ last_notified_on: next })
+          .eq('id', r.id);
+      }
+    }
+  }
+
+  return NextResponse.json({
+    ok: true,
+    due: due.length,
+    sent,
+    failed,
+    users: byUser.size,
+  });
+}
