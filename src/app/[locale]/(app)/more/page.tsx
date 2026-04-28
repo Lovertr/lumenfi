@@ -53,4 +53,12 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
                   <p className="font-medium">{item.label}</p>
                   <p className="text-xs text-muted-foreground">{item.desc}</p>
                 </div>
-                <ChevronRight cla
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </Link>
+            );
+          })}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
