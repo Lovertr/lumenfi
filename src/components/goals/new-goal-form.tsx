@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createGoal } from '@/app/[locale]/(app)/goals/actions';
 import { cn } from '@/lib/utils';
+import { Shield } from 'lucide-react';
 
 const PRESETS = [
   { key: 'emergency', icon: '🛡️', color: '#EF4444', isEmergency: true },
@@ -20,6 +21,24 @@ const PRESETS = [
   { key: 'business', icon: '💼', color: '#0F172A' },
   { key: 'custom', icon: '🎯', color: '#6B7280' },
 ] as const;
+
+const ALL_ICONS = [
+  '🎯', '🛡️', '🏠', '🏡', '🏢', '🚗', '🚙', '🏍️', '✈️', '🛫',
+  '📚', '🎓', '✏️', '🔬', '🎨', '🎬', '🎵', '🎮', '🎤', '🎸',
+  '🌅', '🌴', '🌊', '⛰️', '🏖️', '🏔️', '🗺️', '📷', '🎒', '🧳',
+  '💼', '💰', '💵', '💴', '💶', '💷', '🪙', '💳', '🏦', '📊',
+  '💍', '👔', '👗', '👶', '🤱', '👨‍👩‍👧', '🐶', '🐱', '🌸', '🎁',
+  '💪', '🧘', '🏋️', '⚽', '🏀', '🎾', '🏊', '🚴', '🥋', '🏆',
+  '📱', '💻', '🖥️', '📺', '🎧', '⌚', '📷', '🎥', '🚀', '⭐',
+  '❤️', '✨', '🔥', '💡', '🌈', '🍀', '☀️', '🌙', '⚡', '💎',
+];
+
+const COLORS = [
+  '#EF4444', '#F59E0B', '#FBBF24', '#10B981',
+  '#06B6D4', '#3B82F6', '#8B5CF6', '#EC4899',
+  '#14B8A6', '#84CC16', '#F97316', '#A855F7',
+  '#6B7280', '#0F172A',
+];
 
 type State = { error?: string } | null;
 
@@ -37,24 +56,41 @@ export function NewGoalForm() {
   const t = useTranslations('Goals.form');
   const tPreset = useTranslations('Goals.presets');
   const [state, action] = useFormState<State, FormData>(createGoal, null);
-  const [preset, setPreset] = useState<typeof PRESETS[number]>(PRESETS[0]);
+
+  // Start with emergency preset selected
+  const [selectedPreset, setSelectedPreset] = useState<string>('emergency');
+  const [icon, setIcon] = useState<string>(PRESETS[0].icon);
+  const [color, setColor] = useState<string>(PRESETS[0].color);
+  const [name, setName] = useState<string>('');
+  const [showAllIcons, setShowAllIcons] = useState(false);
+
+  function applyPreset(p: typeof PRESETS[number]) {
+    setSelectedPreset(p.key);
+    setIcon(p.icon);
+    setColor(p.color);
+    if (!name) {
+      setName(tPreset(p.key));
+    }
+  }
+
+  const isEmergency = selectedPreset === 'emergency';
 
   return (
     <form action={action} className="space-y-5">
-      <input type="hidden" name="icon" value={preset.icon} />
-      <input type="hidden" name="color" value={preset.color} />
+      <input type="hidden" name="icon" value={icon} />
+      <input type="hidden" name="color" value={color} />
 
-      {/* Preset picker */}
+      {/* Preset suggestions */}
       <div className="space-y-2">
-        <Label>Preset</Label>
+        <Label>Preset (เลือกแล้วแก้ได้ทุกอย่าง)</Label>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           {PRESETS.map((p) => {
-            const active = preset.key === p.key;
+            const active = selectedPreset === p.key;
             return (
               <button
                 key={p.key}
                 type="button"
-                onClick={() => setPreset(p)}
+                onClick={() => applyPreset(p)}
                 className={cn(
                   'flex flex-col items-center gap-1 rounded-lg border-2 p-2.5 transition-all',
                   active ? 'border-primary bg-primary/5' : 'border-border bg-background hover:border-primary/40'
@@ -71,7 +107,78 @@ export function NewGoalForm() {
       {/* Name */}
       <div className="space-y-2">
         <Label htmlFor="name">{t('name')}</Label>
-        <Input id="name" name="name" required placeholder={t('namePlaceholder')} defaultValue={tPreset(preset.key)} />
+        <Input
+          id="name"
+          name="name"
+          required
+          placeholder={t('namePlaceholder')}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+
+      {/* Icon picker — visual */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label>ไอคอน / Icon</Label>
+          <button
+            type="button"
+            onClick={() => setShowAllIcons((s) => !s)}
+            className="text-xs text-primary"
+          >
+            {showAllIcons ? 'ซ่อน' : 'เลือกไอคอนอื่น'}
+          </button>
+        </div>
+        <div className="rounded-lg border bg-muted/30 p-3">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-xl text-3xl"
+              style={{ backgroundColor: `${color}1A` }}
+            >
+              {icon}
+            </div>
+            <div className="flex-1 text-sm text-muted-foreground">
+              ไอคอนปัจจุบัน — กด "เลือกไอคอนอื่น" เพื่อเปลี่ยน
+            </div>
+          </div>
+          {showAllIcons && (
+            <div className="mt-3 grid max-h-44 grid-cols-8 gap-1 overflow-y-auto">
+              {ALL_ICONS.map((i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setIcon(i)}
+                  className={cn(
+                    'flex h-9 w-9 items-center justify-center rounded-lg text-xl transition-all',
+                    icon === i ? 'bg-primary/15 ring-2 ring-primary' : 'hover:bg-background'
+                  )}
+                >
+                  {i}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Color picker */}
+      <div className="space-y-2">
+        <Label>สี / Color</Label>
+        <div className="flex flex-wrap gap-2">
+          {COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setColor(c)}
+              className={cn(
+                'h-9 w-9 rounded-full border-2 transition-all',
+                color === c ? 'border-foreground scale-110' : 'border-transparent'
+              )}
+              style={{ backgroundColor: c }}
+              aria-label={c}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Target amount */}
@@ -118,7 +225,19 @@ export function NewGoalForm() {
       </div>
 
       {/* Emergency fund toggle */}
-      {preset.key === 'emergency' && <input type="hidden" name="is_emergency_fund" value="on" />}
+      <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-3">
+        <Label htmlFor="is_emergency_fund" className="cursor-pointer flex items-center gap-2">
+          <Shield className="h-4 w-4 text-destructive" />
+          เป็นเงินสำรองฉุกเฉิน
+        </Label>
+        <input
+          id="is_emergency_fund"
+          name="is_emergency_fund"
+          type="checkbox"
+          defaultChecked={isEmergency}
+          className="h-5 w-5 rounded border-input accent-primary"
+        />
+      </div>
 
       {state?.error && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">

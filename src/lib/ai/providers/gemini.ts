@@ -1,5 +1,9 @@
 import type { ChatMessage, ChatResponse } from '../types';
 
+// Gemini 1.5 models were deprecated. Use 2.5 flash (free tier, fast).
+// Fallback chain handles model availability differences across regions/keys.
+const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+
 export async function geminiChat(
   apiKey: string,
   messages: ChatMessage[],
@@ -7,36 +11,53 @@ export async function geminiChat(
 ): Promise<ChatResponse> {
   const userMessages = messages.filter((m) => m.role !== 'system');
 
-  // Gemini uses contents[] with role "user" or "model"
   const contents = userMessages.map((m) => ({
     role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
   }));
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  let lastError: Error | null = null;
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: systemPrompt }] },
-      contents,
-      generationConfig: { maxOutputTokens: 1024 },
-    }),
-  });
+  for (const model of MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini ${res.status}: ${errText.slice(0, 200)}`);
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents,
+          generationConfig: { maxOutputTokens: 1024 },
+        }),
+      });
+
+      if (res.status === 404) {
+        // Model not available, try next
+        lastError = new Error(`${model} 404`);
+        continue;
+      }
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Gemini ${res.status}: ${errText.slice(0, 200)}`);
+      }
+
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      return {
+        text,
+        usage: {
+          inputTokens: data.usageMetadata?.promptTokenCount ?? 0,
+          outputTokens: data.usageMetadata?.candidatesTokenCount ?? 0,
+        },
+      };
+    } catch (e) {
+      lastError = e as Error;
+      // Only retry on 404; other errors fail immediately
+      if (!(lastError.message?.includes('404'))) throw lastError;
+    }
   }
 
-  const data = await res.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-  return {
-    text,
-    usage: {
-      inputTokens: data.usageMetadata?.promptTokenCount ?? 0,
-      outputTokens: data.usageMetadata?.candidatesTokenCount ?? 0,
-    },
-  };
+  throw lastError ?? new Error('All Gemini models failed');
 }
