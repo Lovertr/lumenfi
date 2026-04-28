@@ -2,7 +2,7 @@ import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Brain, Globe, Shield, Download, Trash2, ChevronRight } from 'lucide-react';
+import { ArrowLeft, User, Brain, Shield, Download, Trash2, ChevronRight } from 'lucide-react';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { createClient } from '@/lib/supabase/server';
@@ -47,7 +47,6 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         <LanguageSwitcher />
       </header>
 
-      {/* Profile summary */}
       {profile && (
         <Card>
           <CardContent className="p-4">
@@ -69,7 +68,11 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
           {items.map((item) => {
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} className="flex items-center gap-3 p-4 transition-colors hover:bg-muted/40">
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-3 p-4 transition-colors hover:bg-muted/40"
+              >
                 <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${item.color}`}>
                   <Icon className="h-5 w-5" />
                 </div>
@@ -100,4 +103,6 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
       <div className="pt-2">
         <LogoutButton variant="outline" showLabel />
       </div>
-    </div
+    </div>
+  );
+}

@@ -3,7 +3,9 @@ import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
-import { TrendingUp, FolderOpen, Settings as SettingsIcon, Brain, FileBarChart, ChevronRight } from 'lucide-react';
+import {
+  TrendingUp, FolderOpen, Settings as SettingsIcon, Brain, FileBarChart, ChevronRight, Activity,
+} from 'lucide-react';
 
 export default async function MorePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -11,12 +13,13 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
   const t = await getTranslations('More');
 
   const items = [
-    { href: '/investments', icon: TrendingUp, key: 'investments', color: 'text-green-600 bg-green-50' },
-    { href: '/categories', icon: FolderOpen, key: 'categories', color: 'text-orange-600 bg-orange-50' },
-    { href: '/ai/settings', icon: Brain, key: 'ai', color: 'text-purple-600 bg-purple-50' },
-    { href: '/reports', icon: FileBarChart, key: 'reports', color: 'text-cyan-600 bg-cyan-50' },
-    { href: '/settings', icon: SettingsIcon, key: 'settings', color: 'text-slate-600 bg-slate-100' },
-  ] as const;
+    { href: '/cashflow', icon: Activity, key: 'investments', label: 'Cash Flow', desc: 'Track income, expense and runway', color: 'text-cyan-600 bg-cyan-50' },
+    { href: '/investments', icon: TrendingUp, key: 'investments', label: t('investments'), desc: t('investmentsDesc'), color: 'text-green-600 bg-green-50' },
+    { href: '/categories', icon: FolderOpen, key: 'categories', label: t('categories'), desc: t('categoriesDesc'), color: 'text-orange-600 bg-orange-50' },
+    { href: '/ai/settings', icon: Brain, key: 'ai', label: t('ai'), desc: t('aiDesc'), color: 'text-purple-600 bg-purple-50' },
+    { href: '/reports', icon: FileBarChart, key: 'reports', label: t('reports'), desc: t('reportsDesc'), color: 'text-cyan-600 bg-cyan-50' },
+    { href: '/settings', icon: SettingsIcon, key: 'settings', label: t('settings'), desc: t('settingsDesc'), color: 'text-slate-600 bg-slate-100' },
+  ];
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -30,16 +33,20 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
 
       <Card>
         <CardContent className="divide-y p-0">
-          {items.map((item) => {
+          {items.map((item, idx) => {
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} className="flex items-center gap-3 p-4 transition-colors hover:bg-muted/40">
+              <Link
+                key={`${item.href}-${idx}`}
+                href={item.href}
+                className="flex items-center gap-3 p-4 transition-colors hover:bg-muted/40"
+              >
                 <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${item.color}`}>
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium">{t(item.key)}</p>
-                  <p className="text-xs text-muted-foreground">{t(`${item.key}Desc` as any)}</p>
+                  <p className="font-medium">{item.label}</p>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </Link>
@@ -47,4 +54,6 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
           })}
         </CardContent>
       </Card>
-    </div
+    </div>
+  );
+}
