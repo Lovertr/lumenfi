@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { scanReceipt, type ScanResult } from '@/app/[locale]/(app)/transactions/scan/actions';
-import { createTransaction } from '@/app/[locale]/(app)/transactions/actions';
+import { createTransactionDirect } from '@/app/[locale]/(app)/transactions/actions';
 import { cn } from '@/lib/utils';
 
 interface Account { id: string; name: string; type: string; color: string; }
@@ -186,7 +186,7 @@ export function ReceiptScanner({
           )}
 
           {result?.ok && (
-            <form action={createTransaction} className="space-y-4">
+            <form action={createTransactionDirect} className="space-y-4">
               <p className="rounded-lg border border-green-300 bg-green-50 p-2.5 text-xs text-green-800">
                 ✓ {t('extracted')} — {t('reviewBeforeSave')}
               </p>
