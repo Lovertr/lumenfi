@@ -4,6 +4,7 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { PWAInstaller } from '@/components/layout/pwa-installer';
+import { ThemeScript } from '@/components/layout/theme-toggle';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -64,6 +65,7 @@ export default async function LocaleLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="min-h-screen antialiased">
+        <ThemeScript />
         <NextIntlClientProvider messages={messages}>
           {children}
           <PWAInstaller />

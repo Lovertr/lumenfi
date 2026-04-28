@@ -6,7 +6,7 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { formatTHB } from '@/lib/utils';
 import { getRecentTransactions, getMonthlyTotals } from '@/lib/queries/transactions';
-import { Plus, Wallet, ArrowLeft, Trash2 } from 'lucide-react';
+import { Plus, Wallet, ArrowLeft, Trash2, Camera } from 'lucide-react';
 import { deleteTransaction } from './actions';
 
 function formatDate(dateStr: string, locale: string) {
@@ -50,6 +50,12 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <Button asChild size="sm" variant="outline">
+            <Link href="/transactions/scan">
+              <Camera className="mr-1 h-4 w-4" />
+              <span className="hidden sm:inline">{t('scan')}</span>
+            </Link>
+          </Button>
           <Button asChild size="sm">
             <Link href="/transactions/new">
               <Plus className="mr-1 h-4 w-4" />

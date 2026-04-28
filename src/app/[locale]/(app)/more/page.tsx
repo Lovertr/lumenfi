@@ -3,6 +3,7 @@ import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 import {
   TrendingUp, FolderOpen, Settings as SettingsIcon, Brain, FileBarChart, ChevronRight, Activity, Repeat,
   Wallet, Calculator, CreditCard,
@@ -30,7 +31,8 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
     <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6 lg:pt-10">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-bold">{t('title')}</h1>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           <LanguageSwitcher />
           <LogoutButton />
         </div>

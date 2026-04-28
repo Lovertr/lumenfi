@@ -271,7 +271,8 @@
       "transfer_same_account": "บัญชีต้นทางและปลายทางต้องไม่เหมือนกัน",
       "transfer_need_two_accounts": "การโอนเงินต้องมีอย่างน้อย 2 บัญชี — เพิ่มบัญชีก่อน"
     },
-    "add": "เพิ่ม"
+    "add": "เพิ่ม",
+    "scan": "สแกน"
   },
   "Goals": {
     "title": "เป้าหมายการเงิน",
@@ -570,5 +571,35 @@
     "paidOffIn": "ปลดในเดือน {months}",
     "comparison": "เปรียบเทียบ",
     "avalancheSaves": "ใช้ Avalanche → ประหยัดดอกเบี้ย {amount} และจบเร็วขึ้น {months} เดือน"
+  },
+  "Scan": {
+    "title": "สแกนใบเสร็จด้วย AI",
+    "subtitle": "ถ่ายรูป → AI ดึงยอด/หมวด/วันที่ให้",
+    "uploadPrompt": "อัปโหลดหรือถ่ายรูปใบเสร็จ",
+    "uploadHint": "รองรับ JPG/PNG ขนาดไม่เกิน 10MB",
+    "chooseFile": "เลือกไฟล์",
+    "takePhoto": "ถ่ายรูป",
+    "aiNeeded": "ต้องตั้งค่า API Key ของ AI ก่อน — ไปที่หน้า \"AI Advisor\" → Settings",
+    "analyzing": "AI กำลังอ่านใบเสร็จ...",
+    "extracted": "AI ดึงข้อมูลได้แล้ว",
+    "reviewBeforeSave": "ตรวจสอบก่อนบันทึก",
+    "rescan": "สแกนใหม่",
+    "saveTransaction": "บันทึกรายการ",
+    "saving": "กำลังบันทึก...",
+    "amount": "จำนวนเงิน",
+    "category": "หมวดหมู่",
+    "account": "บัญชี",
+    "date": "วันที่",
+    "note": "หมายเหตุ",
+    "income": "รายรับ",
+    "expense": "รายจ่าย",
+    "error_no_image": "กรุณาเลือกรูป",
+    "error_image_too_large": "รูปใหญ่เกินไป (ไม่เกิน 10MB)",
+    "error_no_ai_key": "ยังไม่ได้ตั้งค่า AI API Key — ไปที่ Settings AI ก่อน",
+    "error_decryption_failed": "ถอดรหัส API Key ไม่สำเร็จ",
+    "error_ai_error": "AI วิเคราะห์ไม่ได้ ลองใหม่อีกครั้ง",
+    "error_unauthorized": "กรุณาเข้าสู่ระบบ",
+    "error_unknown": "ผิดพลาดไม่ทราบสาเหตุ",
+    "error_upload_failed": "อัปโหลดไม่สำเร็จ"
   }
 }

@@ -271,7 +271,8 @@
       "transfer_same_account": "Source and destination must differ",
       "transfer_need_two_accounts": "Transfers need at least 2 accounts — add another account first"
     },
-    "add": "Add"
+    "add": "Add",
+    "scan": "Scan"
   },
   "Goals": {
     "title": "Financial Goals",
@@ -570,5 +571,35 @@
     "paidOffIn": "paid off in month {months}",
     "comparison": "Comparison",
     "avalancheSaves": "Avalanche saves {amount} interest and finishes {months} months earlier"
+  },
+  "Scan": {
+    "title": "Scan Receipt with AI",
+    "subtitle": "Snap a photo → AI fills in amount/category/date",
+    "uploadPrompt": "Upload or take a photo of your receipt",
+    "uploadHint": "JPG/PNG up to 10MB",
+    "chooseFile": "Choose file",
+    "takePhoto": "Take photo",
+    "aiNeeded": "Requires AI API key — set in AI Advisor → Settings",
+    "analyzing": "AI is reading the receipt...",
+    "extracted": "AI extracted the details",
+    "reviewBeforeSave": "Review before saving",
+    "rescan": "Rescan",
+    "saveTransaction": "Save transaction",
+    "saving": "Saving...",
+    "amount": "Amount",
+    "category": "Category",
+    "account": "Account",
+    "date": "Date",
+    "note": "Note",
+    "income": "Income",
+    "expense": "Expense",
+    "error_no_image": "Please choose an image",
+    "error_image_too_large": "Image too large (max 10MB)",
+    "error_no_ai_key": "No AI API key set — configure in AI Settings",
+    "error_decryption_failed": "Could not decrypt API key",
+    "error_ai_error": "AI failed to analyze, try again",
+    "error_unauthorized": "Please log in",
+    "error_unknown": "Unknown error",
+    "error_upload_failed": "Upload failed"
   }
 }
