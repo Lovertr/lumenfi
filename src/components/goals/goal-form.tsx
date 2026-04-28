@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createGoal, updateGoal, deleteGoal } from '@/app/[locale]/(app)/goals/actions';
 import { cn } from '@/lib/utils';
-import { Shield, Trash2 } from 'lucide-react';
+import { Shield, Trash2, Wallet, Link2 } from 'lucide-react';
 
 const PRESETS = [
   { key: 'emergency', icon: '🛡️', color: '#EF4444', isEmergency: true },
@@ -49,6 +49,14 @@ interface GoalDefaults {
   current_amount?: number | string;
   deadline?: string | null;
   is_emergency_fund?: boolean;
+  linked_account_ids?: string[];
+}
+
+interface AccountOption {
+  id: string;
+  name: string;
+  color: string;
+  type: string;
 }
 
 type State = { error?: string } | null;
@@ -63,7 +71,7 @@ function SubmitBtn({ mode }: { mode: 'create' | 'edit' }) {
   );
 }
 
-export function GoalForm({ defaults, mode }: { defaults?: GoalDefaults; mode: 'create' | 'edit' }) {
+export function GoalForm({ defaults, mode, accounts = [] }: { defaults?: GoalDefaults; mode: 'create' | 'edit'; accounts?: AccountOption[] }) {
   const t = useTranslations('Goals.form');
   const tPreset = useTranslations('Goals.presets');
   const action = mode === 'create' ? createGoal : updateGoal;
@@ -74,6 +82,11 @@ export function GoalForm({ defaults, mode }: { defaults?: GoalDefaults; mode: 'c
   const [color, setColor] = useState<string>(defaults?.color ?? PRESETS[0].color);
   const [name, setName] = useState<string>(defaults?.name ?? '');
   const [showAllIcons, setShowAllIcons] = useState(false);
+  const [linkedIds, setLinkedIds] = useState<string[]>(defaults?.linked_account_ids ?? []);
+
+  function toggleLink(id: string) {
+    setLinkedIds((prev) => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }
 
   function applyPreset(p: typeof PRESETS[number]) {
     setSelectedPreset(p.key);
@@ -235,6 +248,42 @@ export function GoalForm({ defaults, mode }: { defaults?: GoalDefaults; mode: 'c
           defaultValue={defaults?.deadline ?? ''}
         />
       </div>
+
+      {/* Linked accounts — auto-sync current_amount from selected accounts' balance */}
+      {accounts.length > 0 && (
+        <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+          <Label className="flex items-center gap-2">
+            <Link2 className="h-4 w-4 text-primary" />
+            ผูกกับบัญชี (ยอดจะอัปเดตตามบัญชี)
+          </Label>
+          <p className="text-[11px] text-muted-foreground">
+            เลือกบัญชีที่เก็บเงินไว้สำหรับเป้าหมายนี้ — ยอดปัจจุบันจะคำนวณจากผลรวมของบัญชีที่ผูกไว้อัตโนมัติ
+          </p>
+          {linkedIds.map((id) => (
+            <input key={id} type="hidden" name="linked_account_ids" value={id} />
+          ))}
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {accounts.map((acc) => {
+              const active = linkedIds.includes(acc.id);
+              return (
+                <button
+                  key={acc.id}
+                  type="button"
+                  onClick={() => toggleLink(acc.id)}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+                    active ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-background hover:bg-muted/40'
+                  )}
+                >
+                  <Wallet className="h-3 w-3" />
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: acc.color }} />
+                  {acc.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-3">
         <Label htmlFor="is_emergency_fund" className="cursor-pointer flex items-center gap-2">

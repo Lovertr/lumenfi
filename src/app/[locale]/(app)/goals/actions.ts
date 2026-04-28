@@ -13,11 +13,13 @@ const baseSchema = z.object({
   is_emergency_fund: z.boolean().default(false),
   color: z.string().default('#10B981'),
   icon: z.string().default('🎯'),
+  linked_account_ids: z.array(z.string().uuid()).default([]),
 });
 
 function parseGoalForm(formData: FormData) {
   const target = parseFloat((formData.get('target_amount') as string) ?? '0');
   const current = parseFloat((formData.get('current_amount') as string) ?? '0');
+  const linkedIds = formData.getAll('linked_account_ids').map((v) => String(v)).filter(Boolean);
 
   return baseSchema.safeParse({
     name: formData.get('name'),
@@ -27,6 +29,7 @@ function parseGoalForm(formData: FormData) {
     is_emergency_fund: formData.get('is_emergency_fund') === 'on',
     color: formData.get('color') || '#10B981',
     icon: formData.get('icon') || '🎯',
+    linked_account_ids: linkedIds,
   });
 }
 

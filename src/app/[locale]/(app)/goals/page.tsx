@@ -17,6 +17,7 @@ interface Goal {
   color: string;
   icon: string;
   is_emergency_fund: boolean;
+  linked_account_ids: string[] | null;
 }
 
 async function getGoals(): Promise<Goal[]> {
@@ -24,13 +25,30 @@ async function getGoals(): Promise<Goal[]> {
     const supabase = createClient();
     const { data, error } = await supabase
       .from('goals')
-      .select('id, name, target_amount, current_amount, deadline, color, icon, is_emergency_fund')
+      .select('id, name, target_amount, current_amount, deadline, color, icon, is_emergency_fund, linked_account_ids')
       .eq('status', 'active')
       .order('created_at', { ascending: false });
     if (error) return [];
     return (data as Goal[]) ?? [];
   } catch {
     return [];
+  }
+}
+
+async function getAccountBalances(): Promise<Record<string, number>> {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('accounts')
+      .select('id, initial_balance')
+      .eq('archived', false);
+    const map: Record<string, number> = {};
+    (data ?? []).forEach((a: any) => {
+      map[a.id] = Number(a.initial_balance ?? 0);
+    });
+    return map;
+  } catch {
+    return {};
   }
 }
 
@@ -47,7 +65,7 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
   setRequestLocale(locale);
   const t = await getTranslations('Goals');
 
-  const goals = await getGoals();
+  const [goals, accountBalances] = await Promise.all([getGoals(), getAccountBalances()]);
 
   return (
     <div className="mx-auto max-w-5xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -95,7 +113,10 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
         <div className="grid gap-3 lg:grid-cols-2">
           {goals.map((goal) => {
             const target = Number(goal.target_amount);
-            const current = Number(goal.current_amount);
+            const isLinked = goal.linked_account_ids && goal.linked_account_ids.length > 0;
+            const current = isLinked
+              ? goal.linked_account_ids!.reduce((s, id) => s + (accountBalances[id] ?? 0), 0)
+              : Number(goal.current_amount);
             const percent = target > 0 ? Math.min(100, (current / target) * 100) : 0;
             const remaining = Math.max(0, target - current);
             const months = monthsBetween(goal.deadline);

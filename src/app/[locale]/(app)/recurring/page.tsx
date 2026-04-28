@@ -4,7 +4,9 @@ import { ArrowLeft, Plus, Repeat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
-import { materializeDueRecurring, nextRunDate } from '@/lib/recurring';
+import { materializeDueRecurring, nextRunDate, getUpcomingNotifications } from '@/lib/recurring';
+import { UpcomingBanner } from '@/components/recurring/upcoming-banner';
+import { NotificationToggle } from '@/components/recurring/notification-toggle';
 import { RecurringRow } from '@/components/transactions/recurring-row';
 
 interface RecurringWithRefs {
@@ -46,7 +48,11 @@ export default async function RecurringPage({ params }: { params: Promise<{ loca
   // Materialize any due rows on page load
   await materializeDueRecurring();
 
-  const [t, rows] = await Promise.all([getTranslations('Recurring'), getRecurring()]);
+  const [t, rows, upcoming] = await Promise.all([
+    getTranslations('Recurring'),
+    getRecurring(),
+    getUpcomingNotifications(),
+  ]);
 
   const active = rows.filter((r) => r.is_active);
   const paused = rows.filter((r) => !r.is_active);
@@ -74,6 +80,9 @@ export default async function RecurringPage({ params }: { params: Promise<{ loca
           </Link>
         </Button>
       </header>
+
+      <NotificationToggle />
+      {upcoming.length > 0 && <UpcomingBanner items={upcoming as any} />}
 
       {rows.length === 0 ? (
         <Card>

@@ -11,10 +11,20 @@ async function getGoal(id: string) {
   const supabase = createClient();
   const { data } = await supabase
     .from('goals')
-    .select('id, name, target_amount, current_amount, deadline, color, icon, is_emergency_fund')
+    .select('id, name, target_amount, current_amount, deadline, color, icon, is_emergency_fund, linked_account_ids')
     .eq('id', id)
     .maybeSingle();
   return data;
+}
+
+async function getAccounts() {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('accounts')
+    .select('id, name, color, type')
+    .eq('archived', false)
+    .order('name');
+  return data ?? [];
 }
 
 export default async function EditGoalPage({
@@ -26,7 +36,7 @@ export default async function EditGoalPage({
   setRequestLocale(locale);
   const t = await getTranslations('Goals');
 
-  const goal = await getGoal(id);
+  const [goal, accounts] = await Promise.all([getGoal(id), getAccounts()]);
   if (!goal) notFound();
 
   return (
@@ -47,6 +57,7 @@ export default async function EditGoalPage({
         <CardContent className="p-5">
           <GoalForm
             mode="edit"
+            accounts={accounts as any}
             defaults={{
               id: goal.id,
               name: goal.name,
@@ -56,6 +67,7 @@ export default async function EditGoalPage({
               color: goal.color,
               icon: goal.icon,
               is_emergency_fund: goal.is_emergency_fund,
+              linked_account_ids: goal.linked_account_ids ?? [],
             }}
           />
         </CardContent>

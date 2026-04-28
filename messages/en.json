@@ -254,7 +254,11 @@
       "dayOfMonth": "Day of month",
       "everyMonthOn": "On day",
       "ofEachMonth": "of every month",
-      "recurringHint": "This will be auto-created each month (day 31 falls back to the last day of shorter months)"
+      "recurringHint": "This will be auto-created each month (day 31 falls back to the last day of shorter months)",
+      "notifyMe": "Notify me before",
+      "notifyDaysBefore": "Days before due",
+      "daysBeforeUnit": "days",
+      "notifyHint": "Browser/mobile push notification — enable permission on the Recurring page first"
     },
     "errors": {
       "amount_required": "Please enter an amount",
@@ -454,6 +458,16 @@
     "next": "Next",
     "pause": "Pause",
     "resume": "Resume",
-    "delete": "Delete"
+    "delete": "Delete",
+    "upcomingTitle": "{count} items coming up",
+    "today": "today",
+    "inDays": "in {days} day(s)",
+    "notifEnable": "Enable notifications",
+    "notifEnabled": "Notifications enabled — we will alert you before recurring items are due",
+    "notifDisable": "Disable",
+    "notifDenied": "Notifications blocked — enable in browser/device settings",
+    "notifUnsupported": "This device/browser does not support notifications",
+    "vapidMissing": "Push server (VAPID) not configured — notifications will only fire while app is open",
+    "localTestNotif": "Notifications working!"
   }
 }

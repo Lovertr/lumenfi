@@ -8,7 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createTransaction } from '@/app/[locale]/(app)/transactions/actions';
 import { cn } from '@/lib/utils';
-import { TrendingDown, TrendingUp, ArrowLeftRight, Repeat, Target, ArrowDown } from 'lucide-react';
+import {
+  TrendingDown, TrendingUp, ArrowLeftRight, Repeat, Target, ArrowDown, Bell,
+} from 'lucide-react';
 
 interface Account {
   id: string;
@@ -105,15 +107,15 @@ export function TransactionForm({
   const [isRecurring, setIsRecurring] = useState(false);
   const [dayOfMonth, setDayOfMonth] = useState(1);
   const [goalId, setGoalId] = useState('');
+  const [notifyEnabled, setNotifyEnabled] = useState(false);
+  const [notifyDays, setNotifyDays] = useState(1);
 
   const today = new Date().toISOString().slice(0, 10);
   const filteredCategories = categories.filter(
     (c) => c.type === type || c.type === 'both'
   );
   const isTransfer = type === 'transfer';
-  const canRecur = !isTransfer;
 
-  // Auto-pick a different toAccount if it collides with FROM
   if (isTransfer && toAccountId === accountId) {
     const alt = accounts.find((a) => a.id !== accountId);
     if (alt && alt.id !== toAccountId) {
@@ -123,7 +125,6 @@ export function TransactionForm({
 
   return (
     <form action={action} className="space-y-5">
-      {/* Type tabs */}
       <input type="hidden" name="type" value={type} />
       <div className="grid grid-cols-3 gap-2 rounded-xl border bg-muted/40 p-1">
         {([
@@ -137,10 +138,7 @@ export function TransactionForm({
             <button
               key={tab.v}
               type="button"
-              onClick={() => {
-                setType(tab.v);
-                if (tab.v === 'transfer') setIsRecurring(false);
-              }}
+              onClick={() => setType(tab.v)}
               className={cn(
                 'flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 active ? `${tab.color} shadow-sm` : 'text-muted-foreground hover:bg-background'
@@ -153,7 +151,6 @@ export function TransactionForm({
         })}
       </div>
 
-      {/* Amount */}
       <div className="space-y-2">
         <Label htmlFor="amount">{tForm('amount')}</Label>
         <div className="relative">
@@ -173,7 +170,6 @@ export function TransactionForm({
         </div>
       </div>
 
-      {/* Category — only show for income/expense */}
       {!isTransfer && (
         <div className="space-y-2">
           <Label>{tForm('category')}</Label>
@@ -206,7 +202,6 @@ export function TransactionForm({
         </div>
       )}
 
-      {/* Accounts: single picker for income/expense, FROM + TO for transfer */}
       {accounts.length === 0 ? (
         <p className="text-sm text-muted-foreground">{tErr('no_accounts')}</p>
       ) : isTransfer ? (
@@ -254,14 +249,13 @@ export function TransactionForm({
         </div>
       )}
 
-      {/* Date */}
       <div className="space-y-2">
         <Label htmlFor="date">{tForm('date')}</Label>
         <Input id="date" name="date" type="date" defaultValue={today} required />
       </div>
 
-      {/* Goal link (optional) — not for transfers */}
-      {goals.length > 0 && !isTransfer && (
+      {/* Goal link — now also for transfers */}
+      {goals.length > 0 && (
         <div className="space-y-2">
           <Label className="flex items-center gap-1.5">
             <Target className="h-4 w-4 text-primary" />
@@ -297,30 +291,29 @@ export function TransactionForm({
         </div>
       )}
 
-      {/* Note */}
       <div className="space-y-2">
         <Label htmlFor="note">{tForm('note')}</Label>
         <Input id="note" name="note" placeholder={tForm('notePlaceholder')} maxLength={500} />
       </div>
 
-      {/* Recurring toggle (income/expense only) */}
-      {canRecur && (
-        <div className="space-y-3 rounded-xl border bg-muted/30 p-3">
-          <label className="flex cursor-pointer items-center justify-between">
-            <span className="flex items-center gap-2 text-sm font-medium">
-              <Repeat className="h-4 w-4 text-primary" />
-              {tForm('saveAsRecurring')}
-            </span>
-            <input
-              type="checkbox"
-              name="is_recurring"
-              checked={isRecurring}
-              onChange={(e) => setIsRecurring(e.target.checked)}
-              className="h-5 w-5 rounded border-input accent-primary"
-            />
-          </label>
-          {isRecurring && (
-            <div className="space-y-2 pt-1">
+      {/* Recurring — now available for all types including transfer */}
+      <div className="space-y-3 rounded-xl border bg-muted/30 p-3">
+        <label className="flex cursor-pointer items-center justify-between">
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <Repeat className="h-4 w-4 text-primary" />
+            {tForm('saveAsRecurring')}
+          </span>
+          <input
+            type="checkbox"
+            name="is_recurring"
+            checked={isRecurring}
+            onChange={(e) => setIsRecurring(e.target.checked)}
+            className="h-5 w-5 rounded border-input accent-primary"
+          />
+        </label>
+        {isRecurring && (
+          <div className="space-y-3 pt-1">
+            <div className="space-y-2">
               <Label htmlFor="day_of_month" className="text-xs">
                 {tForm('dayOfMonth')}
               </Label>
@@ -340,9 +333,44 @@ export function TransactionForm({
               </div>
               <p className="text-[11px] text-muted-foreground">{tForm('recurringHint')}</p>
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Notification settings */}
+            <div className="space-y-2 rounded-lg border bg-background p-3">
+              <label className="flex cursor-pointer items-center justify-between">
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <Bell className="h-4 w-4 text-amber-600" />
+                  {tForm('notifyMe')}
+                </span>
+                <input
+                  type="checkbox"
+                  name="notify_enabled"
+                  checked={notifyEnabled}
+                  onChange={(e) => setNotifyEnabled(e.target.checked)}
+                  className="h-5 w-5 rounded border-input accent-primary"
+                />
+              </label>
+              {notifyEnabled && (
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs text-muted-foreground">{tForm('notifyDaysBefore')}</span>
+                  <Input
+                    name="notify_days_before"
+                    type="number"
+                    min={0}
+                    max={14}
+                    value={notifyDays}
+                    onChange={(e) => setNotifyDays(Math.min(14, Math.max(0, parseInt(e.target.value) || 0)))}
+                    className="h-9 w-16 text-center"
+                  />
+                  <span className="text-xs text-muted-foreground">{tForm('daysBeforeUnit')}</span>
+                </div>
+              )}
+              {notifyEnabled && (
+                <p className="text-[11px] text-muted-foreground">{tForm('notifyHint')}</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {state?.error && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">

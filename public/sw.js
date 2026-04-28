@@ -101,3 +101,67 @@ self.addEventListener('fetch', (event) => {
     );
   }
 });
+
+// === Push notifications ===
+self.addEventListener('push', (event) => {
+  let payload = { title: 'Lumenfi', body: 'รายการประจำใกล้ถึงกำหนด', url: '/recurring' };
+  try {
+    if (event.data) payload = { ...payload, ...event.data.json() };
+  } catch (e) {
+    // payload not JSON — keep defaults
+  }
+  const options = {
+    body: payload.body,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    data: { url: payload.url || '/' },
+    tag: payload.tag || 'lumenfi-recurring',
+    requireInteraction: false,
+  };
+  event.waitUntil(self.registration.showNotification(payload.title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((wins) => {
+      for (const w of wins) {
+        if (w.url.includes(url) && 'focus' in w) return w.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(url);
+    })
+  );
+});
+
+// === Push notifications ===
+self.addEventListener('push', (event) => {
+  let payload = { title: 'Lumenfi', body: 'รายการประจำใกล้ถึงกำหนด', url: '/recurring' };
+  try {
+    if (event.data) payload = { ...payload, ...event.data.json() };
+  } catch (e) {
+    // payload not JSON — keep defaults
+  }
+  const options = {
+    body: payload.body,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    data: { url: payload.url || '/' },
+    tag: payload.tag || 'lumenfi-recurring',
+    requireInteraction: false,
+  };
+  event.waitUntil(self.registration.showNotification(payload.title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((wins) => {
+      for (const w of wins) {
+        if (w.url.includes(url) && 'focus' in w) return w.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(url);
+    })
+  );
+});

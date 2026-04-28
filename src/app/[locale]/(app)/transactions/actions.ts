@@ -16,6 +16,36 @@ const createSchema = z.object({
   note: z.string().max(500).nullable().optional(),
 });
 
+async function applyGoalContribution(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  goalId: string,
+  amount: number,
+  type: 'income' | 'expense' | 'transfer'
+) {
+  // Skip if goal is auto-synced from accounts (current_amount derives from account balances)
+  const { data: goal } = await supabase
+    .from('goals')
+    .select('id, current_amount, linked_account_ids')
+    .eq('id', goalId)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (!goal) return;
+  // If goal is auto-synced from linked accounts, skip manual update — page reads from accounts
+  if (goal.linked_account_ids && goal.linked_account_ids.length > 0) return;
+
+  // For income or transfer-in-style → add; for expense (rare goal use) → still add
+  // (User's mental model: "I'm contributing this amount toward this goal")
+  const next = Number(goal.current_amount ?? 0) + amount;
+
+  await supabase
+    .from('goals')
+    .update({ current_amount: next })
+    .eq('id', goalId)
+    .eq('user_id', userId);
+}
+
 export async function createTransaction(_prev: unknown, formData: FormData) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -48,6 +78,8 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
   const isRecurring = formData.get('is_recurring') === 'on';
   const dayOfMonthRaw = formData.get('day_of_month') as string;
   const dayOfMonth = dayOfMonthRaw ? parseInt(dayOfMonthRaw, 10) : NaN;
+  const notifyEnabled = formData.get('notify_enabled') === 'on';
+  const notifyDaysBefore = parseInt((formData.get('notify_days_before') as string) ?? '0', 10) || 0;
 
   const parsed = createSchema.safeParse({
     type,
@@ -73,20 +105,29 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
     return { error: 'generic' as const };
   }
 
-  if (isRecurring && type !== 'transfer' && !isNaN(dayOfMonth) && dayOfMonth >= 1 && dayOfMonth <= 31) {
+  // Goal contribution (skip if goal is auto-synced from accounts)
+  if (goal_id) {
+    await applyGoalContribution(supabase, user.id, goal_id, amount, type);
+  }
+
+  // Recurring template (now supports transfer too)
+  if (isRecurring && !isNaN(dayOfMonth) && dayOfMonth >= 1 && dayOfMonth <= 31) {
     const todayStr = new Date().toISOString().slice(0, 10);
     const { error: recErr } = await supabase.from('recurring_transactions').insert({
       user_id: user.id,
       type,
       amount,
       account_id,
-      category_id,
+      to_account_id: type === 'transfer' ? to_account_id : null,
+      category_id: type === 'transfer' ? null : category_id,
       goal_id,
       day_of_month: dayOfMonth,
       note,
       is_active: true,
       last_run_on: todayStr,
       start_date: todayStr,
+      notify_enabled: notifyEnabled,
+      notify_days_before: Math.min(14, Math.max(0, notifyDaysBefore)),
     });
     if (recErr) {
       console.error('createRecurring:', recErr);
@@ -96,6 +137,7 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
   revalidatePath('/transactions');
   revalidatePath('/dashboard');
   revalidatePath('/recurring');
+  revalidatePath('/goals');
   redirect('/transactions');
 }
 
@@ -107,9 +149,35 @@ export async function deleteTransaction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
+  // Reverse the goal contribution if any
+  const { data: tx } = await supabase
+    .from('transactions')
+    .select('goal_id, amount')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (tx?.goal_id) {
+    const { data: goal } = await supabase
+      .from('goals')
+      .select('current_amount, linked_account_ids')
+      .eq('id', tx.goal_id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (goal && (!goal.linked_account_ids || goal.linked_account_ids.length === 0)) {
+      const next = Math.max(0, Number(goal.current_amount ?? 0) - Number(tx.amount));
+      await supabase
+        .from('goals')
+        .update({ current_amount: next })
+        .eq('id', tx.goal_id)
+        .eq('user_id', user.id);
+    }
+  }
+
   await supabase.from('transactions').delete().eq('id', id).eq('user_id', user.id);
   revalidatePath('/transactions');
   revalidatePath('/dashboard');
+  revalidatePath('/goals');
 }
 
 export async function toggleRecurring(formData: FormData) {
