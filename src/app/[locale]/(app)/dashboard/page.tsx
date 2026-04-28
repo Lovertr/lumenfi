@@ -42,154 +42,171 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const greeting = user?.user_metadata?.full_name?.split(' ')[0] ?? '';
 
   const data = await getDashboardData();
-  const isPositive = data.monthBalance >= 0;
 
   return (
-    <div className="space-y-4 p-4 pt-6">
+    <div className="space-y-4 p-4 pt-6 lg:pt-10">
       {/* Header */}
       <header className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">
             {t('greeting')} {greeting} 👋
           </p>
-          <h1 className="text-xl font-bold">{t('subtitle')}</h1>
+          <h1 className="text-xl font-bold lg:text-2xl">{t('subtitle')}</h1>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 lg:hidden">
           <HealthBadge score={data.healthScore} />
           <LanguageSwitcher />
           <LogoutButton />
         </div>
+        <div className="hidden lg:block">
+          <HealthBadge score={data.healthScore} />
+        </div>
       </header>
 
-      {/* Net Worth Hero */}
-      <Card className="overflow-hidden bg-gradient-to-br from-[#0A0F1F] to-[#1E293B] text-white">
-        <CardContent className="p-6">
-          <p className="text-sm opacity-90">{t('netWorth')}</p>
-          <p className={`mt-1 text-3xl font-bold ${data.netWorth < 0 ? 'text-[#FCA5A5]' : ''}`}>
-            {formatTHB(data.netWorth)}
-          </p>
-          <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <p className="opacity-70">Assets</p>
-              <p className="mt-0.5 font-semibold">{formatTHB(data.totalAssets, { compact: true })}</p>
+      {/* Top row: Net Worth (wide) + Income/Expense (stacked) */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Net Worth Hero */}
+        <Card className="overflow-hidden bg-gradient-to-br from-[#0A0F1F] to-[#1E293B] text-white lg:col-span-2">
+          <CardContent className="p-6 lg:p-8">
+            <p className="text-sm opacity-90">{t('netWorth')}</p>
+            <p className={`mt-1 text-3xl font-bold lg:text-5xl ${data.netWorth < 0 ? 'text-[#FCA5A5]' : ''}`}>
+              {formatTHB(data.netWorth)}
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-xs lg:mt-6 lg:gap-6 lg:text-sm">
+              <div>
+                <p className="opacity-70">Assets</p>
+                <p className="mt-0.5 font-semibold lg:text-lg">{formatTHB(data.totalAssets, { compact: true })}</p>
+              </div>
+              <div>
+                <p className="opacity-70">Liabilities</p>
+                <p className="mt-0.5 font-semibold text-[#FCA5A5] lg:text-lg">
+                  -{formatTHB(data.totalLiabilities, { compact: true })}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="opacity-70">Liabilities</p>
-              <p className="mt-0.5 font-semibold text-[#FCA5A5]">
-                -{formatTHB(data.totalLiabilities, { compact: true })}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">{t('monthIncome')}</span>
-              <TrendingUp className="h-4 w-4 text-success" />
-            </div>
-            <p className="mt-1 text-lg font-bold text-success">
-              {formatTHB(data.monthIncome, { compact: true })}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">{t('monthExpense')}</span>
-              <TrendingDown className="h-4 w-4 text-destructive" />
-            </div>
-            <p className="mt-1 text-lg font-bold text-destructive">
-              {formatTHB(data.monthExpense, { compact: true })}
-            </p>
-          </CardContent>
-        </Card>
+        {/* Income + Expense stacked on desktop */}
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:gap-4">
+          <Card>
+            <CardContent className="p-4 lg:p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground lg:text-sm">{t('monthIncome')}</span>
+                <TrendingUp className="h-4 w-4 text-success" />
+              </div>
+              <p className="mt-1 text-lg font-bold text-success lg:text-2xl">
+                {formatTHB(data.monthIncome, { compact: true })}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 lg:p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground lg:text-sm">{t('monthExpense')}</span>
+                <TrendingDown className="h-4 w-4 text-destructive" />
+              </div>
+              <p className="mt-1 text-lg font-bold text-destructive lg:text-2xl">
+                {formatTHB(data.monthExpense, { compact: true })}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Health Stats */}
-      <Card>
-        <CardContent className="p-4">
-          <h2 className="mb-3 text-sm font-semibold">{t('healthSection')}</h2>
-          <div className="space-y-3">
-            <StatRow
-              label={t('savingsRate')}
-              value={`${(data.savingsRate * 100).toFixed(0)}%`}
-              hint={t('savingsRateHint')}
-              status={data.savingsRate >= 0.2 ? 'good' : data.savingsRate >= 0.1 ? 'warn' : 'bad'}
-            />
-            <StatRow
-              label={t('dti')}
-              value={`${(data.dti * 100).toFixed(0)}%`}
-              hint={t('dtiHint')}
-              status={data.dti < 0.3 ? 'good' : data.dti < 0.4 ? 'warn' : 'bad'}
-            />
-            <StatRow
-              label={t('emergencyFund')}
-              value={`${data.emergencyFundMonths.toFixed(1)} ${t('monthsLabel')}`}
-              hint={t('emergencyFundHint')}
-              status={data.emergencyFundMonths >= 6 ? 'good' : data.emergencyFundMonths >= 3 ? 'warn' : 'bad'}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Top Categories */}
-      {data.topCategories.length > 0 && (
+      {/* Health + Top Categories */}
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardContent className="p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold">{t('topCategories')}</h2>
-              <Link href="/transactions" className="text-xs text-primary">
-                {locale === 'th' ? 'ดูทั้งหมด' : 'View all'}
-              </Link>
-            </div>
-            <div className="space-y-2">
-              {data.topCategories.map((cat) => {
-                const percent = data.monthExpense > 0 ? (cat.amount / data.monthExpense) * 100 : 0;
-                return (
-                  <div key={cat.name} className="flex items-center gap-3">
-                    <span className="text-xl">{cat.icon}</span>
-                    <div className="flex-1">
-                      <div className="flex justify-between text-sm">
-                        <span>{cat.name}</span>
-                        <span className="font-medium">{formatTHB(cat.amount, { compact: true })}</span>
-                      </div>
-                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full"
-                          style={{ width: `${percent}%`, backgroundColor: cat.color }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+          <CardContent className="p-4 lg:p-6">
+            <h2 className="mb-3 text-sm font-semibold lg:text-base">{t('healthSection')}</h2>
+            <div className="space-y-3">
+              <StatRow
+                label={t('savingsRate')}
+                value={`${(data.savingsRate * 100).toFixed(0)}%`}
+                hint={t('savingsRateHint')}
+                status={data.savingsRate >= 0.2 ? 'good' : data.savingsRate >= 0.1 ? 'warn' : 'bad'}
+              />
+              <StatRow
+                label={t('dti')}
+                value={`${(data.dti * 100).toFixed(0)}%`}
+                hint={t('dtiHint')}
+                status={data.dti < 0.3 ? 'good' : data.dti < 0.4 ? 'warn' : 'bad'}
+              />
+              <StatRow
+                label={t('emergencyFund')}
+                value={`${data.emergencyFundMonths.toFixed(1)} ${t('monthsLabel')}`}
+                hint={t('emergencyFundHint')}
+                status={data.emergencyFundMonths >= 6 ? 'good' : data.emergencyFundMonths >= 3 ? 'warn' : 'bad'}
+              />
             </div>
           </CardContent>
         </Card>
-      )}
+
+        {data.topCategories.length > 0 ? (
+          <Card>
+            <CardContent className="p-4 lg:p-6">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-semibold lg:text-base">{t('topCategories')}</h2>
+                <Link href="/transactions" className="text-xs text-primary">
+                  {locale === 'th' ? 'ดูทั้งหมด' : 'View all'}
+                </Link>
+              </div>
+              <div className="space-y-2">
+                {data.topCategories.map((cat) => {
+                  const percent = data.monthExpense > 0 ? (cat.amount / data.monthExpense) * 100 : 0;
+                  return (
+                    <div key={cat.name} className="flex items-center gap-3">
+                      <span className="text-xl">{cat.icon}</span>
+                      <div className="flex-1">
+                        <div className="flex justify-between text-sm">
+                          <span>{cat.name}</span>
+                          <span className="font-medium">{formatTHB(cat.amount, { compact: true })}</span>
+                        </div>
+                        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full"
+                            style={{ width: `${percent}%`, backgroundColor: cat.color }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-dashed">
+            <CardContent className="flex h-full flex-col items-center justify-center p-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                {locale === 'th' ? 'ยังไม่มีรายการในเดือนนี้' : 'No transactions this month'}
+              </p>
+              <Button asChild size="sm" variant="outline" className="mt-3">
+                <Link href="/transactions/new">+ {t('quickActions.debts')}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <QuickAction href="/debts" icon={CreditCard} label={t('quickActions.debts')} count={data.debtsCount} color="text-red-600" />
-        <QuickAction href="/investments" icon={TrendingUp} label={t('quickActions.investments')} color="text-green-600" />
-        <QuickAction href="/goals" icon={Target} label={t('quickActions.goals')} count={data.goalsCount} color="text-purple-600" />
-        <QuickAction href="/accounts" icon={Wallet} label={t('quickActions.accounts')} count={data.accountsCount} color="text-blue-600" />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <QuickAction href="/debts" icon={CreditCard} label={t('quickActions.debts')} count={data.debtsCount} color="text-red-600 bg-red-50" />
+        <QuickAction href="/investments" icon={TrendingUp} label={t('quickActions.investments')} color="text-green-600 bg-green-50" />
+        <QuickAction href="/goals" icon={Target} label={t('quickActions.goals')} count={data.goalsCount} color="text-purple-600 bg-purple-50" />
+        <QuickAction href="/accounts" icon={Wallet} label={t('quickActions.accounts')} count={data.accountsCount} color="text-blue-600 bg-blue-50" />
       </div>
 
       {/* AI CTA */}
       <Card className="border-primary/30 bg-primary/5">
-        <CardContent className="p-4">
+        <CardContent className="p-4 lg:p-6">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
-              <Sparkles className="h-5 w-5" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary lg:h-12 lg:w-12">
+              <Sparkles className="h-5 w-5 lg:h-6 lg:w-6" />
             </div>
             <div className="flex-1">
-              <p className="font-semibold">{t('aiCta.title')}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">{t('aiCta.subtitle')}</p>
+              <p className="font-semibold lg:text-lg">{t('aiCta.title')}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">{t('aiCta.subtitle')}</p>
             </div>
             <Button asChild size="sm" variant="ghost">
               <Link href="/ai">
@@ -234,15 +251,17 @@ function QuickAction({
 }) {
   return (
     <Link href={href}>
-      <Card className="transition-all active:scale-95">
-        <CardContent className="flex items-center gap-3 p-4">
-          <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-muted ${color}`}>
+      <Card className="h-full transition-all hover:shadow-md active:scale-95">
+        <CardContent className="flex items-center gap-3 p-4 lg:flex-col lg:items-start lg:p-5">
+          <div className={`flex h-10 w-10 items-center justify-center rounded-lg lg:h-12 lg:w-12 ${color}`}>
             <Icon className="h-5 w-5" />
           </div>
-          <div className="flex-1">
-            <span className="font-medium">{label}</span>
+          <div className="flex-1 lg:flex-initial">
+            <p className="font-medium">{label}</p>
             {count !== undefined && count > 0 && (
-              <span className="ml-1 text-xs text-muted-foreground">({count})</span>
+              <p className="text-xs text-muted-foreground lg:mt-0.5">
+                {count} {count === 1 ? 'item' : 'items'}
+              </p>
             )}
           </div>
         </CardContent>

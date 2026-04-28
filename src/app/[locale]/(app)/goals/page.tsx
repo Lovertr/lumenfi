@@ -51,7 +51,7 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
   const goals = await getGoals();
 
   return (
-    <div className="space-y-4 p-4 pt-6">
+    <div className="mx-auto max-w-5xl space-y-4 p-4 pt-6 lg:pt-10">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button asChild size="icon" variant="ghost" className="h-9 w-9 -ml-2">
@@ -87,7 +87,7 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="grid gap-3 lg:grid-cols-2">
           {goals.map((goal) => {
             const target = Number(goal.target_amount);
             const current = Number(goal.current_amount);
@@ -150,7 +150,7 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
             );
           })}
 
-          <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)]">
+          <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)] lg:bottom-8 lg:right-8">
             <Link href="/goals/new">
               <Plus className="h-5 w-5" />
               {t('addGoal')}

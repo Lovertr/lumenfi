@@ -331,6 +331,46 @@
     "reportsDesc": "Monthly and yearly summaries"
   },
 
+  "Investments": {
+    "title": "Investments",
+    "subtitle": "Track your investment portfolio",
+    "addInvestment": "Add investment",
+    "addTitle": "New Investment",
+    "addSubtitle": "Log an investment to track value and P/L",
+    "noInvestments": "No investments yet",
+    "noInvestmentsHint": "Start by adding stocks, funds, or crypto you hold",
+    "totalValue": "Total Value",
+    "totalCost": "Total Cost",
+    "totalPL": "P/L",
+    "allocation": "Asset Allocation",
+    "form": {
+      "name": "Name/Symbol",
+      "namePlaceholder": "e.g. AAPL, KBANK, BTC",
+      "type": "Type",
+      "broker": "Broker/Exchange",
+      "brokerPlaceholder": "e.g. Robinhood, Fidelity, Binance",
+      "quantity": "Quantity",
+      "avgCost": "Average Cost",
+      "currentPrice": "Current Price",
+      "currency": "Currency",
+      "submit": "Save"
+    },
+    "types": {
+      "thai_stock": "Thai Stock",
+      "foreign_stock": "Foreign Stock",
+      "mutual_fund": "Mutual Fund",
+      "etf": "ETF",
+      "crypto": "Crypto",
+      "gold": "Gold",
+      "reit": "REIT",
+      "property": "Property",
+      "bond": "Bond",
+      "fixed_deposit": "Fixed Deposit",
+      "lottery_savings": "Lottery Savings",
+      "other": "Other"
+    }
+  },
+
   "AI": {
     "title": "AI Advisor",
     "subtitle": "Your personal finance assistant",

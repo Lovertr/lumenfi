@@ -331,6 +331,46 @@
     "reportsDesc": "สรุปรายเดือน/ปี"
   },
 
+  "Investments": {
+    "title": "การลงทุน",
+    "subtitle": "ติดตามพอร์ตการลงทุนของคุณ",
+    "addInvestment": "เพิ่มการลงทุน",
+    "addTitle": "เพิ่มการลงทุนใหม่",
+    "addSubtitle": "บันทึกการลงทุนเพื่อติดตามมูลค่าและกำไร-ขาดทุน",
+    "noInvestments": "ยังไม่มีการลงทุน",
+    "noInvestmentsHint": "เริ่มต้นโดยการเพิ่มหุ้น กองทุน หรือคริปโตที่คุณถือ",
+    "totalValue": "มูลค่ารวม",
+    "totalCost": "ทุนรวม",
+    "totalPL": "กำไร/ขาดทุน",
+    "allocation": "Asset Allocation",
+    "form": {
+      "name": "ชื่อ/Symbol",
+      "namePlaceholder": "เช่น AAPL, KBANK, BTC",
+      "type": "ประเภท",
+      "broker": "ผู้ให้บริการ",
+      "brokerPlaceholder": "เช่น Bualuang, Settrade, Binance",
+      "quantity": "จำนวน",
+      "avgCost": "ราคาทุนเฉลี่ย",
+      "currentPrice": "ราคาปัจจุบัน",
+      "currency": "สกุลเงิน",
+      "submit": "บันทึก"
+    },
+    "types": {
+      "thai_stock": "หุ้นไทย",
+      "foreign_stock": "หุ้นต่างประเทศ",
+      "mutual_fund": "กองทุนรวม",
+      "etf": "ETF",
+      "crypto": "คริปโต",
+      "gold": "ทองคำ",
+      "reit": "REIT",
+      "property": "อสังหา",
+      "bond": "พันธบัตร",
+      "fixed_deposit": "เงินฝากประจำ",
+      "lottery_savings": "สลากออมสิน",
+      "other": "อื่นๆ"
+    }
+  },
+
   "AI": {
     "title": "AI Advisor",
     "subtitle": "ที่ปรึกษาการเงินส่วนตัว",

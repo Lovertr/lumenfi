@@ -47,7 +47,7 @@ export default async function DebtsPage({ params }: { params: Promise<{ locale: 
   const totalMonthly = debts.reduce((s, d) => s + Number(d.monthly_payment ?? 0), 0);
 
   return (
-    <div className="space-y-4 p-4 pt-6">
+    <div className="mx-auto max-w-5xl space-y-4 p-4 pt-6 lg:pt-10">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button asChild size="icon" variant="ghost" className="h-9 w-9 -ml-2">
@@ -102,7 +102,7 @@ export default async function DebtsPage({ params }: { params: Promise<{ locale: 
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="grid gap-2 lg:grid-cols-2 lg:gap-3">
           {debts.map((debt) => {
             const cfg = debtTypeConfig[debt.type];
             const Icon = cfg.icon;
@@ -143,7 +143,7 @@ export default async function DebtsPage({ params }: { params: Promise<{ locale: 
               </Card>
             );
           })}
-          <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)]">
+          <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)] lg:bottom-8 lg:right-8">
             <Link href="/debts/new">
               <Plus className="h-5 w-5" />
               {t('addDebt')}

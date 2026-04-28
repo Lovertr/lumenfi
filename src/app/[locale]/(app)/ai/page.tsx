@@ -2,10 +2,10 @@ import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Brain, Lock, Settings as SettingsIcon } from 'lucide-react';
-import { SuggestedPrompts } from '@/components/ai/suggested-prompts';
+import { ArrowLeft, Brain, Settings as SettingsIcon } from 'lucide-react';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
+import { ChatUI } from '@/components/ai/chat-ui';
 import { createClient } from '@/lib/supabase/server';
 
 async function getAIConfig() {
@@ -32,7 +32,7 @@ export default async function AIPage({ params }: { params: Promise<{ locale: str
   const config = await getAIConfig();
 
   return (
-    <div className="space-y-4 p-4 pt-6">
+    <div className="mx-auto max-w-3xl space-y-3 p-4 pt-6 lg:pt-10">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button asChild size="icon" variant="ghost" className="h-9 w-9 -ml-2">
@@ -46,6 +46,13 @@ export default async function AIPage({ params }: { params: Promise<{ locale: str
           </div>
         </div>
         <div className="flex items-center gap-1">
+          {config?.hasKey && (
+            <Button asChild size="icon" variant="ghost" className="h-9 w-9">
+              <Link href="/ai/settings" aria-label="Settings">
+                <SettingsIcon className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
           <LanguageSwitcher />
           <LogoutButton />
         </div>
@@ -68,40 +75,7 @@ export default async function AIPage({ params }: { params: Promise<{ locale: str
           </CardContent>
         </Card>
       ) : (
-        <>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-success/15 text-success">
-                  <Brain className="h-5 w-5" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold">{t('settings.providers.' + config.provider)}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {config.privacyMode && <Lock className="inline h-3 w-3 mr-1" />}
-                    {config.privacyMode ? t('settings.privacyMode') : 'Direct'}
-                  </p>
-                </div>
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/ai/settings">
-                    <SettingsIcon className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Suggested prompts */}
-          <SuggestedPrompts />
-
-          <Card className="border-dashed">
-            <CardContent className="p-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Chat UI กำลังพัฒนา — Phase 7 (จะ build ในเซสชันถัดไป)
-              </p>
-            </CardContent>
-          </Card>
-        </>
+        <ChatUI />
       )}
     </div>
   );

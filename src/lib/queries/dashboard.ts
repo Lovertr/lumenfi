@@ -45,7 +45,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     start.setDate(1);
     start.setHours(0, 0, 0, 0);
 
-    const [accountsRes, debtsRes, txRes, goalsRes] = await Promise.all([
+    const [accountsRes, debtsRes, txRes, goalsRes, investmentsRes] = await Promise.all([
       supabase
         .from('accounts')
         .select('type, initial_balance, include_in_net_worth')
@@ -59,6 +59,10 @@ export async function getDashboardData(): Promise<DashboardData> {
         .select('type, amount, category:categories(name, icon, color)')
         .gte('date', start.toISOString()),
       supabase.from('goals').select('id, current_amount, is_emergency_fund').eq('status', 'active'),
+      supabase
+        .from('investments')
+        .select('quantity, avg_cost, current_price')
+        .eq('archived', false),
     ]);
 
     // Assets / Liabilities from accounts
@@ -81,6 +85,15 @@ export async function getDashboardData(): Promise<DashboardData> {
       totalDebt += Number(d.current_balance);
       totalMonthlyDebt += Number(d.monthly_payment ?? 0);
     }
+    // Investments → assets
+    let totalInvestments = 0;
+    for (const inv of (investmentsRes.data ?? []) as any[]) {
+      const qty = Number(inv.quantity);
+      const price = inv.current_price ? Number(inv.current_price) : Number(inv.avg_cost);
+      totalInvestments += qty * price;
+    }
+    totalAssets += totalInvestments;
+
     const totalLiabilities = totalLiabilitiesAcc + totalDebt;
     const netWorth = totalAssets - totalLiabilities;
 

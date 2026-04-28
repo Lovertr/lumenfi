@@ -55,7 +55,7 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
     .reduce((sum, a) => sum + Number(a.initial_balance), 0);
 
   return (
-    <div className="space-y-4 p-4 pt-6">
+    <div className="mx-auto max-w-5xl space-y-4 p-4 pt-6 lg:pt-10">
       {/* Header */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="grid gap-2 lg:grid-cols-2 lg:gap-3">
           {accounts.map((account) => {
             const cfg = accountTypeConfig[account.type];
             const Icon = cfg.icon;
@@ -146,7 +146,7 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
 
       {/* Floating Add Button — when there are accounts */}
       {accounts.length > 0 && (
-        <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)]">
+        <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)] lg:bottom-8 lg:right-8">
           <Link href="/accounts/new">
             <Plus className="h-5 w-5" />
             {t('addAccount')}

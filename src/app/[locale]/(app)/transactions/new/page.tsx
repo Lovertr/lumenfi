@@ -25,7 +25,7 @@ export default async function NewTransactionPage({ params }: { params: Promise<{
   const [accounts, categories] = await Promise.all([getAccounts(), getCategories()]);
 
   return (
-    <div className="space-y-4 p-4 pt-6">
+    <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6 lg:pt-10">
       <header className="flex items-center gap-2">
         <Button asChild size="icon" variant="ghost" className="h-9 w-9 -ml-2">
           <Link href="/transactions">
