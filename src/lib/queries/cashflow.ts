@@ -189,20 +189,23 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
     const projectedNet30 = avgMonthlyNet;
 
     // Status
+    // Status: prioritize Net (the real direction your finances go)
+    // Runway becomes a flag only if Net is non-positive
     let status: 'healthy' | 'tight' | 'critical' = 'healthy';
     let statusReason = '';
-    if (monthsOfRunway < 1) {
+    if (avgMonthlyNet < 0 && monthsOfRunway < 3) {
       status = 'critical';
-      statusReason = 'เงินสดน้อยกว่ารายจ่าย 1 เดือน — ความเสี่ยงสูง';
-    } else if (monthsOfRunway < 3) {
-      status = 'tight';
-      statusReason = 'เงินสดเหลือน้อยกว่า 3 เดือน — ควรเพิ่ม emergency fund';
+      statusReason = 'รายจ่ายมากกว่ารายรับ + เงินสดสำรอง < 3 เดือน — ความเสี่ยงสูง';
     } else if (avgMonthlyNet < 0) {
       status = 'tight';
-      statusReason = 'รายจ่ายเฉลี่ยมากกว่ารายรับ — กำลังกินทุน';
-    } else if (projectedNet30 < 0) {
+      statusReason = 'กำลังใช้จ่ายมากกว่าหา — กินทุนทุกเดือน';
+    } else if (monthsOfRunway < 3 && avgMonthlyNet < avgMonthlyExpense * 0.2) {
+      // Positive Net but very thin + small cash buffer
       status = 'tight';
-      statusReason = '30 วันข้างหน้าอาจติดลบ — มีค่าใช้จ่ายประจำสูง';
+      statusReason = 'Net เป็นบวกแต่ buffer น้อย — ควรเพิ่มเงินสดสำรองให้ครอบ 3 เดือน';
+    } else if (avgMonthlyNet > 0 && monthsOfRunway < 3) {
+      status = 'tight';
+      statusReason = 'รายได้ดีแต่เงินสดสำรองน้อย — แนะนำกันเงินไว้ฉุกเฉิน 3-6 เดือน';
     } else {
       statusReason = 'Cash flow แข็งแรง รักษาระดับนี้ไว้';
     }

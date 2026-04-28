@@ -69,7 +69,7 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
           <p className="mt-1 text-3xl font-bold lg:text-4xl">{formatTHB(cf.totalCashOnHand)}</p>
           <div className="mt-4 grid grid-cols-2 gap-3 text-xs lg:gap-6 lg:text-sm">
             <div>
-              <p className="opacity-70">{isTh ? 'จะใช้ได้อีก' : 'Runway'}</p>
+              <p className="opacity-70">{isTh ? 'Runway (ถ้ารายได้หยุด)' : 'Runway (if income stops)'}</p>
               <p className="mt-0.5 text-lg font-semibold lg:text-2xl">
                 {cf.monthsOfRunway >= 99 ? '∞' : cf.monthsOfRunway.toFixed(1)} {isTh ? 'เดือน' : 'months'}
               </p>
@@ -143,20 +143,63 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
             <Calendar className="h-4 w-4" />
             {isTh ? 'คาดการณ์ 30 วันข้างหน้า' : 'Next 30 days projection'}
           </h2>
-          <div className="space-y-2.5 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{isTh ? 'รายรับประจำที่คาดว่าจะได้' : 'Expected fixed income'}</span>
-              <span className="font-semibold text-success">+{formatTHB(cf.upcomingFixedIncome + cf.avgMonthlyIncome - (cf.last30.income > 0 ? 0 : 0))}</span>
+          <div className="space-y-3 text-sm">
+            {/* Section 1: From actual averages */}
+            <div className="space-y-1.5 rounded-lg border bg-muted/20 p-2.5">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {isTh ? 'A. ค่าเฉลี่ยจริง (จากธุรกรรม)' : 'A. From actual averages'}
+              </p>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{isTh ? 'รายรับเฉลี่ย/เดือน' : 'Avg monthly income'}</span>
+                <span className="text-success font-medium">+{formatTHB(cf.avgMonthlyIncome)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{isTh ? 'รายจ่ายเฉลี่ย/เดือน' : 'Avg monthly expense'}</span>
+                <span className="text-destructive font-medium">-{formatTHB(cf.avgMonthlyExpense)}</span>
+              </div>
+              <div className="flex justify-between border-t pt-1.5">
+                <span className="font-semibold">{isTh ? 'สุทธิเฉลี่ย' : 'Avg net'}</span>
+                <span className={`font-bold ${cf.avgMonthlyNet >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  {cf.avgMonthlyNet >= 0 ? '+' : ''}{formatTHB(cf.avgMonthlyNet)}
+                </span>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{isTh ? 'รายจ่ายประจำ + ค่างวดหนี้' : 'Fixed expense + debt payments'}</span>
-              <span className="font-semibold text-destructive">-{formatTHB(cf.upcomingFixedExpense + cf.avgMonthlyExpense)}</span>
-            </div>
-            <div className="border-t pt-2.5 flex justify-between">
-              <span className="font-semibold">{isTh ? 'คาดว่าจะเหลือสุทธิ' : 'Projected net'}</span>
+
+            {/* Section 2: From recurring/fixed rules — only show if user has any */}
+            {(cf.upcomingFixedIncome > 0 || cf.upcomingFixedExpense > 0) && (
+              <div className="space-y-1.5 rounded-lg border bg-muted/20 p-2.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {isTh ? 'B. รายการประจำที่ตั้งไว้ (Recurring + ค่างวดหนี้)' : 'B. Scheduled recurring + debt'}
+                </p>
+                {cf.upcomingFixedIncome > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{isTh ? 'รายรับประจำ' : 'Recurring income'}</span>
+                    <span className="text-success font-medium">+{formatTHB(cf.upcomingFixedIncome)}</span>
+                  </div>
+                )}
+                {cf.upcomingFixedExpense > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{isTh ? 'รายจ่ายประจำ + หนี้' : 'Recurring expense + debt'}</span>
+                    <span className="text-destructive font-medium">-{formatTHB(cf.upcomingFixedExpense)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t pt-1.5">
+                  <span className="font-semibold">{isTh ? 'สุทธิตามที่ตั้ง' : 'Net per rules'}</span>
+                  <span className={`font-bold ${(cf.upcomingFixedIncome - cf.upcomingFixedExpense) >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {(cf.upcomingFixedIncome - cf.upcomingFixedExpense) >= 0 ? '+' : ''}{formatTHB(cf.upcomingFixedIncome - cf.upcomingFixedExpense)}
+                  </span>
+                </div>
+                <p className="text-[10px] italic text-muted-foreground">
+                  {isTh ? 'หมายเหตุ: B อาจซ้อนกับ A หากธุรกรรมจริงในอดีตมาจากรายการประจำเดียวกัน' : 'Note: B may overlap with A if past actuals came from these same recurring rules'}
+                </p>
+              </div>
+            )}
+
+            {/* Final projection — use A as the realistic estimate */}
+            <div className="flex justify-between rounded-lg border-2 border-primary/30 bg-primary/5 p-2.5">
+              <span className="font-semibold">{isTh ? 'คาดสุทธิ 30 วันข้างหน้า' : 'Projected net (30 days)'}</span>
               <span className={`font-bold text-lg ${cf.projectedNet30 >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {cf.projectedNet30 >= 0 ? '+' : ''}
-                {formatTHB(cf.projectedNet30)}
+                {cf.projectedNet30 >= 0 ? '+' : ''}{formatTHB(cf.projectedNet30)}
               </span>
             </div>
           </div>
