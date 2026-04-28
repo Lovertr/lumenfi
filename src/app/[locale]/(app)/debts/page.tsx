@@ -6,7 +6,8 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { formatTHB } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/server';
-import { Plus, CreditCard, ArrowLeft, Trash2 } from 'lucide-react';
+import { Plus, CreditCard, ArrowLeft, Trash2, Target as TargetIcon, Mountain, Snowflake } from 'lucide-react';
+import { Link as IntlLink } from '@/i18n/routing';
 import { debtTypeConfig, type DebtType } from '@/components/debts/debt-type-config';
 import { deleteDebt } from './actions';
 
@@ -36,13 +37,35 @@ async function getDebts(): Promise<Debt[]> {
   }
 }
 
+interface ActivePlan {
+  id: string;
+  strategy: 'avalanche' | 'snowball';
+  extra_per_month: number;
+  total_months: number | null;
+  total_interest: number | null;
+  payoff_order: { debt_id?: string; name: string; month: number }[] | null;
+}
+
+async function getActivePlan(): Promise<ActivePlan | null> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data } = await supabase
+    .from('debt_plans')
+    .select('id, strategy, extra_per_month, total_months, total_interest, payoff_order')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .maybeSingle();
+  return data as any;
+}
+
 export default async function DebtsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('Debts');
   const tType = await getTranslations('Debts.types');
 
-  const debts = await getDebts();
+  const [debts, activePlan] = await Promise.all([getDebts(), getActivePlan()]);
   const totalDebt = debts.reduce((s, d) => s + Number(d.current_balance), 0);
   const totalMonthly = debts.reduce((s, d) => s + Number(d.monthly_payment ?? 0), 0);
 
@@ -91,6 +114,36 @@ export default async function DebtsPage({ params }: { params: Promise<{ locale: 
         </div>
       )}
 
+      {/* Active plan banner */}
+      {activePlan && debts.length > 0 && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-3">
+            <div className="flex items-start gap-2">
+              {activePlan.strategy === 'avalanche'
+                ? <Mountain className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                : <Snowflake className="mt-0.5 h-4 w-4 shrink-0 text-cyan-600" />}
+              <div className="flex-1 text-xs">
+                <p className="font-semibold">
+                  {locale === 'th' ? 'แผนชำระหนี้ที่เปิดใช้งาน' : 'Active payoff plan'}: {activePlan.strategy === 'avalanche' ? (locale === 'th' ? 'Avalanche (ดอกสูงก่อน)' : 'Avalanche (highest rate first)') : (locale === 'th' ? 'Snowball (ก้อนเล็กก่อน)' : 'Snowball (smallest first)')}
+                </p>
+                <p className="mt-0.5 text-muted-foreground">
+                  {locale === 'th' ? 'จ่ายเพิ่ม' : 'Extra'}: ฿{Number(activePlan.extra_per_month).toLocaleString()}/{locale === 'th' ? 'เดือน' : 'mo'}
+                  {activePlan.total_months && (
+                    <> · {locale === 'th' ? 'จบใน' : 'finishes in'} {Math.floor(activePlan.total_months / 12)}{locale === 'th' ? 'ปี' : 'y'} {activePlan.total_months % 12}{locale === 'th' ? 'เดือน' : 'mo'}</>
+                  )}
+                  {activePlan.total_interest != null && (
+                    <> · {locale === 'th' ? 'ดอกรวม' : 'Total interest'} ฿{Number(activePlan.total_interest).toLocaleString()}</>
+                  )}
+                </p>
+              </div>
+              <IntlLink href="/tools/debt" className="shrink-0 rounded-md border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted">
+                {locale === 'th' ? 'ดูแผน' : 'View'}
+              </IntlLink>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {debts.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center p-10 text-center">
@@ -110,6 +163,8 @@ export default async function DebtsPage({ params }: { params: Promise<{ locale: 
       ) : (
         <div className="grid gap-2 lg:grid-cols-2 lg:gap-3">
           {debts.map((debt) => {
+            const planIdx = activePlan?.payoff_order?.findIndex((p) => p.debt_id === debt.id) ?? -1;
+            const planMonth = planIdx >= 0 ? activePlan!.payoff_order![planIdx].month : null;
             const cfg = debtTypeConfig[debt.type];
             const Icon = cfg.icon;
             return (

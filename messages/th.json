@@ -571,7 +571,17 @@
     "order": "ลำดับการปลดหนี้",
     "paidOffIn": "ปลดในเดือน {months}",
     "comparison": "เปรียบเทียบ",
-    "avalancheSaves": "ใช้ Avalanche → ประหยัดดอกเบี้ย {amount} และจบเร็วขึ้น {months} เดือน"
+    "avalancheSaves": "ใช้ Avalanche → ประหยัดดอกเบี้ย {amount} และจบเร็วขึ้น {months} เดือน",
+    "payExtraTo": "จ่ายเงินเพิ่มที่ก้อนนี้ก่อน",
+    "focusUntil": "จนถึงเดือนที่ {month} (ปลดก้อนนี้แล้ว)",
+    "extraSchedule": "ลำดับการโจมตี (เงินเพิ่มไปทางไหน)",
+    "monthRange": "เดือนที่ {from}-{to}",
+    "alternative": "อีกทางเลือก",
+    "savePlan": "ยืนยันแผนนี้",
+    "planSaved": "✓ บันทึกแผนแล้ว",
+    "activePlan": "แผนที่ใช้งานอยู่",
+    "clearPlan": "ยกเลิก",
+    "autoLoadedFromDebts": "ดึงหนี้จากระบบให้แล้ว {count} ก้อน — แก้ตัวเลขได้ถ้าต้องการ"
   },
   "Scan": {
     "title": "สแกนใบเสร็จด้วย AI",

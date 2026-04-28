@@ -571,7 +571,17 @@
     "order": "Payoff Order",
     "paidOffIn": "paid off in month {months}",
     "comparison": "Comparison",
-    "avalancheSaves": "Avalanche saves {amount} interest and finishes {months} months earlier"
+    "avalancheSaves": "Avalanche saves {amount} interest and finishes {months} months earlier",
+    "payExtraTo": "Apply extra to this debt FIRST",
+    "focusUntil": "Until month {month} (this debt cleared)",
+    "extraSchedule": "Attack order (where extra goes)",
+    "monthRange": "months {from}-{to}",
+    "alternative": "Alternative",
+    "savePlan": "Activate this plan",
+    "planSaved": "✓ Plan saved",
+    "activePlan": "Active plan",
+    "clearPlan": "Clear",
+    "autoLoadedFromDebts": "Auto-loaded {count} debts from your records — edit if needed"
   },
   "Scan": {
     "title": "Scan Receipt with AI",
