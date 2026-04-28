@@ -64,14 +64,13 @@ export async function createAccount(_prev: unknown, formData: FormData) {
   redirect('/accounts');
 }
 
-export async function deleteAccount(formData: FormData) {
-  const id = formData.get('id') as string;
-  if (!id) return;
+const updateSchema = z.object({
+  name: z.string().min(1).max(100),
+  type: z.enum(['cash', 'bank', 'credit_card', 'e_wallet', 'savings', 'other']),
+  initial_balance: z.number(),
+  color: z.string().default('#3B82F6'),
+  credit_limit: z.number().nullable().optional(),
+  include_in_net_worth: z.boolean().default(true),
+});
 
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
-
-  await supabase.from('accounts').update({ archived: true }).eq('id', id).eq('user_id', user.id);
-  revalidatePath('/accounts');
-}
+export async function updateAccount(_prev: unknown, for

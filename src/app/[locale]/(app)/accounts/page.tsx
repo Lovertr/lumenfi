@@ -114,31 +114,33 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
             const Icon = cfg.icon;
             const isLiability = cfg.isLiability;
             return (
-              <Card key={account.id} className="transition-all active:scale-[0.99]">
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${cfg.bg} ${cfg.color}`}
-                    style={account.color ? { backgroundColor: `${account.color}1A`, color: account.color } : undefined}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate font-semibold">{account.name}</p>
-                    <p className="text-xs text-muted-foreground">{tType(account.type)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-bold ${isLiability ? 'text-destructive' : ''}`}>
-                      {isLiability ? '-' : ''}
-                      {formatTHB(Number(account.initial_balance), { compact: true })}
-                    </p>
-                    {account.credit_limit && (
-                      <p className="text-xs text-muted-foreground">
-                        / {formatTHB(account.credit_limit, { compact: true })}
+              <Link key={account.id} href={`/accounts/${account.id}/edit`}>
+                <Card className="transition-all hover:border-primary/40 hover:shadow-sm active:scale-[0.99]">
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <div
+                      className={`flex h-11 w-11 items-center justify-center rounded-xl ${cfg.bg} ${cfg.color}`}
+                      style={account.color ? { backgroundColor: `${account.color}1A`, color: account.color } : undefined}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate font-semibold">{account.name}</p>
+                      <p className="text-xs text-muted-foreground">{tType(account.type)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-bold ${isLiability ? 'text-destructive' : ''}`}>
+                        {isLiability ? '-' : ''}
+                        {formatTHB(Number(account.initial_balance), { compact: true })}
                       </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                      {account.credit_limit && (
+                        <p className="text-xs text-muted-foreground">
+                          / {formatTHB(account.credit_limit, { compact: true })}
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
         </div>
@@ -147,12 +149,4 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
       {/* Floating Add Button — when there are accounts */}
       {accounts.length > 0 && (
         <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)] lg:bottom-8 lg:right-8">
-          <Link href="/accounts/new">
-            <Plus className="h-5 w-5" />
-            {t('addAccount')}
-          </Link>
-        </Button>
-      )}
-    </div>
-  );
-}
+ 
