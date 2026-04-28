@@ -6,8 +6,7 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { formatTHB } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/server';
-import { Plus, Target, ArrowLeft, Trash2 } from 'lucide-react';
-import { deleteGoal } from './actions';
+import { Plus, Target, ArrowLeft, Pencil } from 'lucide-react';
 
 interface Goal {
   id: string;
@@ -52,7 +51,7 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
 
   return (
     <div className="mx-auto max-w-5xl space-y-4 p-4 pt-6 lg:pt-10">
-      <header className="flex items-center justify-between">
+      <header className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Button asChild size="icon" variant="ghost" className="h-9 w-9 -ml-2">
             <Link href="/dashboard">
@@ -65,6 +64,12 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <Button asChild size="sm">
+            <Link href="/goals/new">
+              <Plus className="mr-1 h-4 w-4" />
+              {t('addGoal')}
+            </Link>
+          </Button>
           <LanguageSwitcher />
           <LogoutButton />
         </div>
@@ -80,7 +85,7 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
             <p className="mt-1 text-sm text-muted-foreground">{t('noGoalsHint')}</p>
             <Button asChild className="mt-4">
               <Link href="/goals/new">
-                <Plus className="h-4 w-4" />
+                <Plus className="mr-1 h-4 w-4" />
                 {t('addGoal')}
               </Link>
             </Button>
@@ -98,66 +103,56 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
             const achieved = current >= target;
 
             return (
-              <Card key={goal.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-2xl"
-                      style={{ backgroundColor: `${goal.color}1A` }}
-                    >
-                      {goal.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-semibold truncate">{goal.name}</p>
-                        <form action={deleteGoal}>
-                          <input type="hidden" name="id" value={goal.id} />
-                          <button
-                            type="submit"
-                            className="text-muted-foreground hover:text-destructive"
-                            aria-label="Delete"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </form>
+              <Link key={goal.id} href={`/goals/${goal.id}/edit`}>
+                <Card className="transition-all hover:border-primary/40 hover:shadow-sm active:scale-[0.99]">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-2xl"
+                        style={{ backgroundColor: `${goal.color}1A` }}
+                      >
+                        {goal.icon}
                       </div>
-                      <div className="mt-2 flex items-baseline justify-between text-sm">
-                        <span className="font-bold">{formatTHB(current, { compact: true })}</span>
-                        <span className="text-xs text-muted-foreground">
-                          / {formatTHB(target, { compact: true })}
-                        </span>
-                      </div>
-                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{ width: `${percent}%`, backgroundColor: goal.color }}
-                        />
-                      </div>
-                      <div className="mt-2 flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">{percent.toFixed(0)}%</span>
-                        {achieved ? (
-                          <span className="font-medium text-success">✓ {t('achieved')}</span>
-                        ) : monthlyRequired ? (
-                          <span className="text-muted-foreground">
-                            {t('monthlyRequired')}: {formatTHB(monthlyRequired, { compact: true })}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="font-semibold truncate">{goal.name}</p>
+                          <Pencil className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        </div>
+                        <div className="mt-2 flex items-baseline justify-between text-sm">
+                          <span className="font-bold">{formatTHB(current, { compact: true })}</span>
+                          <span className="text-xs text-muted-foreground">
+                            / {formatTHB(target, { compact: true })}
                           </span>
-                        ) : null}
+                        </div>
+                        <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{ width: `${percent}%`, backgroundColor: goal.color }}
+                          />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">{percent.toFixed(0)}%</span>
+                          {achieved ? (
+                            <span className="font-medium text-success">✓ {t('achieved')}</span>
+                          ) : monthlyRequired ? (
+                            <span className="text-muted-foreground">
+                              {t('monthlyRequired')}: {formatTHB(monthlyRequired, { compact: true })}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
-
-          <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)] lg:bottom-8 lg:right-8">
-            <Link href="/goals/new">
-              <Plus className="h-5 w-5" />
-              {t('addGoal')}
-            </Link>
-          </Button>
         </div>
       )}
+
+      <p className="rounded-lg border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
+        💡 {t('manageHint')}
+      </p>
     </div>
   );
 }

@@ -291,7 +291,9 @@
       "deadline": "Target date",
       "isEmergencyFund": "This is my emergency fund",
       "color": "Color",
-      "submit": "Save"
+      "submit": "Save",
+      "save": "Save",
+      "delete": "Delete this goal"
     },
     "presets": {
       "emergency": "Emergency Fund",
@@ -303,7 +305,9 @@
       "wedding": "Wedding",
       "business": "Start a Business",
       "custom": "Custom"
-    }
+    },
+    "editTitle": "Edit Goal",
+    "manageHint": "Tap a goal to edit, adjust current amount, or delete — you can also link transactions to goals in the add transaction page"
   },
   "Debts": {
     "title": "Debts",
