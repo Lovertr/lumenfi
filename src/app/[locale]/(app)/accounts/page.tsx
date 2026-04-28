@@ -3,6 +3,7 @@ import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LogoutButton } from '@/components/auth/logout-button';
+import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { createClient } from '@/lib/supabase/server';
 import { formatTHB } from '@/lib/utils';
 import { accountTypeConfig, type AccountType } from '@/components/accounts/account-type-config';
@@ -56,7 +57,6 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
 
   return (
     <div className="mx-auto max-w-5xl space-y-4 p-4 pt-6 lg:pt-10">
-      {/* Header */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button asChild size="icon" variant="ghost" className="h-9 w-9 -ml-2">
@@ -69,15 +69,25 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
             <p className="text-xs text-muted-foreground">{t('subtitle')}</p>
           </div>
         </div>
-        <LogoutButton />
+        <div className="flex items-center gap-1">
+          <Button asChild size="sm" className="hidden lg:inline-flex">
+            <Link href="/accounts/new">
+              <Plus className="h-4 w-4" />
+              {t('addAccount')}
+            </Link>
+          </Button>
+          <LanguageSwitcher />
+          <LogoutButton />
+        </div>
       </header>
 
-      {/* Totals */}
       <div className="grid grid-cols-2 gap-3">
         <Card>
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">{t('totalAssets')}</p>
-            <p className="mt-1 text-lg font-bold text-success">{formatTHB(totalAssets, { compact: true })}</p>
+            <p className="mt-1 text-lg font-bold text-success">
+              {formatTHB(totalAssets, { compact: true })}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -90,7 +100,6 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
         </Card>
       </div>
 
-      {/* Accounts List */}
       {accounts.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center p-10 text-center">
@@ -146,7 +155,18 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
         </div>
       )}
 
-      {/* Floating Add Button — when there are accounts */}
       {accounts.length > 0 && (
-        <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)] lg:bottom-8 lg:right-8">
- 
+        <Button
+          asChild
+          size="lg"
+          className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)] lg:hidden"
+        >
+          <Link href="/accounts/new">
+            <Plus className="h-5 w-5" />
+            {t('addAccount')}
+          </Link>
+        </Button>
+      )}
+    </div>
+  );
+}
