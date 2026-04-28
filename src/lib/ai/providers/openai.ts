@@ -20,7 +20,7 @@ export async function openaiChat(
     body: JSON.stringify({
       model: 'gpt-4o-mini',
       messages: allMessages,
-      max_tokens: 1024,
+      max_tokens: 4096,
     }),
   });
 
