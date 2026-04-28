@@ -33,7 +33,7 @@ async function getRecurring() {
     .from('recurring_transactions')
     .select(`
       id, type, amount, day_of_month, is_active, last_run_on, note,
-      account:accounts(name, color),
+      account:accounts!recurring_transactions_account_id_fkey(name, color),
       category:categories(name, icon, color),
       goal:goals(name, icon)
     `)
