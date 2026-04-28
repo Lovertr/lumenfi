@@ -6,6 +6,7 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { formatTHB } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/server';
+import { getAccountBalanceMap } from '@/lib/queries/balances';
 import { Plus, Target, ArrowLeft, Pencil } from 'lucide-react';
 import { QuickContribute } from '@/components/goals/quick-contribute';
 
@@ -38,16 +39,7 @@ async function getGoals(): Promise<Goal[]> {
 
 async function getAccountBalances(): Promise<Record<string, number>> {
   try {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from('accounts')
-      .select('id, initial_balance')
-      .eq('archived', false);
-    const map: Record<string, number> = {};
-    (data ?? []).forEach((a: any) => {
-      map[a.id] = Number(a.initial_balance ?? 0);
-    });
-    return map;
+    return await getAccountBalanceMap();
   } catch {
     return {};
   }

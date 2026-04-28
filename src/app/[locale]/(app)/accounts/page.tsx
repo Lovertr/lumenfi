@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { createClient } from '@/lib/supabase/server';
+import { getAccountBalanceMap } from '@/lib/queries/balances';
 import { formatTHB } from '@/lib/utils';
 import { accountTypeConfig, type AccountType } from '@/components/accounts/account-type-config';
 import { Plus, Wallet, ArrowLeft } from 'lucide-react';
@@ -45,15 +46,16 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
   const t = await getTranslations('Accounts');
   const tType = await getTranslations('Accounts.types');
 
-  const accounts = await getAccounts();
+  const [accounts, balances] = await Promise.all([getAccounts(), getAccountBalanceMap()]);
+  const balOf = (id: string) => balances[id] ?? 0;
 
   const totalAssets = accounts
     .filter((a) => !accountTypeConfig[a.type].isLiability && a.include_in_net_worth)
-    .reduce((sum, a) => sum + Number(a.initial_balance), 0);
+    .reduce((sum, a) => sum + balOf(a.id), 0);
 
   const totalLiabilities = accounts
     .filter((a) => accountTypeConfig[a.type].isLiability && a.include_in_net_worth)
-    .reduce((sum, a) => sum + Number(a.initial_balance), 0);
+    .reduce((sum, a) => sum + balOf(a.id), 0);
 
   return (
     <div className="mx-auto max-w-5xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -139,7 +141,7 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
                     <div className="text-right">
                       <p className={`font-bold ${isLiability ? 'text-destructive' : ''}`}>
                         {isLiability ? '-' : ''}
-                        {formatTHB(Number(account.initial_balance))}
+                        {formatTHB(balOf(account.id))}
                       </p>
                       {account.credit_limit && (
                         <p className="text-xs text-muted-foreground">

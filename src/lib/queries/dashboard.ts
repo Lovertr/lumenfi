@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { computeAccountBalances } from './balances';
 import { calculateHealthScore } from '@/lib/utils';
 
 export interface DashboardData {
@@ -48,7 +49,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     const [accountsRes, debtsRes, txRes, goalsRes, investmentsRes] = await Promise.all([
       supabase
         .from('accounts')
-        .select('type, initial_balance, include_in_net_worth')
+        .select('id, type, initial_balance, include_in_net_worth, created_at')
         .eq('archived', false),
       supabase
         .from('debts')
@@ -56,8 +57,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         .eq('status', 'active'),
       supabase
         .from('transactions')
-        .select('type, amount, category:categories(name, icon, color)')
-        .gte('date', start.toISOString()),
+        .select('type, amount, date, account_id, to_account_id, category:categories(name, icon, color)'),
       supabase.from('goals').select('id, current_amount, is_emergency_fund').eq('status', 'active'),
       supabase
         .from('investments')
@@ -65,12 +65,19 @@ export async function getDashboardData(): Promise<DashboardData> {
         .eq('archived', false),
     ]);
 
-    // Assets / Liabilities from accounts
+    // Assets / Liabilities from accounts (computed from initial + transactions)
+    const allAccounts = ((accountsRes.data ?? []) as any[]);
+    const allTx = ((txRes.data ?? []) as any[]);
+    // Need full tx for balance compute (date, account_id, to_account_id)
+    const balanceMap = computeAccountBalances(
+      allAccounts.map((a: any) => ({ id: a.id, type: a.type, initial_balance: a.initial_balance, created_at: a.created_at })),
+      allTx
+    );
     let totalAssets = 0;
     let totalLiabilitiesAcc = 0;
-    for (const a of (accountsRes.data ?? []) as any[]) {
+    for (const a of allAccounts) {
       if (!a.include_in_net_worth) continue;
-      const bal = Number(a.initial_balance);
+      const bal = balanceMap[a.id] ?? 0;
       if (a.type === 'credit_card') {
         totalLiabilitiesAcc += bal;
       } else {
@@ -97,11 +104,13 @@ export async function getDashboardData(): Promise<DashboardData> {
     const totalLiabilities = totalLiabilitiesAcc + totalDebt;
     const netWorth = totalAssets - totalLiabilities;
 
-    // Month income / expense
+    // Month income / expense (filter by current month start)
+    const startStr = start.toISOString().slice(0, 10);
     let monthIncome = 0;
     let monthExpense = 0;
     const catMap = new Map<string, { name: string; icon: string; color: string; amount: number }>();
     for (const t of (txRes.data ?? []) as any[]) {
+      if ((t.date ?? '').slice(0, 10) < startStr) continue;
       const amt = Number(t.amount);
       if (t.type === 'income') monthIncome += amt;
       if (t.type === 'expense') {

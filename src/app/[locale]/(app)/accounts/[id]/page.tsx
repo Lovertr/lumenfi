@@ -5,6 +5,7 @@ import { ArrowLeft, Pencil, Plus, TrendingUp, TrendingDown, ArrowLeftRight } fro
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
+import { getAccountBalanceMap } from '@/lib/queries/balances';
 import { formatTHB } from '@/lib/utils';
 import { accountTypeConfig, type AccountType } from '@/components/accounts/account-type-config';
 import { AccountMovementFilters } from '@/components/accounts/account-movement-filters';
@@ -108,7 +109,7 @@ export default async function AccountDetailPage({
   const { period = 'this_month' } = await searchParams;
   setRequestLocale(locale);
 
-  const account = await getAccount(id);
+  const [account, balances] = await Promise.all([getAccount(id), getAccountBalanceMap()]);
   if (!account) notFound();
 
   const [t, tType, tForm, rows] = await Promise.all([
@@ -173,7 +174,7 @@ export default async function AccountDetailPage({
               {isLiability ? t('outstanding') : t('balance')}
             </p>
             <p className={`text-2xl font-bold ${isLiability ? 'text-destructive' : ''}`}>
-              {formatTHB(Number(account.initial_balance))}
+              {formatTHB(balances[id] ?? Number(account.initial_balance))}
             </p>
             {account.bank_name && (
               <p className="mt-0.5 text-xs text-muted-foreground">
