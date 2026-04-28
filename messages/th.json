@@ -475,5 +475,25 @@
     "edit": "แก้ไข",
     "typeLockHint": "ประเภทรายการล็อกไว้ (เปลี่ยนไม่ได้หลังสร้างแล้ว)",
     "createNewIfChange": "ถ้าต้องการเปลี่ยน ให้ลบและสร้างใหม่"
+  },
+  "Reports": {
+    "title": "รายงาน",
+    "subtitle": "สรุปรายเดือน + แยกหมวด + ส่งออก CSV",
+    "ytdIncome": "รายรับ 12 เดือน",
+    "ytdExpense": "รายจ่าย 12 เดือน",
+    "ytdNet": "สุทธิ 12 เดือน",
+    "savingsRate": "อัตราการออม",
+    "savingsRateHint": "สุทธิ ÷ รายรับ",
+    "avgPerMonth": "เดือน",
+    "last12Months": "12 เดือนที่ผ่านมา",
+    "monthlyTitle": "รายรับ-รายจ่ายรายเดือน",
+    "netTrend": "แนวโน้มสุทธิ",
+    "expenseByCategory": "รายจ่ายตามหมวด",
+    "incomeByCategory": "รายรับตามหมวด",
+    "thisMonth": "เดือนนี้",
+    "income": "รายรับ",
+    "expense": "รายจ่าย",
+    "net": "สุทธิ",
+    "noData": "ยังไม่มีข้อมูล"
   }
 }

@@ -475,5 +475,25 @@
     "edit": "Edit",
     "typeLockHint": "Transaction type is locked (cannot change after creation)",
     "createNewIfChange": "To change, delete and create a new one"
+  },
+  "Reports": {
+    "title": "Reports",
+    "subtitle": "Monthly summary + breakdown + CSV export",
+    "ytdIncome": "Income (12mo)",
+    "ytdExpense": "Expense (12mo)",
+    "ytdNet": "Net (12mo)",
+    "savingsRate": "Savings Rate",
+    "savingsRateHint": "Net ÷ Income",
+    "avgPerMonth": "mo",
+    "last12Months": "Last 12 months",
+    "monthlyTitle": "Monthly Income vs Expense",
+    "netTrend": "Net Trend",
+    "expenseByCategory": "Expense by Category",
+    "incomeByCategory": "Income by Category",
+    "thisMonth": "this month",
+    "income": "Income",
+    "expense": "Expense",
+    "net": "Net",
+    "noData": "No data"
   }
 }
