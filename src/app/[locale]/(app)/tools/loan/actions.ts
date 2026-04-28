@@ -3,7 +3,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { decrypt } from '@/lib/encryption';
 import { chat, type AIProvider } from '@/lib/ai';
-import { FINANCE_EXPERTISE_TH } from '@/lib/ai/prompts';
 
 interface ConsolidatedDebt {
   name: string;
@@ -84,7 +83,7 @@ export async function analyzeLoanFeasibility(ctx: LoanContext): Promise<{
 - กองทุนฉุกเฉิน 3-6 เดือน
 - เงินเหลือใช้หลังหนี้ ≥ 30% ของรายได้
 
-ตอบในรูปแบบตัวเลขสกุลบาท (฿) เท่านั้น\n\n${FINANCE_EXPERTISE_TH}`;
+ตอบในรูปแบบตัวเลขสกุลบาท (฿) เท่านั้น\n\n📝 ตอบสั้น กระชับ — แต่ละ section 3-5 bullets เน้นตัวเลขและ action`;
 
   const consolidationBlock = ctx.consolidation_mode && ctx.consolidated_debts && ctx.consolidated_debts.length > 0 ? `
 
