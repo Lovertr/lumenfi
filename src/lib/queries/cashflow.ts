@@ -37,6 +37,14 @@ export interface CashFlowAnalysis {
 
   // Time series for chart (last 30 days)
   daily: CashFlowDataPoint[];
+
+  // Audit/transparency
+  activeMonths: number;
+  debtMonthlyTotal: number;
+  recurringIncomeTotal: number;
+  recurringExpenseTotal: number;
+  recurringIncomeCount: number;
+  recurringExpenseCount: number;
 }
 
 function startOfDay(d: Date): Date {
@@ -53,6 +61,12 @@ function daysAgo(n: number): Date {
 
 export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
   const empty: CashFlowAnalysis = {
+    activeMonths: 0,
+    debtMonthlyTotal: 0,
+    recurringIncomeTotal: 0,
+    recurringExpenseTotal: 0,
+    recurringIncomeCount: 0,
+    recurringExpenseCount: 0,
     last30: { income: 0, expense: 0, net: 0 },
     last60: { income: 0, expense: 0, net: 0 },
     last90: { income: 0, expense: 0, net: 0 },
@@ -170,19 +184,28 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
     // Monthly burn = expenses (avg)
     const monthsOfRunway = avgMonthlyExpense > 0 ? totalCashOnHand / avgMonthlyExpense : 99;
 
-    // Upcoming fixed (next 30 days)
-    let upcomingFixedExpense = 0;
-    let upcomingFixedIncome = 0;
+    // Upcoming fixed (next 30 days) — track separately for audit
+    let debtMonthlyTotal = 0;
+    let recurringIncomeTotal = 0;
+    let recurringExpenseTotal = 0;
+    let recurringIncomeCount = 0;
+    let recurringExpenseCount = 0;
     for (const d of (debtsRes.data ?? []) as any[]) {
-      upcomingFixedExpense += Number(d.monthly_payment ?? 0);
+      debtMonthlyTotal += Number(d.monthly_payment ?? 0);
     }
     for (const r of (recurRes.data ?? []) as any[]) {
-      // recurring_transactions are always monthly (by design — day_of_month)
       const monthAmt = Number(r.amount);
-      if (r.type === 'income') upcomingFixedIncome += monthAmt;
-      if (r.type === 'expense') upcomingFixedExpense += monthAmt;
-      // 'transfer' type ignored for cashflow (zero-sum between user accounts)
+      if (r.type === 'income') {
+        recurringIncomeTotal += monthAmt;
+        recurringIncomeCount++;
+      } else if (r.type === 'expense') {
+        recurringExpenseTotal += monthAmt;
+        recurringExpenseCount++;
+      }
+      // 'transfer' ignored
     }
+    const upcomingFixedExpense = debtMonthlyTotal + recurringExpenseTotal;
+    const upcomingFixedIncome = recurringIncomeTotal;
 
     // Best projection = recent average net (already reflects all actual activity).
     // Recurring 'upcoming' shown separately for transparency, NOT double-counted.
@@ -239,6 +262,12 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
       status,
       statusReason,
       daily,
+      activeMonths: monthDivisor,
+      debtMonthlyTotal,
+      recurringIncomeTotal,
+      recurringExpenseTotal,
+      recurringIncomeCount,
+      recurringExpenseCount,
     };
   } catch (e) {
     console.warn('getCashFlowAnalysis:', e);

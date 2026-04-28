@@ -119,7 +119,7 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
               {formatTHB(cf.last60.net)}
             </p>
             <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
-              <p>{isTh ? 'เฉลี่ย/เดือน' : 'avg/mo'}: {formatTHB(cf.last60.net / 2)}</p>
+              <p>{isTh ? 'เฉลี่ย/เดือน' : 'avg/mo'}: {formatTHB(cf.last60.net / Math.min(2, Math.max(1, cf.activeMonths)))}</p>
             </div>
           </CardContent>
         </Card>
@@ -131,7 +131,7 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
               {formatTHB(cf.last90.net)}
             </p>
             <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
-              <p>{isTh ? 'เฉลี่ย/เดือน' : 'avg/mo'}: {formatTHB(cf.avgMonthlyNet)}</p>
+              <p>{isTh ? 'เฉลี่ย/เดือน' : 'avg/mo'}: {formatTHB(cf.last90.net / Math.max(1, cf.activeMonths))}</p>
             </div>
           </CardContent>
         </Card>
@@ -165,22 +165,34 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
               </div>
             </div>
 
-            {/* Section 2: From recurring/fixed rules — only show if user has any */}
+            {/* Section 2: From recurring/fixed rules — broken down per source */}
             {(cf.upcomingFixedIncome > 0 || cf.upcomingFixedExpense > 0) && (
               <div className="space-y-1.5 rounded-lg border bg-muted/20 p-2.5">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   {isTh ? 'B. รายการประจำที่ตั้งไว้ (Recurring + ค่างวดหนี้)' : 'B. Scheduled recurring + debt'}
                 </p>
-                {cf.upcomingFixedIncome > 0 && (
+                {cf.recurringIncomeTotal > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">{isTh ? 'รายรับประจำ' : 'Recurring income'}</span>
-                    <span className="text-success font-medium">+{formatTHB(cf.upcomingFixedIncome)}</span>
+                    <span className="text-muted-foreground">
+                      {isTh ? `รายรับประจำ (${cf.recurringIncomeCount} รายการ)` : `Recurring income (${cf.recurringIncomeCount})`}
+                    </span>
+                    <span className="text-success font-medium">+{formatTHB(cf.recurringIncomeTotal)}</span>
                   </div>
                 )}
-                {cf.upcomingFixedExpense > 0 && (
+                {cf.recurringExpenseTotal > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">{isTh ? 'รายจ่ายประจำ + หนี้' : 'Recurring expense + debt'}</span>
-                    <span className="text-destructive font-medium">-{formatTHB(cf.upcomingFixedExpense)}</span>
+                    <span className="text-muted-foreground">
+                      {isTh ? `รายจ่ายประจำ (${cf.recurringExpenseCount} รายการ)` : `Recurring expense (${cf.recurringExpenseCount})`}
+                    </span>
+                    <span className="text-destructive font-medium">-{formatTHB(cf.recurringExpenseTotal)}</span>
+                  </div>
+                )}
+                {cf.debtMonthlyTotal > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {isTh ? 'ค่างวดหนี้รวม' : 'Debt payments'}
+                    </span>
+                    <span className="text-destructive font-medium">-{formatTHB(cf.debtMonthlyTotal)}</span>
                   </div>
                 )}
                 <div className="flex justify-between border-t pt-1.5">
@@ -190,7 +202,7 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
                   </span>
                 </div>
                 <p className="text-[10px] italic text-muted-foreground">
-                  {isTh ? 'หมายเหตุ: B อาจซ้อนกับ A หากธุรกรรมจริงในอดีตมาจากรายการประจำเดียวกัน' : 'Note: B may overlap with A if past actuals came from these same recurring rules'}
+                  {isTh ? '⚠ หมายเหตุ: B อาจซ้อนกับ A เช่น หากตั้ง Recurring 15,000 แล้วยังบันทึกธุรกรรมจริงด้วยจะนับ 2 ครั้ง' : 'Note: B may overlap with A — e.g. if you set up a 15K recurring AND also log actual transactions, both will count'}
                 </p>
               </div>
             )}
