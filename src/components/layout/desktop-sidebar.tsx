@@ -46,13 +46,11 @@ export function DesktopSidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r bg-background lg:flex lg:flex-col">
-      {/* Logo */}
       <Link href="/dashboard" className="flex items-center gap-2 px-6 py-5 border-b">
         <LogoMark size={36} />
         <Wordmark className="text-xl" />
       </Link>
 
-      {/* Quick add CTA */}
       <div className="px-3 pt-4">
         <Link
           href="/transactions/new"
@@ -63,20 +61,30 @@ export function DesktopSidebar() {
         </Link>
       </div>
 
-      {/* Nav items */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
         {primary.map((item) => (
-          <NavLink key={item.href} {...item} active={pathname === item.href || pathname.startsWith(item.href + '/')} />
+          <NavLink
+            key={item.href}
+            href={item.href}
+            icon={item.icon}
+            label={item.label}
+            active={pathname === item.href || pathname.startsWith(item.href + '/')}
+          />
         ))}
 
         <div className="my-3 border-t" />
 
         {secondary.map((item) => (
-          <NavLink key={item.href} {...item} active={pathname === item.href} />
+          <NavLink
+            key={item.href}
+            href={item.href}
+            icon={item.icon}
+            label={item.label}
+            active={pathname === item.href}
+          />
         ))}
       </nav>
 
-      {/* Footer: language + logout */}
       <div className="space-y-2 border-t px-3 py-3">
         <LanguageSwitcher className="w-full justify-center" />
         <LogoutButton variant="ghost" showLabel />
@@ -105,3 +113,9 @@ function NavLink({
           ? 'bg-primary/10 text-primary'
           : 'text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
+    >
+      <Icon className="h-4 w-4" />
+      {label}
+    </Link>
+  );
+}
