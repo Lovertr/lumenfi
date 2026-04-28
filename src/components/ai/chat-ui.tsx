@@ -6,6 +6,7 @@ import { Send, Sparkles, AlertCircle, User, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { sendChatMessage } from '@/app/[locale]/(app)/ai/actions';
+import { renderMarkdown } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/lib/ai/types';
 
@@ -49,7 +50,6 @@ export function ChatUI() {
     setInput('');
     setPending(true);
 
-    // Build history (without pending placeholder)
     const history: ChatMessage[] = messages.map((m) => ({ role: m.role, content: m.content }));
     const result = await sendChatMessage(history, trimmed, locale);
 
@@ -70,7 +70,6 @@ export function ChatUI() {
 
   return (
     <div className="flex flex-col gap-3" style={{ minHeight: 'calc(100vh - 200px)' }}>
-      {/* Messages */}
       {messages.length === 0 ? (
         <Card>
           <CardContent className="p-4">
@@ -102,13 +101,12 @@ export function ChatUI() {
         </div>
       )}
 
-      {/* Input */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
           send(input);
         }}
-        className="sticky bottom-20 mt-auto"
+        className="sticky bottom-20 mt-auto lg:bottom-4"
       >
         <div className="flex items-end gap-2 rounded-2xl border bg-background p-2 shadow-sm">
           <textarea
@@ -157,7 +155,7 @@ function MessageBubble({ message }: { message: DisplayMessage }) {
       </div>
       <div
         className={cn(
-          'max-w-[85%] rounded-2xl px-4 py-2.5 text-sm',
+          'max-w-[88%] rounded-2xl px-4 py-2.5 text-sm',
           isUser
             ? 'rounded-tr-sm bg-primary text-primary-foreground'
             : message.error
@@ -179,8 +177,10 @@ function MessageBubble({ message }: { message: DisplayMessage }) {
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{message.content}</span>
           </div>
-        ) : (
+        ) : isUser ? (
           <div className="whitespace-pre-wrap leading-relaxed">{message.content}</div>
+        ) : (
+          <div className="leading-relaxed">{renderMarkdown(message.content)}</div>
         )}
       </div>
     </div>
