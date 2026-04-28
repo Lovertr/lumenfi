@@ -609,7 +609,12 @@
     "ctxBudgets": "Budgets",
     "items": "items",
     "categories": "categories",
-    "noEmergencyFund": "no emergency fund yet"
+    "noEmergencyFund": "no emergency fund yet",
+    "underwaterWarning": "Some debts cannot be paid off — minimum < monthly interest!",
+    "payIs": "Min payment",
+    "butInterest": "but interest is",
+    "shortfall": "shortfall",
+    "underwaterFix": "You must increase minimum payment OR set \"extra per month\" to cover the shortfall, otherwise principal will never decrease"
   },
   "Scan": {
     "title": "Scan Receipt with AI",

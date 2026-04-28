@@ -65,8 +65,10 @@ interface SimResult {
   months: number;
   totalInterest: number;
   payoffOrder: { name: string; month: number; debt_id: string }[];
-  // Phase = "during this month range, the extra is going to debt X"
   phases: { from: number; to: number; targetName: string; targetId: string }[];
+  isUnderwater: boolean; // true if any debt's min payment ≤ monthly interest
+  underwaterDebts: { id: string; name: string; rate: number; balance: number; minPayment: number; monthlyInterest: number; shortfall: number }[];
+  hitCap: boolean; // true if simulation hit 600-month cap (still has balance)
 }
 
 function simulate(
@@ -81,6 +83,12 @@ function simulate(
   const phases: { from: number; to: number; targetName: string; targetId: string }[] = [];
   let currentTargetId = '';
   let phaseStart = 1;
+
+  // Pre-flight: check if total monthly payment can cover total monthly interest
+  // (if the EXTRA is allocated to highest-interest debt, can it cover?)
+  const totalMonthlyInterest = initial.reduce((s, d) => s + (d.balance * d.rate / 100 / 12), 0);
+  const totalMonthlyPayment = initial.reduce((s, d) => s + d.minPayment, 0) + extraPerMonth;
+  const isOverallUnderwater = totalMonthlyPayment <= totalMonthlyInterest;
 
   while (debts.some((d) => !d.paidOff && d.balance > 0) && months < 600) {
     months++;
@@ -148,7 +156,31 @@ function simulate(
     });
   }
 
-  return { months, totalInterest, payoffOrder, phases };
+  // Detect per-debt underwater
+  const underwaterDebts = initial.map((d) => {
+    const monthlyInterest = (d.balance * d.rate) / 100 / 12;
+    return {
+      id: d.id,
+      name: d.name,
+      rate: d.rate,
+      balance: d.balance,
+      minPayment: d.minPayment,
+      monthlyInterest,
+      shortfall: Math.max(0, monthlyInterest - d.minPayment),
+    };
+  }).filter((d) => d.shortfall > 0);
+
+  const hitCap = months >= 600 && debts.some((d) => !d.paidOff && d.balance > 0);
+
+  return {
+    months,
+    totalInterest,
+    payoffOrder,
+    phases,
+    isUnderwater: isOverallUnderwater || underwaterDebts.length > 0,
+    underwaterDebts,
+    hitCap,
+  };
 }
 
 export function DebtCalculator({
@@ -515,7 +547,7 @@ export function DebtCalculator({
           size="lg"
           className="w-full"
           onClick={handleSave}
-          disabled={saved}
+          disabled={saved || chosen.hitCap}
         >
           <Save className="mr-2 h-4 w-4" />
           {saved ? t('planSaved') : t('savePlan')}
@@ -572,16 +604,40 @@ function ResultCard({
           </div>
         )}
 
+        {(data.hitCap || data.underwaterDebts.length > 0) && (
+          <div className="mb-3 rounded-lg border-2 border-red-300 bg-red-50 p-3 text-xs text-red-900">
+            <p className="flex items-center gap-1 font-bold">
+              ⚠️ {t('underwaterWarning')}
+            </p>
+            {data.underwaterDebts.length > 0 && (
+              <ul className="mt-1.5 space-y-1">
+                {data.underwaterDebts.map((d) => (
+                  <li key={d.id}>
+                    · <span className="font-semibold">{d.name}</span>: {t('payIs')} {formatTHB(d.minPayment)}/{t('months')} {t('butInterest')} {formatTHB(d.monthlyInterest)}/{t('months')} → {t('shortfall')} {formatTHB(d.shortfall)}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="mt-2 text-[11px]">
+              💡 {t('underwaterFix')}
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
             <p className="text-xs text-muted-foreground">{t('payoffTime')}</p>
             <p className="font-bold">
-              {Math.floor(data.months / 12)} {t('years')} {data.months % 12} {t('months')}
+              {data.hitCap
+                ? <span className="text-red-600">{t('neverPayoff')}</span>
+                : `${Math.floor(data.months / 12)} ${t('years')} ${data.months % 12} ${t('months')}`}
             </p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">{t('totalInterest')}</p>
-            <p className="font-bold text-red-600">{formatTHB(data.totalInterest)}</p>
+            <p className="font-bold text-red-600">
+              {data.hitCap ? '∞' : formatTHB(data.totalInterest)}
+            </p>
           </div>
         </div>
 
@@ -622,10 +678,12 @@ function CompactCard({ strategy, data }: { strategy: Strategy; data: SimResult }
         <p className="text-xs font-semibold text-muted-foreground">{t('alternative')}: {t(strategy)}</p>
         <div className="mt-1 grid grid-cols-2 gap-2 text-xs">
           <span>
-            {Math.floor(data.months / 12)}{t('years')} {data.months % 12}{t('months')}
+            {data.hitCap
+              ? <span className="text-red-600">{t('neverPayoff')}</span>
+              : `${Math.floor(data.months / 12)}${t('years')} ${data.months % 12}${t('months')}`}
           </span>
           <span className="text-red-600">
-            {formatTHB(data.totalInterest)}
+            {data.hitCap ? '∞' : formatTHB(data.totalInterest)}
           </span>
         </div>
       </CardContent>
