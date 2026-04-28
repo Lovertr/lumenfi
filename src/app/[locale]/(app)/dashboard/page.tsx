@@ -46,11 +46,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
 
   return (
     <div className="space-y-4 p-4 pt-6 lg:pt-10">
-      {/* Header */}
       <header className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">
-            {t('greeting')} {greeting} 👋
+            {t('greeting')} {greeting}
           </p>
           <h1 className="text-xl font-bold lg:text-2xl">{t('subtitle')}</h1>
         </div>
@@ -64,9 +63,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         </div>
       </header>
 
-      {/* Top row: Net Worth (wide) + Income/Expense (stacked) */}
       <div className="grid gap-4 lg:grid-cols-3">
-        {/* Net Worth Hero */}
         <Card className="overflow-hidden bg-gradient-to-br from-[#0A0F1F] to-[#1E293B] text-white lg:col-span-2">
           <CardContent className="p-6 lg:p-8">
             <p className="text-sm opacity-90">{t('netWorth')}</p>
@@ -88,7 +85,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           </CardContent>
         </Card>
 
-        {/* Income + Expense stacked on desktop */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:gap-4">
           <Card>
             <CardContent className="p-4 lg:p-5">
@@ -115,7 +111,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         </div>
       </div>
 
-      {/* Health + Top Categories */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardContent className="p-4 lg:p-6">
@@ -183,14 +178,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                 {locale === 'th' ? 'ยังไม่มีรายการในเดือนนี้' : 'No transactions this month'}
               </p>
               <Button asChild size="sm" variant="outline" className="mt-3">
-                <Link href="/transactions/new">+ {t('quickActions.debts')}</Link>
+                <Link href="/transactions/new">+ Add</Link>
               </Button>
             </CardContent>
           </Card>
         )}
       </div>
 
-      {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <QuickAction href="/cashflow" icon={Activity} label="Cash Flow" color="text-cyan-600 bg-cyan-50" />
         <QuickAction href="/debts" icon={CreditCard} label={t('quickActions.debts')} count={data.debtsCount} color="text-red-600 bg-red-50" />
@@ -199,7 +193,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         <QuickAction href="/accounts" icon={Wallet} label={t('quickActions.accounts')} count={data.accountsCount} color="text-blue-600 bg-blue-50" />
       </div>
 
-      {/* AI CTA */}
       <Card className="border-primary/30 bg-primary/5">
         <CardContent className="p-4 lg:p-6">
           <div className="flex items-start gap-3">
@@ -262,4 +255,12 @@ function QuickAction({
             <p className="font-medium">{label}</p>
             {count !== undefined && count > 0 && (
               <p className="text-xs text-muted-foreground lg:mt-0.5">
-                {count} {count === 1 ? 'item
+                {count} items
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
