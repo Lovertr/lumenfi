@@ -8,22 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createAccount } from '@/app/[locale]/(app)/accounts/actions';
 import { accountTypeConfig, accountTypes, type AccountType } from './account-type-config';
+import { AccountFormFields, AccountNoteField } from './account-form-fields';
 import { cn } from '@/lib/utils';
 
 const COLORS = [
-  '#3B82F6', // blue
-  '#10B981', // emerald
-  '#F59E0B', // amber
-  '#EF4444', // red
-  '#8B5CF6', // violet
-  '#EC4899', // pink
-  '#06B6D4', // cyan
-  '#0F172A', // midnight
+  '#3B82F6', '#10B981', '#F59E0B', '#EF4444',
+  '#8B5CF6', '#EC4899', '#06B6D4', '#0F172A',
 ];
 
 type State = { error?: string } | null;
 
-function SubmitButton() {
+function SubmitBtn() {
   const t = useTranslations('Accounts.form');
   const { pending } = useFormStatus();
   return (
@@ -79,13 +74,11 @@ export function NewAccountForm() {
       {/* Name */}
       <div className="space-y-2">
         <Label htmlFor="name">{t('name')}</Label>
-        <Input
-          id="name"
-          name="name"
-          required
-          placeholder={t('namePlaceholder')}
-        />
+        <Input id="name" name="name" required placeholder={t('namePlaceholder')} />
       </div>
+
+      {/* Type-specific fields (bank info / card info / wallet info) */}
+      <AccountFormFields type={selectedType} />
 
       {/* Initial balance */}
       <div className="space-y-2">
@@ -107,7 +100,7 @@ export function NewAccountForm() {
         <p className="text-xs text-muted-foreground">{t('initialBalanceHint')}</p>
       </div>
 
-      {/* Credit limit (only for credit cards) */}
+      {/* Credit limit */}
       {isCreditCard && (
         <div className="space-y-2">
           <Label htmlFor="credit_limit">{t('creditLimit')}</Label>
@@ -124,11 +117,10 @@ export function NewAccountForm() {
               className="pl-8"
             />
           </div>
-          <p className="text-xs text-muted-foreground">{t('creditLimitHint')}</p>
         </div>
       )}
 
-      {/* Color picker */}
+      {/* Color */}
       <div className="space-y-2">
         <Label>{t('color')}</Label>
         <input type="hidden" name="color" value={selectedColor} />
@@ -149,13 +141,14 @@ export function NewAccountForm() {
         </div>
       </div>
 
+      {/* Note */}
+      <AccountNoteField />
+
       {/* Include in net worth */}
       <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-3">
-        <div className="text-sm">
-          <Label htmlFor="include_in_net_worth" className="cursor-pointer">
-            {t('includeInNetWorth')}
-          </Label>
-        </div>
+        <Label htmlFor="include_in_net_worth" className="cursor-pointer">
+          {t('includeInNetWorth')}
+        </Label>
         <input
           id="include_in_net_worth"
           name="include_in_net_worth"
@@ -171,7 +164,7 @@ export function NewAccountForm() {
         </div>
       )}
 
-      <SubmitButton />
+      <SubmitBtn />
     </form>
   );
 }

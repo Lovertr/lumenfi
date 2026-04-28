@@ -16,6 +16,12 @@ const baseSchema = z.object({
   color: z.string().default('#3B82F6'),
   credit_limit: z.number().nullable().optional(),
   include_in_net_worth: z.boolean().default(true),
+  bank_name: z.string().max(100).nullable().optional(),
+  account_number: z.string().max(30).nullable().optional(),
+  account_holder: z.string().max(100).nullable().optional(),
+  note: z.string().max(500).nullable().optional(),
+  statement_day: z.number().int().min(1).max(31).nullable().optional(),
+  due_day: z.number().int().min(1).max(31).nullable().optional(),
 });
 
 function parseFormFields(formData: FormData) {
@@ -25,6 +31,18 @@ function parseFormFields(formData: FormData) {
   }
   const balanceStr = (formData.get('initial_balance') as string) ?? '0';
   const balance = parseFloat(balanceStr.replace(/,/g, ''));
+
+  const intOrNull = (key: string): number | null => {
+    const v = formData.get(key) as string;
+    if (!v) return null;
+    const n = parseInt(v, 10);
+    return isNaN(n) ? null : n;
+  };
+  const strOrNull = (key: string): string | null => {
+    const v = formData.get(key) as string;
+    return v && v.trim() ? v.trim() : null;
+  };
+
   const parsed = baseSchema.safeParse({
     name: formData.get('name'),
     type: rawType,
@@ -35,6 +53,12 @@ function parseFormFields(formData: FormData) {
       ? parseFloat(formData.get('credit_limit') as string)
       : null,
     include_in_net_worth: formData.get('include_in_net_worth') === 'on',
+    bank_name: strOrNull('bank_name'),
+    account_number: strOrNull('account_number'),
+    account_holder: strOrNull('account_holder'),
+    note: strOrNull('note'),
+    statement_day: intOrNull('statement_day'),
+    due_day: intOrNull('due_day'),
   });
   if (!parsed.success) {
     return { error: 'name_required' as const };

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { updateAccount, deleteAccount } from '@/app/[locale]/(app)/accounts/actions';
 import { accountTypeConfig, accountTypes, type AccountType } from './account-type-config';
+import { AccountFormFields, AccountNoteField } from './account-form-fields';
 import { cn } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';
 
@@ -24,6 +25,12 @@ interface ExistingAccount {
   color: string;
   credit_limit: number | null;
   include_in_net_worth: boolean;
+  bank_name?: string | null;
+  account_number?: string | null;
+  account_holder?: string | null;
+  note?: string | null;
+  statement_day?: number | null;
+  due_day?: number | null;
 }
 
 type State = { error?: string } | null;
@@ -53,7 +60,6 @@ export function EditAccountForm({ account }: { account: ExistingAccount }) {
       <form action={formAction} className="space-y-5">
         <input type="hidden" name="id" value={account.id} />
 
-        {/* Type picker */}
         <div className="space-y-2">
           <Label>{t('type')}</Label>
           <input type="hidden" name="type" value={selectedType} />
@@ -84,13 +90,22 @@ export function EditAccountForm({ account }: { account: ExistingAccount }) {
           </div>
         </div>
 
-        {/* Name */}
         <div className="space-y-2">
           <Label htmlFor="name">{t('name')}</Label>
           <Input id="name" name="name" required defaultValue={account.name} />
         </div>
 
-        {/* Initial balance — editable */}
+        <AccountFormFields
+          type={selectedType}
+          defaults={{
+            bank_name: account.bank_name,
+            account_number: account.account_number,
+            account_holder: account.account_holder,
+            statement_day: account.statement_day,
+            due_day: account.due_day,
+          }}
+        />
+
         <div className="space-y-2">
           <Label htmlFor="initial_balance">{t('initialBalance')}</Label>
           <div className="relative">
@@ -110,7 +125,6 @@ export function EditAccountForm({ account }: { account: ExistingAccount }) {
           <p className="text-xs text-muted-foreground">{t('initialBalanceHint')}</p>
         </div>
 
-        {/* Credit limit */}
         {isCreditCard && (
           <div className="space-y-2">
             <Label htmlFor="credit_limit">{t('creditLimit')}</Label>
@@ -130,7 +144,6 @@ export function EditAccountForm({ account }: { account: ExistingAccount }) {
           </div>
         )}
 
-        {/* Color */}
         <div className="space-y-2">
           <Label>{t('color')}</Label>
           <input type="hidden" name="color" value={selectedColor} />
@@ -151,7 +164,8 @@ export function EditAccountForm({ account }: { account: ExistingAccount }) {
           </div>
         </div>
 
-        {/* Include in net worth */}
+        <AccountNoteField defaultValue={account.note} />
+
         <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-3">
           <Label htmlFor="include_in_net_worth" className="cursor-pointer">
             {t('includeInNetWorth')}
@@ -174,7 +188,6 @@ export function EditAccountForm({ account }: { account: ExistingAccount }) {
         <SubmitBtn />
       </form>
 
-      {/* Delete button */}
       <form action={deleteAccount}>
         <input type="hidden" name="id" value={account.id} />
         <Button
