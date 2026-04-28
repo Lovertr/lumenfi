@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { computeAccountBalances } from './balances';
 
 export interface CashFlowDataPoint {
   date: string;
@@ -85,16 +86,17 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
         .order('date', { ascending: true }),
       supabase
         .from('accounts')
-        .select('type, initial_balance, include_in_net_worth')
+        .select('id, type, initial_balance, include_in_net_worth, created_at')
         .eq('archived', false),
       supabase
         .from('debts')
         .select('monthly_payment')
         .eq('status', 'active'),
       supabase
-        .from('recurring_templates')
-        .select('type, amount, frequency, next_occurrence')
-        .eq('active', true),
+        .from('recurring_transactions')
+        .select('type, amount, day_of_month')
+        .eq('user_id', user.id)
+        .eq('is_active', true),
     ]);
 
     const txs = (txRes.data ?? []) as { type: string; amount: number; date: string }[];
@@ -135,16 +137,34 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
 
     const avgDailyIncome = periods.last30.income / 30;
     const avgDailyExpense = periods.last30.expense / 30;
-    const avgMonthlyIncome = periods.last90.income / 3;
-    const avgMonthlyExpense = periods.last90.expense / 3;
+    // Count months that actually contain data so a new user with 1 month doesn't get divided by 3
+    const monthsWithData = new Set<string>();
+    for (const tx of txs) monthsWithData.add(tx.date.slice(0, 7));
+    const monthDivisor = Math.min(3, Math.max(1, monthsWithData.size));
+    const avgMonthlyIncome = periods.last90.income / monthDivisor;
+    const avgMonthlyExpense = periods.last90.expense / monthDivisor;
     const avgMonthlyNet = avgMonthlyIncome - avgMonthlyExpense;
 
     // Cash on hand from accounts (exclude credit cards)
+    // Cash on hand: use computed balances (initial + all-time tx, cutoff respected)
+    const { data: allTxData } = await supabase
+      .from('transactions')
+      .select('type, amount, date, account_id, to_account_id')
+      .eq('user_id', user.id);
+    const balanceMap = computeAccountBalances(
+      ((accRes.data ?? []) as any[]).map((a: any) => ({
+        id: a.id,
+        type: a.type,
+        initial_balance: a.initial_balance,
+        created_at: a.created_at,
+      })),
+      (allTxData ?? []) as any[]
+    );
     let totalCashOnHand = 0;
     for (const a of (accRes.data ?? []) as any[]) {
       if (a.type === 'credit_card') continue;
       if (!a.include_in_net_worth) continue;
-      totalCashOnHand += Number(a.initial_balance);
+      totalCashOnHand += balanceMap[a.id] ?? Number(a.initial_balance);
     }
 
     // Monthly burn = expenses (avg)
@@ -157,22 +177,16 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
       upcomingFixedExpense += Number(d.monthly_payment ?? 0);
     }
     for (const r of (recurRes.data ?? []) as any[]) {
-      // approximate: monthly = once, weekly = 4x, daily = 30x, etc.
-      const freqMap: Record<string, number> = {
-        daily: 30,
-        weekly: 4.3,
-        biweekly: 2.15,
-        monthly: 1,
-        quarterly: 1 / 3,
-        yearly: 1 / 12,
-      };
-      const occurrences = freqMap[r.frequency] ?? 1;
-      const monthAmt = Number(r.amount) * occurrences;
+      // recurring_transactions are always monthly (by design — day_of_month)
+      const monthAmt = Number(r.amount);
       if (r.type === 'income') upcomingFixedIncome += monthAmt;
       if (r.type === 'expense') upcomingFixedExpense += monthAmt;
+      // 'transfer' type ignored for cashflow (zero-sum between user accounts)
     }
 
-    const projectedNet30 = avgMonthlyIncome + upcomingFixedIncome - avgMonthlyExpense - upcomingFixedExpense;
+    // Best projection = recent average net (already reflects all actual activity).
+    // Recurring 'upcoming' shown separately for transparency, NOT double-counted.
+    const projectedNet30 = avgMonthlyNet;
 
     // Status
     let status: 'healthy' | 'tight' | 'critical' = 'healthy';
