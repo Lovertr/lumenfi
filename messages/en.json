@@ -14,7 +14,6 @@
     "search": "Search",
     "currency": "$"
   },
-
   "Landing": {
     "heroTitle1": "Manage your money",
     "heroTitle2": "with a plan",
@@ -29,7 +28,6 @@
     "ctaFinalButton": "Create free account",
     "footer": "© 2026 Lumenfi · Built with Next.js + Supabase"
   },
-
   "Features": {
     "income": {
       "title": "Income & Expenses",
@@ -56,7 +54,6 @@
       "desc": "See your full financial health, DTI, savings rate, and score"
     }
   },
-
   "Nav": {
     "home": "Home",
     "transactions": "Activity",
@@ -64,7 +61,6 @@
     "ai": "AI",
     "more": "More"
   },
-
   "Dashboard": {
     "greeting": "Hi there",
     "subtitle": "Let's check your finances",
@@ -96,7 +92,6 @@
       "body": "This page still shows mock data — see PROJECT_PLAN.md for Phase 2-4"
     }
   },
-
   "Auth": {
     "login": "Sign in",
     "signup": "Sign up",
@@ -137,18 +132,29 @@
       "generic": "Something went wrong. Please try again."
     }
   },
-
   "Settings": {
     "title": "Settings",
     "profile": "Profile",
+    "profileDesc": "Name, email, currency",
     "language": "Language",
     "currency": "Currency",
     "ai": "AI Settings",
+    "aiDesc": "API key for AI Advisor",
     "privacy": "Privacy",
     "exportData": "Export data",
-    "deleteAccount": "Delete account"
+    "deleteAccount": "Delete account",
+    "logout": "Sign out",
+    "form": {
+      "fullName": "Full name",
+      "email": "Email",
+      "emailReadonly": "Email can't be changed — contact support",
+      "defaultCurrency": "Default currency",
+      "monthlyIncomeTarget": "Monthly income target",
+      "monthlyExpenseTarget": "Monthly expense budget",
+      "submit": "Save",
+      "saved": "Saved"
+    }
   },
-
   "Accounts": {
     "title": "My Accounts",
     "subtitle": "Manage bank accounts, cash, credit cards",
@@ -191,13 +197,11 @@
       "generic": "Something went wrong. Please try again."
     }
   },
-
   "Language": {
     "th": "ไทย",
     "en": "English",
     "switch": "Switch language"
   },
-
   "Transactions": {
     "title": "Transactions",
     "subtitle": "Track your daily income and expenses",
@@ -228,7 +232,16 @@
       "submit": "Save",
       "submitting": "Saving...",
       "delete": "Delete",
-      "deleteConfirm": "Delete this transaction?"
+      "deleteConfirm": "Delete this transaction?",
+      "fromAccount": "From Account",
+      "toAccount": "To Account",
+      "linkGoal": "Link to Goal (optional)",
+      "noGoal": "None",
+      "saveAsRecurring": "Save as recurring",
+      "dayOfMonth": "Day of month",
+      "everyMonthOn": "On day",
+      "ofEachMonth": "of every month",
+      "recurringHint": "This will be auto-created each month (day 31 falls back to the last day of shorter months)"
     },
     "errors": {
       "amount_required": "Please enter an amount",
@@ -236,10 +249,12 @@
       "account_required": "Please choose an account",
       "no_categories": "No categories — please add one first",
       "no_accounts": "No accounts — please add one first",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "to_account_required": "Please select destination account",
+      "transfer_same_account": "Source and destination must differ",
+      "transfer_need_two_accounts": "Transfers need at least 2 accounts — add another account first"
     }
   },
-
   "Goals": {
     "title": "Financial Goals",
     "subtitle": "Set targets and track progress",
@@ -277,7 +292,6 @@
       "custom": "Custom"
     }
   },
-
   "Debts": {
     "title": "Debts",
     "subtitle": "Manage debts and plan payoff",
@@ -316,7 +330,6 @@
       "other": "Other"
     }
   },
-
   "More": {
     "title": "More",
     "investments": "Investments",
@@ -328,9 +341,9 @@
     "ai": "AI Advisor",
     "aiDesc": "Configure your AI API key",
     "reports": "Reports",
-    "reportsDesc": "Monthly and yearly summaries"
+    "reportsDesc": "Monthly and yearly summaries",
+    "recurring": "Recurring"
   },
-
   "Investments": {
     "title": "Investments",
     "subtitle": "Track your investment portfolio",
@@ -370,7 +383,6 @@
       "other": "Other"
     }
   },
-
   "AI": {
     "title": "AI Advisor",
     "subtitle": "Your personal finance assistant",
@@ -411,28 +423,19 @@
       ]
     }
   },
-
-  "Settings": {
-    "title": "Settings",
-    "profile": "Profile",
-    "profileDesc": "Name, email, currency",
-    "language": "Language",
-    "currency": "Currency",
-    "ai": "AI Settings",
-    "aiDesc": "API key for AI Advisor",
-    "privacy": "Privacy",
-    "exportData": "Export data",
-    "deleteAccount": "Delete account",
-    "logout": "Sign out",
-    "form": {
-      "fullName": "Full name",
-      "email": "Email",
-      "emailReadonly": "Email can't be changed — contact support",
-      "defaultCurrency": "Default currency",
-      "monthlyIncomeTarget": "Monthly income target",
-      "monthlyExpenseTarget": "Monthly expense budget",
-      "submit": "Save",
-      "saved": "Saved"
-    }
+  "Recurring": {
+    "title": "Recurring",
+    "subtitle": "Income/expenses that auto-post each month",
+    "add": "Add",
+    "empty": "No recurring items yet — turn on \"Save as recurring\" when adding a transaction",
+    "activeSection": "Active",
+    "pausedSection": "Paused",
+    "income": "Income",
+    "expense": "Expense",
+    "everyDay": "On day {day}",
+    "next": "Next",
+    "pause": "Pause",
+    "resume": "Resume",
+    "delete": "Delete"
   }
 }

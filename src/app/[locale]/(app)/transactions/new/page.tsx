@@ -17,12 +17,26 @@ async function getAccounts() {
   return data ?? [];
 }
 
+async function getGoals() {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('goals')
+    .select('id, name, icon')
+    .eq('is_completed', false)
+    .order('created_at', { ascending: false });
+  return data ?? [];
+}
+
 export default async function NewTransactionPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('Transactions');
 
-  const [accounts, categories] = await Promise.all([getAccounts(), getCategories()]);
+  const [accounts, categories, goals] = await Promise.all([
+    getAccounts(),
+    getCategories(),
+    getGoals(),
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -43,6 +57,7 @@ export default async function NewTransactionPage({ params }: { params: Promise<{
           <TransactionForm
             accounts={accounts as any}
             categories={categories as any}
+            goals={goals as any}
           />
         </CardContent>
       </Card>

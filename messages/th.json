@@ -14,7 +14,6 @@
     "search": "ค้นหา",
     "currency": "฿"
   },
-
   "Landing": {
     "heroTitle1": "บริหารการเงิน",
     "heroTitle2": "อย่างมีแผน",
@@ -29,7 +28,6 @@
     "ctaFinalButton": "สร้างบัญชีฟรี",
     "footer": "© 2026 Lumenfi · Built with Next.js + Supabase"
   },
-
   "Features": {
     "income": {
       "title": "รายรับ-รายจ่าย",
@@ -56,7 +54,6 @@
       "desc": "ดูสุขภาพการเงินรวม คะแนนสุขภาพ DTI Savings Rate"
     }
   },
-
   "Nav": {
     "home": "หน้าหลัก",
     "transactions": "รายการ",
@@ -64,7 +61,6 @@
     "ai": "AI",
     "more": "เพิ่มเติม"
   },
-
   "Dashboard": {
     "greeting": "สวัสดี",
     "subtitle": "มาดูฐานะการเงินกัน",
@@ -96,7 +92,6 @@
       "body": "หน้านี้ยังเป็น mock data — ดู PROJECT_PLAN.md เพื่อทำ Phase 2-4 ต่อ"
     }
   },
-
   "Auth": {
     "login": "เข้าสู่ระบบ",
     "signup": "สมัครสมาชิก",
@@ -137,18 +132,29 @@
       "generic": "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง"
     }
   },
-
   "Settings": {
     "title": "ตั้งค่า",
     "profile": "โปรไฟล์",
+    "profileDesc": "ชื่อ อีเมล สกุลเงิน",
     "language": "ภาษา",
     "currency": "สกุลเงิน",
     "ai": "AI Settings",
+    "aiDesc": "API key สำหรับ AI Advisor",
     "privacy": "ความเป็นส่วนตัว",
     "exportData": "ส่งออกข้อมูล",
-    "deleteAccount": "ลบบัญชี"
+    "deleteAccount": "ลบบัญชี",
+    "logout": "ออกจากระบบ",
+    "form": {
+      "fullName": "ชื่อ-นามสกุล",
+      "email": "อีเมล",
+      "emailReadonly": "อีเมลเปลี่ยนไม่ได้ — ติดต่อ support",
+      "defaultCurrency": "สกุลเงินหลัก",
+      "monthlyIncomeTarget": "เป้ารายรับต่อเดือน",
+      "monthlyExpenseTarget": "งบประมาณรายจ่าย/เดือน",
+      "submit": "บันทึก",
+      "saved": "บันทึกแล้ว"
+    }
   },
-
   "Accounts": {
     "title": "บัญชีของฉัน",
     "subtitle": "จัดการบัญชีธนาคาร เงินสด บัตรเครดิต",
@@ -191,13 +197,11 @@
       "generic": "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง"
     }
   },
-
   "Language": {
     "th": "ไทย",
     "en": "English",
     "switch": "เปลี่ยนภาษา"
   },
-
   "Transactions": {
     "title": "รายรับ-รายจ่าย",
     "subtitle": "บันทึกธุรกรรมประจำวัน",
@@ -228,7 +232,16 @@
       "submit": "บันทึก",
       "submitting": "กำลังบันทึก...",
       "delete": "ลบรายการ",
-      "deleteConfirm": "ลบรายการนี้?"
+      "deleteConfirm": "ลบรายการนี้?",
+      "fromAccount": "จากบัญชี",
+      "toAccount": "ไปยังบัญชี",
+      "linkGoal": "ผูกกับเป้าหมาย (ไม่บังคับ)",
+      "noGoal": "ไม่ผูก",
+      "saveAsRecurring": "บันทึกเป็นรายการประจำ",
+      "dayOfMonth": "วันในเดือน",
+      "everyMonthOn": "ทุกวันที่",
+      "ofEachMonth": "ของเดือน",
+      "recurringHint": "ระบบจะสร้างรายการนี้ให้อัตโนมัติทุกเดือน (วันที่ 31 จะปรับเป็นวันสุดท้ายของเดือนสั้น)"
     },
     "errors": {
       "amount_required": "กรุณาใส่จำนวนเงิน",
@@ -236,10 +249,12 @@
       "account_required": "กรุณาเลือกบัญชี",
       "no_categories": "ไม่มีหมวดหมู่ กรุณาเพิ่มก่อน",
       "no_accounts": "ไม่มีบัญชี กรุณาเพิ่มก่อน",
-      "generic": "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง"
+      "generic": "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง",
+      "to_account_required": "กรุณาเลือกบัญชีปลายทาง",
+      "transfer_same_account": "บัญชีต้นทางและปลายทางต้องไม่เหมือนกัน",
+      "transfer_need_two_accounts": "การโอนเงินต้องมีอย่างน้อย 2 บัญชี — เพิ่มบัญชีก่อน"
     }
   },
-
   "Goals": {
     "title": "เป้าหมายการเงิน",
     "subtitle": "ตั้งเป้าและติดตามความคืบหน้า",
@@ -277,7 +292,6 @@
       "custom": "อื่นๆ"
     }
   },
-
   "Debts": {
     "title": "หนี้สิน",
     "subtitle": "จัดการหนี้และวางแผนใช้หนี้",
@@ -316,7 +330,6 @@
       "other": "อื่นๆ"
     }
   },
-
   "More": {
     "title": "เพิ่มเติม",
     "investments": "การลงทุน",
@@ -328,9 +341,9 @@
     "ai": "AI Advisor",
     "aiDesc": "ตั้งค่า API key สำหรับ AI",
     "reports": "รายงาน",
-    "reportsDesc": "สรุปรายเดือน/ปี"
+    "reportsDesc": "สรุปรายเดือน/ปี",
+    "recurring": "รายการประจำ"
   },
-
   "Investments": {
     "title": "การลงทุน",
     "subtitle": "ติดตามพอร์ตการลงทุนของคุณ",
@@ -370,7 +383,6 @@
       "other": "อื่นๆ"
     }
   },
-
   "AI": {
     "title": "AI Advisor",
     "subtitle": "ที่ปรึกษาการเงินส่วนตัว",
@@ -411,28 +423,19 @@
       ]
     }
   },
-
-  "Settings": {
-    "title": "ตั้งค่า",
-    "profile": "โปรไฟล์",
-    "profileDesc": "ชื่อ อีเมล สกุลเงิน",
-    "language": "ภาษา",
-    "currency": "สกุลเงิน",
-    "ai": "AI Settings",
-    "aiDesc": "API key สำหรับ AI Advisor",
-    "privacy": "ความเป็นส่วนตัว",
-    "exportData": "ส่งออกข้อมูล",
-    "deleteAccount": "ลบบัญชี",
-    "logout": "ออกจากระบบ",
-    "form": {
-      "fullName": "ชื่อ-นามสกุล",
-      "email": "อีเมล",
-      "emailReadonly": "อีเมลเปลี่ยนไม่ได้ — ติดต่อ support",
-      "defaultCurrency": "สกุลเงินหลัก",
-      "monthlyIncomeTarget": "เป้ารายรับต่อเดือน",
-      "monthlyExpenseTarget": "งบประมาณรายจ่าย/เดือน",
-      "submit": "บันทึก",
-      "saved": "บันทึกแล้ว"
-    }
+  "Recurring": {
+    "title": "รายการประจำ",
+    "subtitle": "รายรับ/รายจ่ายที่จ่ายทุกเดือนอัตโนมัติ",
+    "add": "เพิ่ม",
+    "empty": "ยังไม่มีรายการประจำ — เปิดสวิตช์ \"บันทึกเป็นรายการประจำ\" ตอนเพิ่มรายการ",
+    "activeSection": "กำลังใช้งาน",
+    "pausedSection": "หยุดชั่วคราว",
+    "income": "รายรับ",
+    "expense": "รายจ่าย",
+    "everyDay": "ทุกวันที่ {day}",
+    "next": "ครั้งถัดไป",
+    "pause": "หยุดชั่วคราว",
+    "resume": "เปิดใช้",
+    "delete": "ลบ"
   }
 }

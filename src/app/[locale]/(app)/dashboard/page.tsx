@@ -6,6 +6,7 @@ import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { formatTHB } from '@/lib/utils';
 import { getDashboardData } from '@/lib/queries/dashboard';
+import { materializeDueRecurring } from '@/lib/recurring';
 import { createClient } from '@/lib/supabase/server';
 import {
   TrendingUp,
@@ -42,6 +43,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const { data: { user } } = await supabase.auth.getUser();
   const greeting = user?.user_metadata?.full_name?.split(' ')[0] ?? '';
 
+  await materializeDueRecurring();
   const data = await getDashboardData();
 
   return (
