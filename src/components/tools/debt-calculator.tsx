@@ -208,11 +208,13 @@ export function DebtCalculator({
       ];
 
   const [debts, setDebts] = useState<DebtItem[]>(seedDebts);
-  const [extra, setExtra] = useState(String(activePlan?.extra_per_month ?? 5000));
+  const [extra, setExtra] = useState(activePlan?.extra_per_month != null ? String(activePlan.extra_per_month) : '');
   const [chosenStrategy, setChosenStrategy] = useState<Strategy>(activePlan?.strategy ?? 'avalanche');
   const [saved, setSaved] = useState(!!activePlan);
 
-  const extraNum = parseFloat(extra.replace(/,/g, '')) || 0;
+  const extraIsEmpty = extra.trim() === '';
+  const extraNum = extraIsEmpty ? 0 : (parseFloat(extra.replace(/,/g, '')) || 0);
+  const extraIsExplicitZero = !extraIsEmpty && extraNum === 0;
   const validDebts = debts.filter((d) => d.balance > 0);
 
   const avalanche = useMemo(() => simulate(validDebts, extraNum, 'avalanche'), [validDebts, extraNum]);
@@ -251,7 +253,8 @@ export function DebtCalculator({
       })),
       snapshot,
       extraNum,
-      chosenStrategy
+      chosenStrategy,
+      extraIsEmpty // true = ask AI to recommend optimal
     );
     setAiLoading(false);
     if (r.ok && r.advice) setAiAdvice(r.advice);
@@ -433,10 +436,21 @@ export function DebtCalculator({
               inputMode="decimal"
               value={extra}
               onChange={(e) => { setExtra(e.target.value); setSaved(false); }}
+              placeholder={t('extraPlaceholder')}
               className="pl-7"
             />
           </div>
           <p className="mt-1 text-[11px] text-muted-foreground">{t('extraHint')}</p>
+          {extraIsEmpty && (
+            <p className="mt-1 rounded border border-purple-200 bg-purple-50 px-2 py-1 text-[11px] text-purple-900">
+              ✨ {t('extraEmptyHint')}
+            </p>
+          )}
+          {extraIsExplicitZero && (
+            <p className="mt-1 rounded border bg-muted/40 px-2 py-1 text-[11px] text-muted-foreground">
+              ℹ️ {t('extraZeroHint')}
+            </p>
+          )}
         </CardContent>
       </Card>
 
