@@ -42,9 +42,13 @@ async function getFinancialContext() {
 
   return {
     monthly_income: Math.round(monthlyIncome),
-    monthly_fixed_expenses: Math.round(monthlyExpense - existingDebtPayments),
+    monthly_fixed_expenses: Math.max(0, Math.round(monthlyExpense - existingDebtPayments)),
     existing_debt_payments: Math.round(existingDebtPayments),
     total_debt: Math.round(totalDebt),
+    // Raw computed values (for displaying hints to user)
+    computed_income: Math.round(monthlyIncome),
+    computed_expense_total: Math.round(monthlyExpense),
+    computed_expense_excluding_debt: Math.max(0, Math.round(monthlyExpense - existingDebtPayments)),
   };
 }
 

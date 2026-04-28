@@ -19,6 +19,9 @@ interface LoanContext {
   monthly_fixed_expenses: number;
   existing_debt_payments: number;
   total_debt: number;
+  computed_income?: number;
+  computed_expense_total?: number;
+  computed_expense_excluding_debt?: number;
 }
 
 interface DebtRow {
@@ -486,6 +489,28 @@ export function LoanSimulator({ context, debts = [] }: { context: LoanContext; d
       <Card>
         <CardContent className="space-y-3 p-4">
           <p className="text-sm font-semibold">{t('yourFinances')}</p>
+          {(context.computed_income != null || context.computed_expense_total != null) && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-2.5 text-[11px] text-blue-900">
+              <p className="flex items-center gap-1 font-semibold">
+                💡 {t('systemCalcTitle')}
+              </p>
+              <ul className="mt-1 space-y-0.5">
+                <li>· {t('calcIncome30d')}: <span className="font-mono font-bold">{formatTHB(context.computed_income ?? 0)}</span></li>
+                <li>· {t('calcExpense30d')}: <span className="font-mono font-bold">{formatTHB(context.computed_expense_total ?? 0)}</span></li>
+                <li>· {t('calcExpenseExclDebt')}: <span className="font-mono font-bold">{formatTHB(context.computed_expense_excluding_debt ?? 0)}</span></li>
+              </ul>
+              <button
+                type="button"
+                onClick={() => {
+                  if (context.computed_income != null) setIncome(String(context.computed_income));
+                  if (context.computed_expense_excluding_debt != null) setFixedExp(String(context.computed_expense_excluding_debt));
+                }}
+                className="mt-1.5 rounded border border-blue-300 bg-white px-2 py-1 text-[10px] font-semibold text-blue-700 hover:bg-blue-100"
+              >
+                {t('useSystemCalc')}
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-xs">{t('monthlyIncome')}</Label>
@@ -493,6 +518,11 @@ export function LoanSimulator({ context, debts = [] }: { context: LoanContext; d
                 <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">฿</span>
                 <Input value={income} onChange={(e) => setIncome(e.target.value)} className="h-9 pl-6 text-sm" />
               </div>
+              {context.computed_income != null && (
+                <p className="mt-0.5 text-[10px] text-muted-foreground">
+                  {t('systemCalc')}: <span className="font-semibold">{formatTHB(context.computed_income)}</span>
+                </p>
+              )}
             </div>
             <div>
               <Label className="text-xs">{t('fixedExpenses')}</Label>
@@ -501,6 +531,11 @@ export function LoanSimulator({ context, debts = [] }: { context: LoanContext; d
                 <Input value={fixedExp} onChange={(e) => setFixedExp(e.target.value)} className="h-9 pl-6 text-sm" />
               </div>
               <p className="mt-0.5 text-[10px] text-muted-foreground">{t('fixedHint')}</p>
+              {context.computed_expense_excluding_debt != null && (
+                <p className="mt-0.5 text-[10px] text-muted-foreground">
+                  {t('systemCalc')}: <span className="font-semibold">{formatTHB(context.computed_expense_excluding_debt)}</span>
+                </p>
+              )}
             </div>
           </div>
           <div className="rounded-lg border bg-muted/30 p-2.5 text-xs">
