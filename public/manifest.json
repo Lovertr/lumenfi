@@ -1,7 +1,7 @@
 {
-  "name": "Lumenfi — Light up your finances",
+  "name": "Lumenfi - Light up your finances",
   "short_name": "Lumenfi",
-  "description": "แอปบริหารการเงินส่วนตัวครบวงจร พร้อม AI Advisor",
+  "description": "Personal finance management app with AI advisor",
   "start_url": "/th/dashboard",
   "scope": "/",
   "display": "standalone",
@@ -9,14 +9,11 @@
   "theme_color": "#0A0F1F",
   "orientation": "portrait-primary",
   "lang": "th",
-  "categories": ["finance", "productivity", "lifestyle"],
+  "categories": ["finance", "productivity"],
   "icons": [
-    {
-      "src": "/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512.png",
-     
+    {"src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+    {"src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

@@ -8,7 +8,7 @@ import type { AccountType } from '@/components/accounts/account-type-config';
 
 const VALID_TYPES: AccountType[] = ['cash', 'bank', 'credit_card', 'e_wallet', 'savings', 'other'];
 
-const createSchema = z.object({
+const baseSchema = z.object({
   name: z.string().min(1).max(100),
   type: z.enum(['cash', 'bank', 'credit_card', 'e_wallet', 'savings', 'other']),
   initial_balance: z.number(),
@@ -18,23 +18,14 @@ const createSchema = z.object({
   include_in_net_worth: z.boolean().default(true),
 });
 
-export async function createAccount(_prev: unknown, formData: FormData) {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    redirect('/login');
-  }
-
+function parseFormFields(formData: FormData) {
   const rawType = formData.get('type');
   if (!VALID_TYPES.includes(rawType as AccountType)) {
     return { error: 'type_required' as const };
   }
-
   const balanceStr = (formData.get('initial_balance') as string) ?? '0';
   const balance = parseFloat(balanceStr.replace(/,/g, ''));
-
-  const parsed = createSchema.safeParse({
+  const parsed = baseSchema.safeParse({
     name: formData.get('name'),
     type: rawType,
     initial_balance: isNaN(balance) ? 0 : balance,
@@ -45,13 +36,22 @@ export async function createAccount(_prev: unknown, formData: FormData) {
       : null,
     include_in_net_worth: formData.get('include_in_net_worth') === 'on',
   });
-
   if (!parsed.success) {
     return { error: 'name_required' as const };
   }
+  return { data: parsed.data };
+}
+
+export async function createAccount(_prev: unknown, formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const result = parseFormFields(formData);
+  if ('error' in result) return { error: result.error };
 
   const { error } = await supabase.from('accounts').insert({
-    ...parsed.data,
+    ...result.data,
     user_id: user.id,
   });
 
@@ -64,13 +64,43 @@ export async function createAccount(_prev: unknown, formData: FormData) {
   redirect('/accounts');
 }
 
-const updateSchema = z.object({
-  name: z.string().min(1).max(100),
-  type: z.enum(['cash', 'bank', 'credit_card', 'e_wallet', 'savings', 'other']),
-  initial_balance: z.number(),
-  color: z.string().default('#3B82F6'),
-  credit_limit: z.number().nullable().optional(),
-  include_in_net_worth: z.boolean().default(true),
-});
+export async function updateAccount(_prev: unknown, formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
-export async function updateAccount(_prev: unknown, for
+  const id = formData.get('id') as string;
+  if (!id) return { error: 'generic' as const };
+
+  const result = parseFormFields(formData);
+  if ('error' in result) return { error: result.error };
+
+  const { error } = await supabase
+    .from('accounts')
+    .update(result.data)
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('updateAccount error:', error);
+    return { error: 'generic' as const };
+  }
+
+  revalidatePath('/accounts');
+  revalidatePath('/dashboard');
+  redirect('/accounts');
+}
+
+export async function deleteAccount(formData: FormData) {
+  const id = formData.get('id') as string;
+  if (!id) return;
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  await supabase.from('accounts').update({ archived: true }).eq('id', id).eq('user_id', user.id);
+  revalidatePath('/accounts');
+  revalidatePath('/dashboard');
+  redirect('/accounts');
+}

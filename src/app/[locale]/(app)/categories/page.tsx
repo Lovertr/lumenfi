@@ -9,12 +9,20 @@ import { getCategories } from '@/lib/categories';
 import { deleteCategory } from './actions';
 import { createClient } from '@/lib/supabase/server';
 
-async function getCategoriesWithMeta() {
+interface Cat {
+  id: string;
+  name: string;
+  type: 'income' | 'expense' | 'both';
+  icon: string;
+  color: string;
+  is_default: boolean;
+}
+
+async function getCategoriesWithMeta(): Promise<Cat[]> {
   try {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
-    // Trigger seed if needed
     await getCategories();
     const { data } = await supabase
       .from('categories')
@@ -22,7 +30,7 @@ async function getCategoriesWithMeta() {
       .eq('archived', false)
       .order('is_default', { ascending: false })
       .order('name');
-    return data ?? [];
+    return (data as Cat[]) ?? [];
   } catch {
     return [];
   }
@@ -32,41 +40,42 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const categories = (await getCategoriesWithMeta()) as Array<{
-    id: string;
-    name: string;
-    type: 'income' | 'expense' | 'both';
-    icon: string;
-    color: string;
-    is_default: boolean;
-  }>;
+  const categories = await getCategoriesWithMeta();
   const income = categories.filter((c) => c.type === 'income' || c.type === 'both');
   const expense = categories.filter((c) => c.type === 'expense' || c.type === 'both');
+  const isTh = locale === 'th';
 
-  const renderGrid = (list: typeof categories) => (
-    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-      {list.map((c) => (
-        <div key={c.id} className="group relative">
-          <div className="flex flex-col items-center gap-1 rounded-lg border bg-background p-3">
-            <span className="text-2xl">{c.icon}</span>
-            <span className="text-xs font-medium leading-tight text-center line-clamp-1">{c.name}</span>
-          </div>
-          {!c.is_default && (
-            <form action={deleteCategory} className="absolute -top-1.5 -right-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-              <input type="hidden" name="id" value={c.id} />
-              <button
-                type="submit"
-                className="flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90"
-                aria-label="Delete"
+  function CategoryGrid({ list }: { list: Cat[] }) {
+    return (
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+        {list.map((c) => (
+          <div key={c.id} className="group relative">
+            <div className="flex flex-col items-center gap-1 rounded-lg border bg-background p-3">
+              <span className="text-2xl">{c.icon}</span>
+              <span className="text-xs font-medium leading-tight text-center line-clamp-1">
+                {c.name}
+              </span>
+            </div>
+            {!c.is_default && (
+              <form
+                action={deleteCategory}
+                className="absolute -top-1.5 -right-1.5 opacity-0 transition-opacity group-hover:opacity-100"
               >
-                <X className="h-3 w-3" />
-              </button>
-            </form>
-          )}
-        </div>
-      ))}
-    </div>
-  );
+                <input type="hidden" name="id" value={c.id} />
+                <button
+                  type="submit"
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90"
+                  aria-label="Delete"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </form>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -78,9 +87,9 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
             </Link>
           </Button>
           <div>
-            <h1 className="text-xl font-bold">{locale === 'th' ? 'หมวดหมู่' : 'Categories'}</h1>
+            <h1 className="text-xl font-bold">{isTh ? 'หมวดหมู่' : 'Categories'}</h1>
             <p className="text-xs text-muted-foreground">
-              {locale === 'th' ? 'จัดการหมวดรายรับ-รายจ่าย' : 'Manage income & expense categories'}
+              {isTh ? 'จัดการหมวดรายรับ-รายจ่าย' : 'Manage income and expense categories'}
             </p>
           </div>
         </div>
@@ -88,7 +97,7 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
           <Button asChild size="sm" className="hidden lg:inline-flex">
             <Link href="/categories/new">
               <Plus className="h-4 w-4" />
-              {locale === 'th' ? 'เพิ่ม' : 'Add'}
+              {isTh ? 'เพิ่ม' : 'Add'}
             </Link>
           </Button>
           <LanguageSwitcher />
@@ -99,4 +108,50 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
       {categories.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-            <FolderOpen 
+            <FolderOpen className="h-8 w-8 text-muted-foreground" />
+            <p className="mt-3 font-semibold">
+              {isTh ? 'กำลังโหลด default categories...' : 'Loading default categories...'}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="mb-3 text-sm font-semibold text-success">
+                {isTh ? 'รายรับ' : 'Income'} ({income.length})
+              </h2>
+              <CategoryGrid list={income} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="mb-3 text-sm font-semibold text-destructive">
+                {isTh ? 'รายจ่าย' : 'Expense'} ({expense.length})
+              </h2>
+              <CategoryGrid list={expense} />
+            </CardContent>
+          </Card>
+
+          <p className="px-1 text-xs text-muted-foreground">
+            {isTh
+              ? 'หมวดเริ่มต้นลบไม่ได้ ลบได้เฉพาะหมวดที่คุณสร้างเอง (hover เพื่อเห็นปุ่ม X)'
+              : 'Default categories cannot be deleted. Only your custom ones (hover to show X button).'}
+          </p>
+
+          <Button
+            asChild
+            size="lg"
+            className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)] lg:hidden"
+          >
+            <Link href="/categories/new">
+              <Plus className="h-5 w-5" />
+              {isTh ? 'เพิ่มหมวด' : 'Add'}
+            </Link>
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}
