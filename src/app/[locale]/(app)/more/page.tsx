@@ -1,0 +1,52 @@
+import { setRequestLocale, getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
+import { Card, CardContent } from '@/components/ui/card';
+import { LogoutButton } from '@/components/auth/logout-button';
+import { LanguageSwitcher } from '@/components/layout/language-switcher';
+import { TrendingUp, FolderOpen, Settings as SettingsIcon, Brain, FileBarChart, ChevronRight } from 'lucide-react';
+
+export default async function MorePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations('More');
+
+  const items = [
+    { href: '/investments', icon: TrendingUp, key: 'investments', color: 'text-green-600 bg-green-50' },
+    { href: '/categories', icon: FolderOpen, key: 'categories', color: 'text-orange-600 bg-orange-50' },
+    { href: '/ai', icon: Brain, key: 'ai', color: 'text-purple-600 bg-purple-50' },
+    { href: '/reports', icon: FileBarChart, key: 'reports', color: 'text-cyan-600 bg-cyan-50' },
+    { href: '/settings', icon: SettingsIcon, key: 'settings', color: 'text-slate-600 bg-slate-100' },
+  ] as const;
+
+  return (
+    <div className="space-y-4 p-4 pt-6">
+      <header className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">{t('title')}</h1>
+        <div className="flex items-center gap-1">
+          <LanguageSwitcher />
+          <LogoutButton />
+        </div>
+      </header>
+
+      <Card>
+        <CardContent className="divide-y p-0">
+          {items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link key={item.href} href={item.href} className="flex items-center gap-3 p-4 transition-colors hover:bg-muted/40">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${item.color}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">{t(item.key)}</p>
+                  <p className="text-xs text-muted-foreground">{t(`${item.key}Desc` as any)}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </Link>
+            );
+          })}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -196,5 +196,203 @@
     "th": "ไทย",
     "en": "English",
     "switch": "เปลี่ยนภาษา"
+  },
+
+  "Transactions": {
+    "title": "รายรับ-รายจ่าย",
+    "subtitle": "บันทึกธุรกรรมประจำวัน",
+    "addTitle": "เพิ่มรายการ",
+    "addSubtitle": "บันทึกรายรับหรือรายจ่ายใหม่",
+    "noTransactions": "ยังไม่มีรายการ",
+    "noTransactionsHint": "เริ่มต้นด้วยการบันทึกรายการแรก",
+    "monthSummary": "สรุปเดือนนี้",
+    "income": "รายรับ",
+    "expense": "รายจ่าย",
+    "transfer": "โอน",
+    "balance": "คงเหลือ",
+    "filterAll": "ทั้งหมด",
+    "today": "วันนี้",
+    "yesterday": "เมื่อวาน",
+    "thisWeek": "สัปดาห์นี้",
+    "thisMonth": "เดือนนี้",
+    "form": {
+      "type": "ประเภท",
+      "amount": "จำนวนเงิน",
+      "category": "หมวดหมู่",
+      "categoryPlaceholder": "เลือกหมวดหมู่",
+      "account": "บัญชี",
+      "accountPlaceholder": "เลือกบัญชี",
+      "date": "วันที่",
+      "note": "หมายเหตุ",
+      "notePlaceholder": "บันทึกเพิ่มเติม (ไม่บังคับ)",
+      "submit": "บันทึก",
+      "submitting": "กำลังบันทึก...",
+      "delete": "ลบรายการ",
+      "deleteConfirm": "ลบรายการนี้?"
+    },
+    "errors": {
+      "amount_required": "กรุณาใส่จำนวนเงิน",
+      "category_required": "กรุณาเลือกหมวดหมู่",
+      "account_required": "กรุณาเลือกบัญชี",
+      "no_categories": "ไม่มีหมวดหมู่ กรุณาเพิ่มก่อน",
+      "no_accounts": "ไม่มีบัญชี กรุณาเพิ่มก่อน",
+      "generic": "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง"
+    }
+  },
+
+  "Goals": {
+    "title": "เป้าหมายการเงิน",
+    "subtitle": "ตั้งเป้าและติดตามความคืบหน้า",
+    "addGoal": "เพิ่มเป้าหมาย",
+    "addTitle": "เป้าหมายใหม่",
+    "addSubtitle": "ตั้งเป้าหมายเพื่อจัดการเงินอย่างมีแผน",
+    "noGoals": "ยังไม่มีเป้าหมาย",
+    "noGoalsHint": "ตั้งเป้าหมายแรกของคุณ — เก็บเงินสำรอง, ดาวน์บ้าน, เกษียณ",
+    "progress": "ความคืบหน้า",
+    "monthlyRequired": "ต้องเก็บ/เดือน",
+    "remaining": "คงเหลือ",
+    "deadline": "ครบกำหนด",
+    "achieved": "บรรลุแล้ว",
+    "onTrack": "ตามแผน",
+    "behind": "ล่าช้า",
+    "form": {
+      "name": "ชื่อเป้าหมาย",
+      "namePlaceholder": "เช่น ดาวน์บ้าน",
+      "targetAmount": "ยอดเป้าหมาย",
+      "currentAmount": "เก็บได้แล้ว",
+      "deadline": "วันที่ตั้งใจถึงเป้า",
+      "isEmergencyFund": "เป็นเงินสำรองฉุกเฉิน",
+      "color": "สี",
+      "submit": "บันทึก"
+    },
+    "presets": {
+      "emergency": "เงินสำรองฉุกเฉิน",
+      "downpayment": "ดาวน์บ้าน",
+      "car": "ซื้อรถ",
+      "education": "ทุนการศึกษา",
+      "retirement": "เกษียณ",
+      "travel": "ท่องเที่ยว",
+      "wedding": "งานแต่ง",
+      "business": "เริ่มธุรกิจ",
+      "custom": "อื่นๆ"
+    }
+  },
+
+  "Debts": {
+    "title": "หนี้สิน",
+    "subtitle": "จัดการหนี้และวางแผนใช้หนี้",
+    "addDebt": "เพิ่มหนี้",
+    "addTitle": "เพิ่มหนี้ใหม่",
+    "addSubtitle": "บันทึกหนี้เพื่อวางแผนใช้",
+    "noDebts": "ยังไม่มีหนี้",
+    "noDebtsHint": "เพิ่มหนี้ปัจจุบันของคุณเพื่อจัดการ",
+    "totalDebt": "หนี้รวม",
+    "monthlyPayment": "ค่างวด/เดือน",
+    "dti": "DTI Ratio",
+    "dtiHint": "ภาระหนี้ต่อรายได้",
+    "interestRate": "ดอกเบี้ย",
+    "remainingTerm": "งวดที่เหลือ",
+    "form": {
+      "name": "ชื่อหนี้",
+      "namePlaceholder": "เช่น บัตร KTC, บ้าน SCB",
+      "type": "ประเภทหนี้",
+      "lender": "เจ้าหนี้",
+      "originalPrincipal": "เงินต้นเริ่มต้น",
+      "currentBalance": "เงินต้นคงเหลือ",
+      "interestRate": "ดอกเบี้ย (%/ปี)",
+      "monthlyPayment": "ค่างวด/เดือน",
+      "totalTerm": "จำนวนงวด",
+      "startDate": "วันเริ่ม",
+      "submit": "บันทึก"
+    },
+    "types": {
+      "credit_card": "บัตรเครดิต",
+      "personal_loan": "สินเชื่อบุคคล",
+      "auto_loan": "สินเชื่อรถ",
+      "mortgage": "สินเชื่อบ้าน",
+      "student_loan": "กยศ./การศึกษา",
+      "informal": "หนี้นอกระบบ",
+      "installment_zero": "ผ่อน 0%",
+      "other": "อื่นๆ"
+    }
+  },
+
+  "More": {
+    "title": "เพิ่มเติม",
+    "investments": "การลงทุน",
+    "investmentsDesc": "ติดตามพอร์ตหุ้น กองทุน คริปโต",
+    "categories": "หมวดหมู่",
+    "categoriesDesc": "จัดการหมวดรายรับ-รายจ่าย",
+    "settings": "ตั้งค่า",
+    "settingsDesc": "โปรไฟล์ ภาษา ความเป็นส่วนตัว",
+    "ai": "AI Advisor",
+    "aiDesc": "ตั้งค่า API key สำหรับ AI",
+    "reports": "รายงาน",
+    "reportsDesc": "สรุปรายเดือน/ปี"
+  },
+
+  "AI": {
+    "title": "AI Advisor",
+    "subtitle": "ที่ปรึกษาการเงินส่วนตัว",
+    "noKey": "ยังไม่ได้ตั้งค่า API Key",
+    "noKeyHint": "ใส่ API key ของคุณเองเพื่อใช้ AI ปลอดภัยและ private 100%",
+    "setupKey": "ตั้งค่า API Key",
+    "settings": {
+      "title": "ตั้งค่า AI",
+      "subtitle": "ใส่ API key ของ AI provider ที่คุณใช้",
+      "provider": "ผู้ให้บริการ",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "sk-... หรือ sk-ant-...",
+      "apiKeyHint": "Key จะถูกเข้ารหัสก่อนเก็บ — เราเห็นไม่ได้",
+      "privacyMode": "Privacy Mode",
+      "privacyModeHint": "ส่งข้อมูลแบบ anonymized ก่อนถามผ่าน AI",
+      "test": "ทดสอบการเชื่อมต่อ",
+      "testing": "กำลังทดสอบ...",
+      "save": "บันทึก",
+      "remove": "ลบ Key",
+      "saved": "บันทึกแล้ว",
+      "providers": {
+        "anthropic": "Anthropic Claude",
+        "openai": "OpenAI",
+        "gemini": "Google Gemini",
+        "openrouter": "OpenRouter"
+      }
+    },
+    "chat": {
+      "title": "คุยกับ AI",
+      "placeholder": "ถามอะไรก็ได้เกี่ยวกับการเงินของคุณ...",
+      "send": "ส่ง",
+      "thinking": "กำลังคิด...",
+      "suggestions": [
+        "วิเคราะห์ค่าใช้จ่ายเดือนนี้",
+        "ฉันควรจ่ายหนี้ก้อนไหนก่อน",
+        "ประเมินสุขภาพการเงินของฉัน",
+        "ฉันควรเก็บเงินสำรองเท่าไหร่"
+      ]
+    }
+  },
+
+  "Settings": {
+    "title": "ตั้งค่า",
+    "profile": "โปรไฟล์",
+    "profileDesc": "ชื่อ อีเมล สกุลเงิน",
+    "language": "ภาษา",
+    "currency": "สกุลเงิน",
+    "ai": "AI Settings",
+    "aiDesc": "API key สำหรับ AI Advisor",
+    "privacy": "ความเป็นส่วนตัว",
+    "exportData": "ส่งออกข้อมูล",
+    "deleteAccount": "ลบบัญชี",
+    "logout": "ออกจากระบบ",
+    "form": {
+      "fullName": "ชื่อ-นามสกุล",
+      "email": "อีเมล",
+      "emailReadonly": "อีเมลเปลี่ยนไม่ได้ — ติดต่อ support",
+      "defaultCurrency": "สกุลเงินหลัก",
+      "monthlyIncomeTarget": "เป้ารายรับต่อเดือน",
+      "monthlyExpenseTarget": "งบประมาณรายจ่าย/เดือน",
+      "submit": "บันทึก",
+      "saved": "บันทึกแล้ว"
+    }
   }
 }

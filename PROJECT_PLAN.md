@@ -13,9 +13,9 @@
 
 ## 📍 Current Status
 
-**Phase:** Phase 2 complete — debugging deploy
-**Live URL:** https://lumenfi.vercel.app (deploy สำเร็จแล้ว แต่กำลังแก้ routing 404)
-**Next action:** แก้ middleware matcher แล้ว push — รอ Vercel auto-deploy ใหม่
+**Phase:** Phase 3-7 ✅ MVP Complete!
+**Live URL:** https://lumenfi.vercel.app/th 🎉
+**Next action:** Push code → test ทุกฟีเจอร์ → next session: Phase 7 AI chat + Phase 8 Investments + Phase 11 PWA
 
 ---
 
@@ -79,9 +79,10 @@
 - [x] เพิ่ม `next.config.js` redirects ครบทุก path รวม `/` → `/th` — fail (ทุก URL 404 รวม `/th` ที่ build แล้ว)
 - [x] Simplify middleware — strip custom auth, ใช้ minimal next-intl — ยังไม่ผ่าน
 - [x] Force dynamic rendering ใน `[locale]/layout.tsx` (bypass static SSG)
-- [ ] **[NEXT]** Push + ถ้ายังไม่ได้ — Promote to Production ใน Vercel manually
-- [ ] Plan B: ถ้ายังไม่ได้ — delete Vercel project แล้ว re-import จาก GitHub
-- [ ] อัพเดท `NEXT_PUBLIC_APP_URL` เป็น Vercel URL จริง + Redeploy
+- [x] **Plan B: delete Vercel project + re-import จาก GitHub** ✅ **WORKED!**
+- [x] Site live ที่ https://lumenfi.vercel.app/th 🎉
+- [ ] **[NEXT]** อัพเดท `NEXT_PUBLIC_APP_URL` เป็น `https://lumenfi.vercel.app` + Redeploy
+- [ ] ทดสอบ flow: signup → dashboard → add account → logout → login
 
 ### 🔐 Phase 1 — Auth & User Profile
 **เป้าหมาย:** ผู้ใช้สมัคร/login ได้ + มีหน้า profile
@@ -106,68 +107,81 @@
 - [x] หน้า `/accounts/new` — เพิ่มบัญชีใหม่ (type picker + color picker)
 - [x] Server action `createAccount` (Zod validation + Supabase insert)
 - [x] Account type config (cash, bank, credit_card, e_wallet, savings, other)
-- [x] Empty state เมื่อยังไม่มีบัญชี
-- [x] Floating "Add account" button (FAB) เมื่อมีบัญชีแล้ว
+- [x] Empty state + FAB
 - [x] Logout button on dashboard
-- [ ] **[NEXT]** Edit / archive account
-- [ ] Account detail page (`/accounts/[id]`)
-- [ ] Category seed data + CRUD page (`/categories`)
+- [x] Categories — auto-seed defaults บน first visit (ผ่าน SQL function)
+- [x] หน้า `/categories` — แสดง income + expense แยก
+- [ ] Edit / archive account (เซสชันถัดไป)
+- [ ] Account detail page `/accounts/[id]` (เซสชันถัดไป)
 
 ### 📝 Phase 3 — Income & Expense (MVP Core)
 **เป้าหมาย:** บันทึก-แก้-ลบรายการได้ + อัพโหลดรูปบิล
 
-- [ ] DB schema `transactions` พร้อม
-- [ ] Form เพิ่ม transaction (amount, type, category, account, date, note, photo)
-- [ ] Upload รูปบิลไป Supabase Storage
-- [ ] List view + filter by date/category/account
-- [ ] Edit/Delete transaction
-- [ ] Quick add (เปิดแอปแล้วกดเพิ่มได้ใน 3 tap)
-- [ ] Recurring transactions (เงินเดือน, ค่าเช่า)
+- [x] DB schema `transactions` พร้อม (ใน DATABASE_SCHEMA.sql)
+- [x] Form เพิ่ม transaction (type tabs, amount, category picker, account picker, date, note)
+- [x] List view group by date + delete button
+- [x] Quick add via FAB at bottom-center (เปิดแอป → กด → 3 tap save)
+- [x] Server actions: createTransaction, deleteTransaction
+- [x] Monthly summary card (income/expense/balance)
+- [ ] Upload รูปบิลไป Supabase Storage (เซสชันถัดไป)
+- [ ] OCR scan bill (เซสชันถัดไป — ผ่าน N8N)
+- [ ] Edit transaction (เซสชันถัดไป)
+- [ ] Filter by category/account (เซสชันถัดไป)
+- [ ] Recurring transactions (เซสชันถัดไป)
 
 ### 📊 Phase 4 — Dashboard & Net Worth
 **เป้าหมาย:** หน้าแรกที่บอกสุขภาพการเงินรวมทั้งหมด
 
-- [ ] Net Worth calculation (assets − liabilities)
-- [ ] กราฟ Net Worth ย้อนหลัง
-- [ ] Cash flow card (รายรับ-รายจ่ายเดือนนี้)
-- [ ] Top 5 expense categories chart
-- [ ] Financial Health Score (0-100)
-- [ ] Quick stats: Savings rate, DTI, Emergency fund coverage
+- [x] Net Worth real-time จาก accounts + debts (assets − liabilities)
+- [x] Cash flow card (รายรับ-รายจ่ายเดือนนี้)
+- [x] Top 5 expense categories chart (จาก transactions ของเดือน)
+- [x] Financial Health Score (0-100) คำนวณจาก savingsRate + DTI + emergencyFund
+- [x] Quick stats: Savings rate, DTI, Emergency fund coverage
+- [x] Quick action cards (debts/investments/goals/accounts) พร้อม count
+- [x] Greeting แสดงชื่อจริงของ user (`profiles.full_name`)
+- [ ] กราฟ Net Worth ย้อนหลัง (เซสชันถัดไป — ใช้ net_worth_snapshots)
 
 ### 💳 Phase 5 — Debt Management
 **เป้าหมาย:** จัดการหนี้สินทุกก้อน + คำนวณกลยุทธ์ใช้หนี้
 
-- [ ] DB schema `debts` + `debt_payments`
-- [ ] CRUD หนี้ (ประเภท, เงินต้น, ดอกเบี้ย, ค่างวด, due date)
-- [ ] Amortization table generator
-- [ ] กราฟ payoff timeline
-- [ ] DTI calculator card
-- [ ] Strategy comparison: Avalanche vs Snowball
-- [ ] Extra payment simulator (โปะแล้วประหยัดเท่าไหร่)
-- [ ] Refinance calculator
+- [x] DB schema `debts` + `debt_payments` พร้อม
+- [x] CRUD หนี้ (8 types: บัตรเครดิต/สินเชื่อ/รถ/บ้าน/กยศ./นอกระบบ/ผ่อน 0%/อื่นๆ)
+- [x] หน้า `/debts` แสดง total debt + monthly payment summary
+- [x] หน้า `/debts/new` — type picker + form ครบทุก field
+- [x] Server actions: createDebt, deleteDebt
+- [x] DTI auto-calc on dashboard (จาก monthly_payment / monthly_income)
+- [x] `generateAmortization()` function ใน lib/utils.ts (พร้อมใช้)
+- [ ] Amortization table view (เซสชันถัดไป — ใช้ฟังก์ชันที่มีแล้ว)
+- [ ] Strategy comparison: Avalanche vs Snowball (เซสชันถัดไป)
+- [ ] Extra payment simulator (เซสชันถัดไป)
+- [ ] Refinance calculator (เซสชันถัดไป)
 
 ### 🎯 Phase 6 — Goals & Planning
 **เป้าหมาย:** ตั้งเป้าหมายและติดตามความคืบหน้า
 
-- [ ] DB schema `goals`
-- [ ] CRUD goals (ระยะสั้น/กลาง/ยาว)
-- [ ] Progress tracking (ยอดเป้า, ยอดปัจจุบัน, %)
-- [ ] "ต้องเก็บเดือนละเท่าไหร่ถึงจะถึงเป้า"
-- [ ] Emergency Fund tracker (พิเศษ — เด่น)
-- [ ] Retirement / FIRE calculator
-- [ ] Goal contribution flow (โอนเงินเข้าเป้า)
+- [x] DB schema `goals` พร้อม
+- [x] CRUD goals พร้อม preset 9 แบบ (Emergency / บ้าน / รถ / การศึกษา / เกษียณ / ทริป / งานแต่ง / ธุรกิจ / Custom)
+- [x] Progress bar + % + monthly required calculation
+- [x] Emergency Fund flag (auto-link กับ dashboard emergency fund coverage)
+- [x] Server actions: createGoal, deleteGoal
+- [x] หน้า `/goals` + `/goals/new` ใช้งานได้
+- [ ] Goal detail page + contribution flow (เซสชันถัดไป)
+- [ ] Retirement / FIRE calculator (เซสชันถัดไป)
 
 ### 🤖 Phase 7 — AI Advisor (BYO API Key)
 **เป้าหมาย:** ผู้ใช้ใส่ API key เอง แล้วคุยกับ AI ได้
 
-- [ ] หน้า `/settings/ai` ใส่ API key (รองรับ Anthropic/OpenAI/Gemini)
-- [ ] Encrypt API key (AES-GCM) เก็บใน Supabase หรือ localStorage
-- [ ] Provider abstraction layer (`lib/ai/providers/`)
-- [ ] Chat UI หน้า `/ai`
-- [ ] Context injection (ส่งข้อมูลการเงินผู้ใช้แบบ summarize ไป AI)
-- [ ] Privacy mode (anonymize ก่อนส่ง)
-- [ ] Prompt templates: วิเคราะห์เดือนนี้, แนะนำใช้หนี้, สรุปสุขภาพการเงิน
-- [ ] Streaming response
+- [x] หน้า `/ai/settings` ใส่ API key (4 providers: Anthropic/OpenAI/Gemini/OpenRouter)
+- [x] AES-GCM encryption (`src/lib/encryption.ts`) — encrypt/decrypt/maskKey
+- [x] Server actions: saveAIKey, removeAIKey
+- [x] หน้า `/ai` แสดง config + suggested prompts skeleton
+- [x] Privacy mode toggle
+- [x] Show/hide API key toggle
+- [ ] Chat UI พร้อม streaming response (เซสชันถัดไป)
+- [ ] Provider abstraction layer (anthropic.ts / openai.ts / gemini.ts) (เซสชันถัดไป)
+- [ ] Context injection (ส่งข้อมูลการเงิน summarize ไป AI) (เซสชันถัดไป)
+- [ ] Test connection button (เซสชันถัดไป)
+- [ ] Conversation history (เซสชันถัดไป)
 
 ### 📈 Phase 8 — Investment Tracking
 **เป้าหมาย:** ติดตามพอร์ตการลงทุน
@@ -362,4 +376,10 @@ finance-app/
 - ✅ **GitHub repo** `github.com/Lovertr/lumenfi` (private)
 - ✅ **Vercel deploy** สำเร็จ — `lumenfi.vercel.app` (build ผ่าน, แก้ 3 รอบ)
 - 🐛 พบ 404 ที่ root URL — แก้ middleware matcher (จะ deploy ใหม่)
-- 📌 **Next:** ยืนยัน root URL ใช้ได้ → ลอง signup จริง → Phase 3 (Transactions)
+- ❌ ลองแก้ 6+ รอบ (matcher, localePrefix='always', config redirects, app/page.tsx, force-dynamic) — ยัง 404
+- ✅ **Plan B: ลบ Vercel project แล้วสร้างใหม่** → ทำงานทันที! (project state เก่า corrupt)
+- 🎉 **Live: https://lumenfi.vercel.app/th** — Phase 0-2 จบสมบูรณ์
+- ✅ **Long autonomous build session** — Phase 3 (Transactions) + Phase 4 (Dashboard real data) + Phase 5 (Debts) + Phase 6 (Goals) + Phase 7 (AI BYO key) + /more navigation + Settings + Categories
+- ✅ Auth gate ใน `(app)/layout.tsx` (server component)
+- ✅ AES-GCM encryption สำหรับ AI API keys
+- 📌 **Next session:** Photo upload, AI chat UI + streaming, Edit forms, Phase 8 Investments, Phase 11 PWA

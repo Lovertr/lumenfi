@@ -5,35 +5,17 @@ import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { formatTHB } from '@/lib/utils';
+import { getDashboardData } from '@/lib/queries/dashboard';
+import { createClient } from '@/lib/supabase/server';
 import {
   TrendingUp,
   TrendingDown,
   Target,
-  AlertCircle,
   Sparkles,
   ArrowRight,
   Wallet,
   CreditCard,
 } from 'lucide-react';
-
-const mockData = {
-  netWorth: 285000,
-  netWorthChange: 12500,
-  netWorthChangePercent: 4.6,
-  monthIncome: 65000,
-  monthExpense: 42300,
-  healthScore: 78,
-  savingsRate: 0.35,
-  dti: 0.28,
-  emergencyFundMonths: 4.2,
-  topCategories: [
-    { key: 'food', label: { th: 'อาหาร', en: 'Food' }, amount: 12500, color: '#F59E0B', icon: '🍔' },
-    { key: 'transport', label: { th: 'เดินทาง', en: 'Transport' }, amount: 8200, color: '#3B82F6', icon: '🚗' },
-    { key: 'housing', label: { th: 'ค่าที่อยู่อาศัย', en: 'Housing' }, amount: 9000, color: '#8B5CF6', icon: '🏠' },
-    { key: 'shopping', label: { th: 'ของใช้', en: 'Shopping' }, amount: 5400, color: '#06B6D4', icon: '🛒' },
-    { key: 'entertainment', label: { th: 'บันเทิง', en: 'Entertainment' }, amount: 3200, color: '#A855F7', icon: '🎬' },
-  ],
-};
 
 function HealthBadge({ score }: { score: number }) {
   const color =
@@ -54,36 +36,49 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('Dashboard');
-  const data = mockData;
-  const isPositive = data.netWorthChange >= 0;
-  const localeTyped = locale as 'th' | 'en';
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const greeting = user?.user_metadata?.full_name?.split(' ')[0] ?? '';
+
+  const data = await getDashboardData();
+  const isPositive = data.monthBalance >= 0;
 
   return (
     <div className="space-y-4 p-4 pt-6">
       {/* Header */}
       <header className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">{t('greeting')} 👋</p>
+          <p className="text-sm text-muted-foreground">
+            {t('greeting')} {greeting} 👋
+          </p>
           <h1 className="text-xl font-bold">{t('subtitle')}</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <HealthBadge score={data.healthScore} />
           <LanguageSwitcher />
           <LogoutButton />
         </div>
       </header>
 
-      {/* Net Worth Hero Card */}
+      {/* Net Worth Hero */}
       <Card className="overflow-hidden bg-gradient-to-br from-[#0A0F1F] to-[#1E293B] text-white">
         <CardContent className="p-6">
           <p className="text-sm opacity-90">{t('netWorth')}</p>
-          <p className="mt-1 text-3xl font-bold">{formatTHB(data.netWorth)}</p>
-          <div className="mt-3 flex items-center gap-2 text-sm">
-            {isPositive ? <TrendingUp className="h-4 w-4 text-[#FCD34D]" /> : <TrendingDown className="h-4 w-4" />}
-            <span>
-              {isPositive ? '+' : ''}
-              {formatTHB(data.netWorthChange)} ({data.netWorthChangePercent}%) {t('monthChange')}
-            </span>
+          <p className={`mt-1 text-3xl font-bold ${data.netWorth < 0 ? 'text-[#FCA5A5]' : ''}`}>
+            {formatTHB(data.netWorth)}
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <p className="opacity-70">Assets</p>
+              <p className="mt-0.5 font-semibold">{formatTHB(data.totalAssets, { compact: true })}</p>
+            </div>
+            <div>
+              <p className="opacity-70">Liabilities</p>
+              <p className="mt-0.5 font-semibold text-[#FCA5A5]">
+                -{formatTHB(data.totalLiabilities, { compact: true })}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -142,45 +137,47 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       </Card>
 
       {/* Top Categories */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">{t('topCategories')}</h2>
-            <Link href="/transactions" className="text-xs text-primary">
-              {locale === 'th' ? 'ดูทั้งหมด' : 'View all'}
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {data.topCategories.map((cat) => {
-              const percent = (cat.amount / data.monthExpense) * 100;
-              return (
-                <div key={cat.key} className="flex items-center gap-3">
-                  <span className="text-xl">{cat.icon}</span>
-                  <div className="flex-1">
-                    <div className="flex justify-between text-sm">
-                      <span>{cat.label[localeTyped]}</span>
-                      <span className="font-medium">{formatTHB(cat.amount, { compact: true })}</span>
-                    </div>
-                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full"
-                        style={{ width: `${percent}%`, backgroundColor: cat.color }}
-                      />
+      {data.topCategories.length > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold">{t('topCategories')}</h2>
+              <Link href="/transactions" className="text-xs text-primary">
+                {locale === 'th' ? 'ดูทั้งหมด' : 'View all'}
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {data.topCategories.map((cat) => {
+                const percent = data.monthExpense > 0 ? (cat.amount / data.monthExpense) * 100 : 0;
+                return (
+                  <div key={cat.name} className="flex items-center gap-3">
+                    <span className="text-xl">{cat.icon}</span>
+                    <div className="flex-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{cat.name}</span>
+                        <span className="font-medium">{formatTHB(cat.amount, { compact: true })}</span>
+                      </div>
+                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: `${percent}%`, backgroundColor: cat.color }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-3">
-        <QuickAction href="/debts" icon={CreditCard} label={t('quickActions.debts')} color="text-red-600" />
+        <QuickAction href="/debts" icon={CreditCard} label={t('quickActions.debts')} count={data.debtsCount} color="text-red-600" />
         <QuickAction href="/investments" icon={TrendingUp} label={t('quickActions.investments')} color="text-green-600" />
-        <QuickAction href="/goals" icon={Target} label={t('quickActions.goals')} color="text-purple-600" />
-        <QuickAction href="/accounts" icon={Wallet} label={t('quickActions.accounts')} color="text-blue-600" />
+        <QuickAction href="/goals" icon={Target} label={t('quickActions.goals')} count={data.goalsCount} color="text-purple-600" />
+        <QuickAction href="/accounts" icon={Wallet} label={t('quickActions.accounts')} count={data.accountsCount} color="text-blue-600" />
       </div>
 
       {/* AI CTA */}
@@ -202,33 +199,14 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           </div>
         </CardContent>
       </Card>
-
-      {/* Mock notice */}
-      <Card className="border-warning/30 bg-warning/5">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="h-5 w-5 shrink-0 text-warning" />
-            <div className="text-xs">
-              <p className="font-semibold">{t('mockNotice.title')}</p>
-              <p className="mt-0.5 text-muted-foreground">{t('mockNotice.body')}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
 
 function StatRow({
-  label,
-  value,
-  hint,
-  status,
+  label, value, hint, status,
 }: {
-  label: string;
-  value: string;
-  hint: string;
-  status: 'good' | 'warn' | 'bad';
+  label: string; value: string; hint: string; status: 'good' | 'warn' | 'bad';
 }) {
   const dotColor = { good: 'bg-success', warn: 'bg-warning', bad: 'bg-destructive' }[status];
   return (
@@ -246,14 +224,12 @@ function StatRow({
 }
 
 function QuickAction({
-  href,
-  icon: Icon,
-  label,
-  color,
+  href, icon: Icon, label, count, color,
 }: {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  count?: number;
   color: string;
 }) {
   return (
@@ -263,7 +239,12 @@ function QuickAction({
           <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-muted ${color}`}>
             <Icon className="h-5 w-5" />
           </div>
-          <span className="font-medium">{label}</span>
+          <div className="flex-1">
+            <span className="font-medium">{label}</span>
+            {count !== undefined && count > 0 && (
+              <span className="ml-1 text-xs text-muted-foreground">({count})</span>
+            )}
+          </div>
         </CardContent>
       </Card>
     </Link>

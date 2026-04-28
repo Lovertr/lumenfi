@@ -196,5 +196,203 @@
     "th": "ไทย",
     "en": "English",
     "switch": "Switch language"
+  },
+
+  "Transactions": {
+    "title": "Transactions",
+    "subtitle": "Track your daily income and expenses",
+    "addTitle": "Add Transaction",
+    "addSubtitle": "Log a new income or expense",
+    "noTransactions": "No transactions yet",
+    "noTransactionsHint": "Start by logging your first transaction",
+    "monthSummary": "This month",
+    "income": "Income",
+    "expense": "Expense",
+    "transfer": "Transfer",
+    "balance": "Balance",
+    "filterAll": "All",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "form": {
+      "type": "Type",
+      "amount": "Amount",
+      "category": "Category",
+      "categoryPlaceholder": "Choose a category",
+      "account": "Account",
+      "accountPlaceholder": "Choose an account",
+      "date": "Date",
+      "note": "Note",
+      "notePlaceholder": "Add a note (optional)",
+      "submit": "Save",
+      "submitting": "Saving...",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this transaction?"
+    },
+    "errors": {
+      "amount_required": "Please enter an amount",
+      "category_required": "Please choose a category",
+      "account_required": "Please choose an account",
+      "no_categories": "No categories — please add one first",
+      "no_accounts": "No accounts — please add one first",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+
+  "Goals": {
+    "title": "Financial Goals",
+    "subtitle": "Set targets and track progress",
+    "addGoal": "Add goal",
+    "addTitle": "New Goal",
+    "addSubtitle": "Set a goal to plan your finances",
+    "noGoals": "No goals yet",
+    "noGoalsHint": "Set your first goal — emergency fund, home, retirement",
+    "progress": "Progress",
+    "monthlyRequired": "Monthly required",
+    "remaining": "Remaining",
+    "deadline": "Deadline",
+    "achieved": "Achieved",
+    "onTrack": "On track",
+    "behind": "Behind",
+    "form": {
+      "name": "Goal name",
+      "namePlaceholder": "e.g. Home down payment",
+      "targetAmount": "Target amount",
+      "currentAmount": "Current amount",
+      "deadline": "Target date",
+      "isEmergencyFund": "This is my emergency fund",
+      "color": "Color",
+      "submit": "Save"
+    },
+    "presets": {
+      "emergency": "Emergency Fund",
+      "downpayment": "Home Down Payment",
+      "car": "Buy a Car",
+      "education": "Education Fund",
+      "retirement": "Retirement",
+      "travel": "Travel",
+      "wedding": "Wedding",
+      "business": "Start a Business",
+      "custom": "Custom"
+    }
+  },
+
+  "Debts": {
+    "title": "Debts",
+    "subtitle": "Manage debts and plan payoff",
+    "addDebt": "Add debt",
+    "addTitle": "New Debt",
+    "addSubtitle": "Log a debt to plan its payoff",
+    "noDebts": "No debts yet",
+    "noDebtsHint": "Add your current debts to manage them",
+    "totalDebt": "Total debt",
+    "monthlyPayment": "Monthly payment",
+    "dti": "DTI Ratio",
+    "dtiHint": "Debt-to-income ratio",
+    "interestRate": "Interest",
+    "remainingTerm": "Months left",
+    "form": {
+      "name": "Debt name",
+      "namePlaceholder": "e.g. Chase Card, SCB Mortgage",
+      "type": "Debt type",
+      "lender": "Lender",
+      "originalPrincipal": "Original principal",
+      "currentBalance": "Current balance",
+      "interestRate": "Interest (% / year)",
+      "monthlyPayment": "Monthly payment",
+      "totalTerm": "Total months",
+      "startDate": "Start date",
+      "submit": "Save"
+    },
+    "types": {
+      "credit_card": "Credit Card",
+      "personal_loan": "Personal Loan",
+      "auto_loan": "Auto Loan",
+      "mortgage": "Mortgage",
+      "student_loan": "Student Loan",
+      "informal": "Informal Debt",
+      "installment_zero": "0% Installment",
+      "other": "Other"
+    }
+  },
+
+  "More": {
+    "title": "More",
+    "investments": "Investments",
+    "investmentsDesc": "Track stocks, funds, and crypto",
+    "categories": "Categories",
+    "categoriesDesc": "Manage income & expense categories",
+    "settings": "Settings",
+    "settingsDesc": "Profile, language, privacy",
+    "ai": "AI Advisor",
+    "aiDesc": "Configure your AI API key",
+    "reports": "Reports",
+    "reportsDesc": "Monthly and yearly summaries"
+  },
+
+  "AI": {
+    "title": "AI Advisor",
+    "subtitle": "Your personal finance assistant",
+    "noKey": "No API key configured",
+    "noKeyHint": "Bring your own API key for full privacy and control",
+    "setupKey": "Set up API Key",
+    "settings": {
+      "title": "AI Settings",
+      "subtitle": "Configure your AI provider's API key",
+      "provider": "Provider",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "sk-... or sk-ant-...",
+      "apiKeyHint": "Key is encrypted before storage — we can't read it",
+      "privacyMode": "Privacy Mode",
+      "privacyModeHint": "Anonymize sensitive data before sending to AI",
+      "test": "Test connection",
+      "testing": "Testing...",
+      "save": "Save",
+      "remove": "Remove key",
+      "saved": "Saved",
+      "providers": {
+        "anthropic": "Anthropic Claude",
+        "openai": "OpenAI",
+        "gemini": "Google Gemini",
+        "openrouter": "OpenRouter"
+      }
+    },
+    "chat": {
+      "title": "Chat with AI",
+      "placeholder": "Ask anything about your finances...",
+      "send": "Send",
+      "thinking": "Thinking...",
+      "suggestions": [
+        "Analyze my spending this month",
+        "Which debt should I pay off first?",
+        "Assess my financial health",
+        "How much emergency fund do I need?"
+      ]
+    }
+  },
+
+  "Settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "profileDesc": "Name, email, currency",
+    "language": "Language",
+    "currency": "Currency",
+    "ai": "AI Settings",
+    "aiDesc": "API key for AI Advisor",
+    "privacy": "Privacy",
+    "exportData": "Export data",
+    "deleteAccount": "Delete account",
+    "logout": "Sign out",
+    "form": {
+      "fullName": "Full name",
+      "email": "Email",
+      "emailReadonly": "Email can't be changed — contact support",
+      "defaultCurrency": "Default currency",
+      "monthlyIncomeTarget": "Monthly income target",
+      "monthlyExpenseTarget": "Monthly expense budget",
+      "submit": "Save",
+      "saved": "Saved"
+    }
   }
 }
