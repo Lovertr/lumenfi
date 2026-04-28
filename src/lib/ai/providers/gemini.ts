@@ -28,7 +28,7 @@ export async function geminiChat(
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents,
-          generationConfig: { maxOutputTokens: 4096 },
+          generationConfig: { maxOutputTokens: 8192 },
         }),
       });
 

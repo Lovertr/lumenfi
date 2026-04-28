@@ -16,7 +16,7 @@ export async function anthropicChat(
     },
     body: JSON.stringify({
       model: 'claude-3-5-sonnet-latest',
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: systemPrompt,
       messages: userMessages.map((m) => ({
         role: m.role,
