@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DebtForm } from '@/components/debts/debt-form';
 import { createClient } from '@/lib/supabase/server';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 async function getDebt(id: string) {
   const supabase = createClient();

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LoanSimulator } from '@/components/tools/loan-simulator';
 import { createClient } from '@/lib/supabase/server';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 async function getFinancialContext() {
   const supabase = createClient();

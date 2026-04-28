@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { formatTHB } from '@/lib/utils';
 import { BudgetRow } from '@/components/budgets/budget-row';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 interface Budget { id: string; category_id: string; amount: number; }
 interface Category { id: string; name: string; icon: string; color: string; type: 'income' | 'expense' | 'both'; }

@@ -9,7 +9,7 @@ import { getCategories } from '@/lib/categories';
 import { deleteCategory } from './actions';
 import { createClient } from '@/lib/supabase/server';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 interface Cat {
   id: string;

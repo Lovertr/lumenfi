@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { NewInvestmentForm } from '@/components/investments/new-investment-form';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function NewInvestmentPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/server';
 import { investmentTypeConfig, type InvestmentType } from '@/components/investments/investment-type-config';
 import { deleteInvestment } from './actions';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 interface Investment {
   id: string;

@@ -6,7 +6,7 @@ import { DebtCalculator } from '@/components/tools/debt-calculator';
 import { createClient } from '@/lib/supabase/server';
 import { getCashFlowAnalysis } from '@/lib/queries/cashflow';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 interface Debt {
   id: string;

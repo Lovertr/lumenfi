@@ -10,8 +10,6 @@ import { materializeDueRecurring } from '@/lib/recurring';
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
 import { createClient } from '@/lib/supabase/server';
 import {
-
-export const dynamic = "force-dynamic";
   TrendingUp,
   TrendingDown,
   Target,
@@ -21,6 +19,8 @@ export const dynamic = "force-dynamic";
   CreditCard,
   Activity,
 } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 
 function HealthBadge({ score }: { score: number }) {
   const color =

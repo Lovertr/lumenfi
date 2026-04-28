@@ -9,7 +9,7 @@ import { getRecentTransactions, getMonthlyTotals } from '@/lib/queries/transacti
 import { Plus, Wallet, ArrowLeft, Trash2, Camera } from 'lucide-react';
 import { deleteTransaction } from './actions';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 function formatDate(dateStr: string, locale: string) {
   const d = new Date(dateStr);

@@ -7,7 +7,7 @@ import { EditAccountForm } from '@/components/accounts/edit-account-form';
 import { createClient } from '@/lib/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function EditAccountPage({
   params,

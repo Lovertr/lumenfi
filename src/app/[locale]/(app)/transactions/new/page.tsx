@@ -7,7 +7,7 @@ import { TransactionForm } from '@/components/transactions/transaction-form';
 import { createClient } from '@/lib/supabase/server';
 import { getCategories } from '@/lib/categories';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 async function getAccounts() {
   const supabase = createClient();

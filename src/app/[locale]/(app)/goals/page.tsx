@@ -10,7 +10,7 @@ import { getAccountBalanceMap } from '@/lib/queries/balances';
 import { Plus, Target, ArrowLeft, Pencil } from 'lucide-react';
 import { QuickContribute } from '@/components/goals/quick-contribute';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 interface Goal {
   id: string;

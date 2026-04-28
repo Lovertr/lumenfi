@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { GoalForm } from '@/components/goals/goal-form';
 import { createClient } from '@/lib/supabase/server';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 async function getGoal(id: string) {
   const supabase = createClient();
