@@ -590,7 +590,17 @@
     "quickAddTitle": "+ Add new debt (will be saved and shown on Debts page)",
     "quickType": "Type",
     "saveDebt": "Save",
-    "quickAddHint": "✓ Once saved, appears on Debts page and auto-loads into calculator"
+    "quickAddHint": "✓ Once saved, appears on Debts page and auto-loads into calculator",
+    "singleDebtNoCompare": "Only 1 debt — all strategies give the same result. Add another debt to compare",
+    "strategiesEqual": "With current debts, both strategies are equivalent",
+    "aiAdvisorTitle": "AI Advisor — personalized payoff plan",
+    "aiAdvisorHint": "AI analyzes your income/expense/debts/budgets and recommends fastest payoff — including ways to increase income and cut expenses",
+    "askAI": "Ask AI",
+    "regenerate": "Re-analyze",
+    "analyzing": "AI thinking...",
+    "noAiKey": "AI key not set — go to AI Advisor → Settings",
+    "noSnapshot": "No financial data — add transactions so AI can analyze",
+    "aiFailed": "AI failed, try again"
   },
   "Scan": {
     "title": "Scan Receipt with AI",

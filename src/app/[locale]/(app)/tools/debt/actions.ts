@@ -114,3 +114,150 @@ export async function deactivateDebtPlan() {
   revalidatePath('/debts');
   revalidatePath('/tools/debt');
 }
+
+import { decrypt } from '@/lib/encryption';
+import { chat, type AIProvider } from '@/lib/ai';
+import { FINANCE_EXPERTISE_TH } from '@/lib/ai/prompts';
+
+interface DebtForAI {
+  name: string;
+  type: string;
+  balance: number;
+  rate: number;
+  monthly_payment: number;
+  rate_type?: string | null;
+}
+
+interface FinancialSnapshot {
+  monthly_income: number;
+  monthly_expense_total: number;
+  existing_debt_payments: number;
+  total_debt: number;
+  cash_available: number;
+  total_assets: number;
+  active_months: number;
+  budget_categories?: { name: string; budget: number; spent: number }[];
+}
+
+export async function analyzeDebtSituation(
+  debts: DebtForAI[],
+  snapshot: FinancialSnapshot,
+  extra_per_month: number,
+  chosenStrategy: 'avalanche' | 'snowball'
+): Promise<{ ok: boolean; advice?: string; error?: string }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'unauthorized' };
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('ai_provider, ai_api_key_encrypted')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (!profile?.ai_provider || !profile?.ai_api_key_encrypted) {
+    return { ok: false, error: 'no_ai_key' };
+  }
+
+  let apiKey: string;
+  try {
+    apiKey = await decrypt(profile.ai_api_key_encrypted);
+  } catch {
+    return { ok: false, error: 'decryption_failed' };
+  }
+
+  const dti = snapshot.monthly_income > 0
+    ? (snapshot.existing_debt_payments / snapshot.monthly_income) * 100
+    : 0;
+  const disposableIncome = snapshot.monthly_income - snapshot.monthly_expense_total;
+  const monthsToCover = snapshot.monthly_income > 0
+    ? snapshot.total_debt / snapshot.monthly_income
+    : 0;
+
+  const debtList = debts.map((d, i) =>
+    `${i + 1}. ${d.name} (${d.type}): ฿${d.balance.toLocaleString()} · ${d.rate}%/ปี · ผ่อน ฿${d.monthly_payment.toLocaleString()}/เดือน${d.rate_type ? ` · ${d.rate_type}` : ''}`
+  ).join('\n');
+
+  const budgetText = snapshot.budget_categories && snapshot.budget_categories.length > 0
+    ? '\n\n**งบประมาณรายเดือน:**\n' + snapshot.budget_categories.map((b) =>
+        `- ${b.name}: ใช้ ฿${b.spent.toLocaleString()} / งบ ฿${b.budget.toLocaleString()} (${b.budget > 0 ? Math.round((b.spent / b.budget) * 100) : 0}%)`
+      ).join('\n')
+    : '';
+
+  const systemPrompt = `คุณเป็นที่ปรึกษาการเงินผู้เชี่ยวชาญด้านการจัดการหนี้
+ผู้ใช้ต้องการคำแนะนำเพื่อปลดหนี้ให้เร็วและมีประสิทธิภาพ
+
+ตอบเป็นภาษาไทย ใช้ markdown โครงสร้างชัดเจน:
+
+## สรุปสถานะหนี้
+- DTI ปัจจุบัน + ระดับ (ปลอดภัย/ระวัง/วิกฤต)
+- ภาพรวมหนี้ทั้งหมด
+- เงินเหลือใช้ต่อเดือน
+
+## วิเคราะห์ปัญหา
+- 2-4 ข้อ พร้อมตัวเลขเฉพาะเจาะจง
+- เน้นจุดสำคัญที่กระทบมากที่สุด
+
+## กลยุทธ์ที่แนะนำ
+- เลือกระหว่าง Avalanche / Snowball / Consolidation / Refinance
+- เหตุผลที่เลือก
+- ลำดับการโจมตีหนี้
+
+## ✨ เพิ่มรายได้
+- 3-5 วิธีเฉพาะเจาะจง พร้อมตัวเลขเป้าหมาย
+- เช่น "หางาน freelance 5,000-10,000 บาท/เดือน"
+- หรือ "ขายของไม่ใช้ในบ้าน คาด ฿20,000"
+
+## 💸 ลดรายจ่าย
+- 3-5 วิธีเฉพาะเจาะจง
+- ระบุหมวดที่ใช้เกินงบ (ถ้ามี)
+- เช่น "ลดอาหารนอกบ้าน ฿3,000/เดือน"
+- หรือ "ยกเลิก subscription ที่ไม่ใช้"
+
+## 📅 กรอบเวลา (Timeline)
+- ปลดหนี้ทั้งหมดใน X เดือน/ปี
+- Milestone รายไตรมาส
+- เป้าหมายเงินเก็บฉุกเฉินคู่ขนาน
+
+## ⚠️ เตือน
+- ความเสี่ยงที่ต้องระวัง
+- ห้ามทำอะไร
+
+ตัวเลขทุกตัวให้ใช้บาทเต็ม (฿) ห้ามใช้ K/M ย่อ
+อ้างอิงเทคนิคจริง เช่น คลินิกแก้หนี้ ธปท., รวมหนี้สินเชื่อบุคคล, รีไฟแนนซ์บ้าน
+${FINANCE_EXPERTISE_TH}`;
+
+  const userMessage = `ขอคำแนะนำในการจัดการหนี้ทั้งหมดของผู้ใช้ — เน้นวิธีปลดให้เร็วที่สุดด้วยเงื่อนไขจริง
+
+**หนี้ทั้งหมด (${debts.length} ก้อน):**
+${debtList}
+
+**ข้อมูลทางการเงิน (เฉลี่ย ${snapshot.active_months} เดือนล่าสุด):**
+- รายรับ/เดือน: ฿${snapshot.monthly_income.toLocaleString()}
+- รายจ่าย/เดือน (รวมหนี้): ฿${snapshot.monthly_expense_total.toLocaleString()}
+- ผ่อนหนี้/เดือน: ฿${snapshot.existing_debt_payments.toLocaleString()}
+- เงินเหลือใช้/เดือน: ฿${disposableIncome.toLocaleString()}
+- DTI: ${dti.toFixed(1)}%
+- หนี้รวม: ฿${snapshot.total_debt.toLocaleString()} (${monthsToCover.toFixed(1)} เท่าของรายได้/เดือน)
+- สินทรัพย์รวม: ฿${snapshot.total_assets.toLocaleString()}
+- เงินสดที่เข้าถึงได้: ฿${snapshot.cash_available.toLocaleString()}
+${budgetText}
+
+**กลยุทธ์ที่เลือก:** ${chosenStrategy === 'avalanche' ? 'Avalanche (ดอกสูงก่อน)' : 'Snowball (ก้อนเล็กก่อน)'}
+**จ่ายเพิ่ม/เดือน:** ฿${extra_per_month.toLocaleString()}
+
+ให้คำแนะนำที่ปฏิบัติได้จริง โฟกัสที่ "เพิ่มรายได้" และ "ลดรายจ่าย" ที่เป็นไปได้ในกรณีนี้ — อย่ายกตัวอย่างเก่าๆ`;
+
+  try {
+    const result = await chat(
+      profile.ai_provider as AIProvider,
+      apiKey,
+      [{ role: 'user', content: userMessage }],
+      systemPrompt
+    );
+    return { ok: true, advice: result.text };
+  } catch (e: any) {
+    console.error('analyzeDebtSituation:', e?.message);
+    return { ok: false, error: 'ai_error' };
+  }
+}

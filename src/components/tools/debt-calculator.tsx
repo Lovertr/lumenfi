@@ -6,9 +6,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Trophy, Snowflake, Mountain, Save, Target, CheckCircle2, X, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Trophy, Snowflake, Mountain, Save, Target, CheckCircle2, X, Loader2, Brain, Sparkles } from 'lucide-react';
+import { renderMarkdown } from '@/lib/markdown';
 import { formatTHB, cn } from '@/lib/utils';
-import { saveDebtPlan, deactivateDebtPlan, quickCreateDebt } from '@/app/[locale]/(app)/tools/debt/actions';
+import { saveDebtPlan, deactivateDebtPlan, quickCreateDebt, analyzeDebtSituation } from '@/app/[locale]/(app)/tools/debt/actions';
 import { useRouter } from 'next/navigation';
 
 interface DebtItem {
@@ -27,6 +28,17 @@ interface ActivePlan {
   total_interest: number | null;
   payoff_order: { debt_id?: string; name: string; month: number }[] | null;
   created_at: string;
+}
+
+interface FinancialSnapshot {
+  monthly_income: number;
+  monthly_expense_total: number;
+  existing_debt_payments: number;
+  total_debt: number;
+  cash_available: number;
+  total_assets: number;
+  active_months: number;
+  budget_categories?: { name: string; budget: number; spent: number }[];
 }
 
 type Strategy = 'avalanche' | 'snowball';
@@ -124,9 +136,11 @@ function simulate(
 export function DebtCalculator({
   initialDebts = [],
   activePlan = null,
+  snapshot = null,
 }: {
   initialDebts?: { id: string; name: string; current_balance: number; interest_rate: number; monthly_payment: number | null }[];
   activePlan?: ActivePlan | null;
+  snapshot?: FinancialSnapshot | null;
 }) {
   const t = useTranslations('DebtCalc');
 
@@ -164,6 +178,35 @@ export function DebtCalculator({
   const [newType, setNewType] = useState('credit_card');
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+
+  const [aiAdvice, setAiAdvice] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  async function askAI() {
+    if (!snapshot) {
+      setAiError('no_snapshot');
+      return;
+    }
+    setAiLoading(true);
+    setAiError(null);
+    setAiAdvice(null);
+    const r = await analyzeDebtSituation(
+      validDebts.map((d) => ({
+        name: d.name,
+        type: 'debt',
+        balance: d.balance,
+        rate: d.rate,
+        monthly_payment: d.minPayment,
+      })),
+      snapshot,
+      extraNum,
+      chosenStrategy
+    );
+    setAiLoading(false);
+    if (r.ok && r.advice) setAiAdvice(r.advice);
+    else setAiError(r.error ?? 'unknown');
+  }
 
   async function handleQuickCreate() {
     setAddError(null);
@@ -382,16 +425,52 @@ export function DebtCalculator({
               <div className="text-sm">
                 <p className="font-semibold">{t('comparison')}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {t('avalancheSaves', {
-                    amount: formatTHB(snowball.totalInterest - avalanche.totalInterest),
-                    months: snowball.months - avalanche.months,
-                  })}
+                  {validDebts.length === 1
+                    ? t('singleDebtNoCompare')
+                    : avalanche.totalInterest === snowball.totalInterest && avalanche.months === snowball.months
+                    ? t('strategiesEqual')
+                    : t('avalancheSaves', {
+                        amount: formatTHB(Math.abs(snowball.totalInterest - avalanche.totalInterest)),
+                        months: Math.abs(snowball.months - avalanche.months),
+                      })}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
+
+      {/* AI advisor */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-sm font-semibold">
+              <Brain className="h-4 w-4 text-purple-600" />
+              {t('aiAdvisorTitle')}
+            </p>
+            <Button size="sm" onClick={askAI} disabled={aiLoading || validDebts.length === 0 || !snapshot}>
+              {aiLoading ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Sparkles className="mr-1 h-3 w-3" />}
+              {aiLoading ? t('analyzing') : aiAdvice ? t('regenerate') : t('askAI')}
+            </Button>
+          </div>
+          {aiError && (
+            <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
+              {aiError === 'no_ai_key' ? t('noAiKey')
+                : aiError === 'no_snapshot' ? t('noSnapshot')
+                : aiError === 'ai_error' ? t('aiFailed')
+                : aiError}
+            </div>
+          )}
+          {aiAdvice && (
+            <div className="mt-3 rounded-lg border bg-muted/20 p-3 text-sm">
+              {renderMarkdown(aiAdvice)}
+            </div>
+          )}
+          {!aiAdvice && !aiError && !aiLoading && (
+            <p className="mt-2 text-xs text-muted-foreground">{t('aiAdvisorHint')}</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Save plan */}
       {validDebts.length > 0 && (
