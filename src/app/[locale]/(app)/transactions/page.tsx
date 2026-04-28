@@ -50,6 +50,12 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <Button asChild size="sm">
+            <Link href="/transactions/new">
+              <Plus className="mr-1 h-4 w-4" />
+              {t('add')}
+            </Link>
+          </Button>
           <LanguageSwitcher />
           <LogoutButton />
         </div>

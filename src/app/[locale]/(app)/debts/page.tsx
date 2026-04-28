@@ -61,6 +61,12 @@ export default async function DebtsPage({ params }: { params: Promise<{ locale: 
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <Button asChild size="sm">
+            <Link href="/debts/new">
+              <Plus className="mr-1 h-4 w-4" />
+              {t('addDebt')}
+            </Link>
+          </Button>
           <LanguageSwitcher />
           <LogoutButton />
         </div>

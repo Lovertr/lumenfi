@@ -81,6 +81,12 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <Button asChild size="sm">
+            <Link href="/investments/new">
+              <Plus className="mr-1 h-4 w-4" />
+              {t('addInvestment')}
+            </Link>
+          </Button>
           <LanguageSwitcher />
           <LogoutButton />
         </div>

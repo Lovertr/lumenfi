@@ -266,7 +266,8 @@
       "to_account_required": "Please select destination account",
       "transfer_same_account": "Source and destination must differ",
       "transfer_need_two_accounts": "Transfers need at least 2 accounts — add another account first"
-    }
+    },
+    "add": "Add"
   },
   "Goals": {
     "title": "Financial Goals",
