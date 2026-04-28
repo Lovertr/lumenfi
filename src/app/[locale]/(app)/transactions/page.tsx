@@ -104,6 +104,16 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
                 <CardContent className="divide-y p-0">
                   {items.map((tx) => {
                     const isIncome = tx.type === 'income';
+                    const isExpense = tx.type === 'expense';
+                    const isTransfer = tx.type === 'transfer';
+                    const amountClass = isIncome
+                      ? 'font-bold text-green-600'
+                      : isExpense
+                        ? 'font-bold text-red-600'
+                        : 'font-bold text-foreground';
+                    const sign = isIncome ? '+' : isExpense ? '-' : '';
+                    const fallbackLabel = isIncome ? 'Income' : isExpense ? 'Expense' : 'Transfer';
+                    const fallbackIcon = isTransfer ? '🔄' : '💰';
                     return (
                       <div key={tx.id} className="flex items-center gap-3 p-3">
                         <div
@@ -114,11 +124,11 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
                               : '#F1F5F9',
                           }}
                         >
-                          {tx.category?.icon ?? '💰'}
+                          {tx.category?.icon ?? fallbackIcon}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">
-                            {tx.category?.name ?? (isIncome ? 'Income' : 'Expense')}
+                            {tx.category?.name ?? fallbackLabel}
                           </p>
                           <p className="text-xs text-muted-foreground truncate">
                             {tx.account?.name}
@@ -126,8 +136,8 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className={isIncome ? 'font-bold text-success' : 'font-bold'}>
-                            {isIncome ? '+' : '-'}
+                          <p className={amountClass}>
+                            {sign}
                             {formatTHB(Number(tx.amount), { compact: true })}
                           </p>
                         </div>

@@ -251,9 +251,20 @@ export default async function AccountDetailPage({
                   {items.map((tx) => {
                     const isTransferIn = tx.type === 'transfer' && tx.to_account_id === id;
                     const isTransferOut = tx.type === 'transfer' && tx.account_id === id;
-                    const isIncome = tx.type === 'income' || isTransferIn;
-                    const sign = isIncome ? '+' : '-';
-                    const colorClass = isIncome ? 'text-green-600' : 'text-red-600';
+                    const isTransfer = tx.type === 'transfer';
+                    const sign =
+                      tx.type === 'income'
+                        ? '+'
+                        : tx.type === 'expense'
+                          ? '-'
+                          : isTransferIn
+                            ? '+'
+                            : '-';
+                    const colorClass = isTransfer
+                      ? 'font-bold text-foreground'
+                      : tx.type === 'income'
+                        ? 'font-bold text-green-600'
+                        : 'font-bold text-red-600';
 
                     let icon: string;
                     let label: string;
@@ -290,7 +301,7 @@ export default async function AccountDetailPage({
                             <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
                           )}
                         </div>
-                        <p className={`font-bold ${colorClass}`}>
+                        <p className={colorClass}>
                           {sign}
                           {formatTHB(Number(tx.amount), { compact: true })}
                         </p>
