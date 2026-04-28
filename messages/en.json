@@ -372,7 +372,8 @@
     "tax": "Tax Calculator",
     "taxDesc": "Thai personal income tax tool",
     "debtCalc": "Debt Payoff Planner",
-    "debtCalcDesc": "Avalanche vs Snowball strategies"
+    "debtCalcDesc": "Avalanche vs Snowball strategies",
+    "scan": "Scan"
   },
   "Investments": {
     "title": "Investments",

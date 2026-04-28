@@ -15,6 +15,10 @@ import {
   FolderOpen,
   FileBarChart,
   Activity,
+  Repeat,
+  Calculator,
+  MoreHorizontal,
+  Camera,
 } from 'lucide-react';
 import { LogoMark, Wordmark } from '@/components/brand/logo-mark';
 import { cn } from '@/lib/utils';
@@ -30,17 +34,23 @@ export function DesktopSidebar() {
   const primary = [
     { href: '/dashboard', icon: Home, label: tNav('home') },
     { href: '/transactions', icon: ListChecks, label: tNav('transactions') },
+    { href: '/transactions/scan', icon: Camera, label: tMore('scan') ?? 'Scan' },
+    { href: '/recurring', icon: Repeat, label: tMore('recurring') },
     { href: '/cashflow', icon: Activity, label: 'Cash Flow' },
     { href: '/accounts', icon: Wallet, label: tDash('quickActions.accounts') },
     { href: '/debts', icon: CreditCard, label: tDash('quickActions.debts') },
     { href: '/goals', icon: Target, label: tDash('quickActions.goals') },
     { href: '/investments', icon: TrendingUp, label: tDash('quickActions.investments') },
+    { href: '/budgets', icon: Wallet, label: tMore('budgets') },
     { href: '/ai', icon: Brain, label: tNav('ai') },
   ];
 
   const secondary = [
-    { href: '/categories', icon: FolderOpen, label: tMore('categories') },
+    { href: '/tools/tax', icon: Calculator, label: tMore('tax') },
+    { href: '/tools/debt', icon: CreditCard, label: tMore('debtCalc') },
     { href: '/reports', icon: FileBarChart, label: tMore('reports') },
+    { href: '/categories', icon: FolderOpen, label: tMore('categories') },
+    { href: '/more', icon: MoreHorizontal, label: tNav('more') },
     { href: '/settings', icon: Settings, label: tMore('settings') },
   ];
 
@@ -112,10 +122,4 @@ function NavLink({
         active
           ? 'bg-primary/10 text-primary'
           : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-      )}
-    >
-      <Icon className="h-4 w-4" />
-      {label}
-    </Link>
-  );
-}
+    
