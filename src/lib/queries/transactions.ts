@@ -31,7 +31,13 @@ export async function getRecentTransactions(limit = 50): Promise<Transaction[]> 
       console.warn('getRecentTransactions:', error.message);
       return [];
     }
-    return (data as unknown as Transaction[]) ?? [];
+    // Normalize: Supabase join may return single object or array — flatten to object
+    const normalized = (data ?? []).map((row: any) => ({
+      ...row,
+      category: Array.isArray(row.category) ? row.category[0] ?? null : row.category,
+      account: Array.isArray(row.account) ? row.account[0] ?? null : row.account,
+    }));
+    return normalized as Transaction[];
   } catch {
     return [];
   }
@@ -86,21 +92,21 @@ export async function getTopCategories(limit = 5): Promise<
     if (error || !data) return [];
 
     const map = new Map<string, { name: string; icon: string; color: string; amount: number }>();
-    for (const t of data as Array<{
-      amount: number;
-      category: { name: string; icon: string; color: string } | null;
-    }>) {
-      if (!t.category) continue;
-      const key = t.category.name;
+    for (const t of (data as any[]) ?? []) {
+      // category from join — could be object or array depending on Supabase
+      const cat = Array.isArray(t.category) ? t.category[0] : t.category;
+      if (!cat) continue;
+      const key = cat.name as string;
+      const amt = Number(t.amount);
       const existing = map.get(key);
       if (existing) {
-        existing.amount += Number(t.amount);
+        existing.amount += amt;
       } else {
         map.set(key, {
-          name: t.category.name,
-          icon: t.category.icon,
-          color: t.category.color,
-          amount: Number(t.amount),
+          name: cat.name,
+          icon: cat.icon,
+          color: cat.color,
+          amount: amt,
         });
       }
     }

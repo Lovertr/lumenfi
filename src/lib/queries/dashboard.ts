@@ -93,15 +93,17 @@ export async function getDashboardData(): Promise<DashboardData> {
       if (t.type === 'income') monthIncome += amt;
       if (t.type === 'expense') {
         monthExpense += amt;
-        if (t.category) {
-          const k = t.category.name;
+        // category from Supabase join — could be object or array
+        const cat = Array.isArray(t.category) ? t.category[0] : t.category;
+        if (cat?.name) {
+          const k = cat.name as string;
           const existing = catMap.get(k);
           if (existing) existing.amount += amt;
           else
             catMap.set(k, {
-              name: t.category.name,
-              icon: t.category.icon,
-              color: t.category.color,
+              name: cat.name,
+              icon: cat.icon,
+              color: cat.color,
               amount: amt,
             });
         }

@@ -2,7 +2,8 @@ import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Brain, Sparkles, Lock, Settings as SettingsIcon } from 'lucide-react';
+import { ArrowLeft, Brain, Lock, Settings as SettingsIcon } from 'lucide-react';
+import { SuggestedPrompts } from '@/components/ai/suggested-prompts';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { createClient } from '@/lib/supabase/server';
@@ -91,29 +92,7 @@ export default async function AIPage({ params }: { params: Promise<{ locale: str
           </Card>
 
           {/* Suggested prompts */}
-          <Card>
-            <CardContent className="p-4">
-              <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                <Sparkles className="h-4 w-4 text-primary" />
-                ลองเริ่มจากคำถามเหล่านี้
-              </p>
-              <div className="space-y-2">
-                {[
-                  t('chat.suggestions.0'),
-                  t('chat.suggestions.1'),
-                  t('chat.suggestions.2'),
-                  t('chat.suggestions.3'),
-                ].map((sug) => (
-                  <button
-                    key={sug}
-                    className="w-full rounded-lg border bg-background px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/40"
-                  >
-                    {sug}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <SuggestedPrompts />
 
           <Card className="border-dashed">
             <CardContent className="p-6 text-center">
