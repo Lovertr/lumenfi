@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { NewGoalForm } from '@/components/goals/new-goal-form';
 
+export const dynamic = "force-dynamic";
+
 export default async function NewGoalPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);

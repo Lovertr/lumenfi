@@ -10,6 +10,8 @@ import { materializeDueRecurring } from '@/lib/recurring';
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
 import { createClient } from '@/lib/supabase/server';
 import {
+
+export const dynamic = "force-dynamic";
   TrendingUp,
   TrendingDown,
   Target,

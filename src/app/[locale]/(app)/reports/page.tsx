@@ -9,6 +9,8 @@ import { createClient } from '@/lib/supabase/server';
 import { formatTHB } from '@/lib/utils';
 import { ReportsCharts } from '@/components/reports/reports-charts';
 
+export const dynamic = "force-dynamic";
+
 interface TxRow {
   type: 'income' | 'expense' | 'transfer';
   amount: number;

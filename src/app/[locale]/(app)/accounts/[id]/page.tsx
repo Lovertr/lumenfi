@@ -10,6 +10,8 @@ import { formatTHB } from '@/lib/utils';
 import { accountTypeConfig, type AccountType } from '@/components/accounts/account-type-config';
 import { AccountMovementFilters } from '@/components/accounts/account-movement-filters';
 
+export const dynamic = "force-dynamic";
+
 interface Tx {
   id: string;
   type: 'income' | 'expense' | 'transfer';

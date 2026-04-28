@@ -13,6 +13,8 @@ import { getCashFlowAnalysis } from '@/lib/queries/cashflow';
 import { CashFlowChart } from '@/components/cashflow/cashflow-chart';
 import { CashFlowAIButton } from '@/components/cashflow/cashflow-ai-button';
 
+export const dynamic = "force-dynamic";
+
 export default async function CashFlowPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);

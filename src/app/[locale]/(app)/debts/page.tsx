@@ -10,6 +10,8 @@ import { Plus, CreditCard, ArrowLeft, Pencil, Target as TargetIcon, Mountain, Sn
 import { Link as IntlLink } from '@/i18n/routing';
 import { debtTypeConfig, type DebtType } from '@/components/debts/debt-type-config';
 
+export const dynamic = "force-dynamic";
+
 interface Debt {
   id: string;
   name: string;

@@ -8,6 +8,8 @@ import { createClient } from '@/lib/supabase/server';
 import { RecurringEditForm } from '@/components/recurring/recurring-edit-form';
 import { getCategories } from '@/lib/categories';
 
+export const dynamic = "force-dynamic";
+
 async function getRecurring(id: string) {
   const supabase = createClient();
   const { data } = await supabase

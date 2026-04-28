@@ -10,6 +10,8 @@ import { formatTHB } from '@/lib/utils';
 import { accountTypeConfig, type AccountType } from '@/components/accounts/account-type-config';
 import { Plus, Wallet, ArrowLeft } from 'lucide-react';
 
+export const dynamic = "force-dynamic";
+
 interface Account {
   id: string;
   name: string;

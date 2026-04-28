@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { NewDebtForm } from '@/components/debts/new-debt-form';
 
+export const dynamic = "force-dynamic";
+
 export default async function NewDebtPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);

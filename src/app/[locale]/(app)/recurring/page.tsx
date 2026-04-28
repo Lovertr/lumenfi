@@ -9,6 +9,8 @@ import { UpcomingBanner } from '@/components/recurring/upcoming-banner';
 import { NotificationToggle } from '@/components/recurring/notification-toggle';
 import { RecurringRow } from '@/components/transactions/recurring-row';
 
+export const dynamic = "force-dynamic";
+
 interface RecurringWithRefs {
   id: string;
   type: 'income' | 'expense';

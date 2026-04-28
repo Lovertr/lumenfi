@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { NewAccountForm } from '@/components/accounts/new-account-form';
 import { ArrowLeft } from 'lucide-react';
 
+export const dynamic = "force-dynamic";
+
 export default async function NewAccountPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
