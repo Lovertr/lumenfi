@@ -167,42 +167,76 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
 
             {/* Section 2: From recurring/fixed rules — broken down per source */}
             {(cf.upcomingFixedIncome > 0 || cf.upcomingFixedExpense > 0) && (
-              <div className="space-y-1.5 rounded-lg border bg-muted/20 p-2.5">
+              <div className="space-y-2 rounded-lg border bg-muted/20 p-2.5">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {isTh ? 'B. รายการประจำที่ตั้งไว้ (Recurring + ค่างวดหนี้)' : 'B. Scheduled recurring + debt'}
+                  {isTh ? 'B. รายการประจำที่ตั้งไว้ (รายละเอียดเต็ม)' : 'B. Scheduled rules (full breakdown)'}
                 </p>
-                {cf.recurringIncomeTotal > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {isTh ? `รายรับประจำ (${cf.recurringIncomeCount} รายการ)` : `Recurring income (${cf.recurringIncomeCount})`}
-                    </span>
-                    <span className="text-success font-medium">+{formatTHB(cf.recurringIncomeTotal)}</span>
-                  </div>
+
+                {cf.recurringIncomeList.length > 0 && (
+                  <details className="text-xs">
+                    <summary className="flex cursor-pointer items-center justify-between">
+                      <span className="text-muted-foreground">
+                        {isTh ? `▸ รายรับประจำ (${cf.recurringIncomeCount} รายการ)` : `▸ Recurring income (${cf.recurringIncomeCount})`}
+                      </span>
+                      <span className="text-success font-medium">+{formatTHB(cf.recurringIncomeTotal)}</span>
+                    </summary>
+                    <ul className="mt-1.5 space-y-0.5 border-l-2 border-success/30 pl-3 text-[11px]">
+                      {cf.recurringIncomeList.map((r, i) => (
+                        <li key={i} className="flex justify-between">
+                          <span className="text-muted-foreground">{r.name} · ทุกวันที่ {r.dayOfMonth}</span>
+                          <span className="text-success">+{formatTHB(r.amount)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
                 )}
-                {cf.recurringExpenseTotal > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {isTh ? `รายจ่ายประจำ (${cf.recurringExpenseCount} รายการ)` : `Recurring expense (${cf.recurringExpenseCount})`}
-                    </span>
-                    <span className="text-destructive font-medium">-{formatTHB(cf.recurringExpenseTotal)}</span>
-                  </div>
+
+                {cf.recurringExpenseList.length > 0 && (
+                  <details className="text-xs" open>
+                    <summary className="flex cursor-pointer items-center justify-between">
+                      <span className="text-muted-foreground">
+                        {isTh ? `▸ รายจ่ายประจำ (${cf.recurringExpenseCount} รายการ)` : `▸ Recurring expense (${cf.recurringExpenseCount})`}
+                      </span>
+                      <span className="text-destructive font-medium">-{formatTHB(cf.recurringExpenseTotal)}</span>
+                    </summary>
+                    <ul className="mt-1.5 space-y-0.5 border-l-2 border-destructive/30 pl-3 text-[11px]">
+                      {cf.recurringExpenseList.map((r, i) => (
+                        <li key={i} className="flex justify-between">
+                          <span className="text-muted-foreground">{r.name} · ทุกวันที่ {r.dayOfMonth}</span>
+                          <span className="text-destructive">-{formatTHB(r.amount)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
                 )}
-                {cf.debtMonthlyTotal > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {isTh ? 'ค่างวดหนี้รวม' : 'Debt payments'}
-                    </span>
-                    <span className="text-destructive font-medium">-{formatTHB(cf.debtMonthlyTotal)}</span>
-                  </div>
+
+                {cf.debtList.length > 0 && (
+                  <details className="text-xs">
+                    <summary className="flex cursor-pointer items-center justify-between">
+                      <span className="text-muted-foreground">
+                        {isTh ? `▸ ค่างวดหนี้ (${cf.debtList.length} ก้อน)` : `▸ Debt payments (${cf.debtList.length})`}
+                      </span>
+                      <span className="text-destructive font-medium">-{formatTHB(cf.debtMonthlyTotal)}</span>
+                    </summary>
+                    <ul className="mt-1.5 space-y-0.5 border-l-2 border-destructive/30 pl-3 text-[11px]">
+                      {cf.debtList.map((d, i) => (
+                        <li key={i} className="flex justify-between">
+                          <span className="text-muted-foreground">{d.name}</span>
+                          <span className="text-destructive">-{formatTHB(d.amount)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
                 )}
+
                 <div className="flex justify-between border-t pt-1.5">
                   <span className="font-semibold">{isTh ? 'สุทธิตามที่ตั้ง' : 'Net per rules'}</span>
                   <span className={`font-bold ${(cf.upcomingFixedIncome - cf.upcomingFixedExpense) >= 0 ? 'text-success' : 'text-destructive'}`}>
                     {(cf.upcomingFixedIncome - cf.upcomingFixedExpense) >= 0 ? '+' : ''}{formatTHB(cf.upcomingFixedIncome - cf.upcomingFixedExpense)}
                   </span>
                 </div>
-                <p className="text-[10px] italic text-muted-foreground">
-                  {isTh ? '⚠ หมายเหตุ: B อาจซ้อนกับ A เช่น หากตั้ง Recurring 15,000 แล้วยังบันทึกธุรกรรมจริงด้วยจะนับ 2 ครั้ง' : 'Note: B may overlap with A — e.g. if you set up a 15K recurring AND also log actual transactions, both will count'}
+                <p className="flex items-center gap-1 text-[10px] italic text-muted-foreground">
+                  💡 {isTh ? 'แตะหัวข้อเพื่อดูแต่ละ rule — ถ้าซ้ำให้ลบใน /recurring' : 'Tap to expand each rule — duplicates can be deleted in /recurring'}
                 </p>
               </div>
             )}

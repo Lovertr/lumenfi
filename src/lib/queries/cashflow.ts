@@ -45,6 +45,9 @@ export interface CashFlowAnalysis {
   recurringExpenseTotal: number;
   recurringIncomeCount: number;
   recurringExpenseCount: number;
+  recurringIncomeList: { name: string; amount: number; dayOfMonth: number }[];
+  recurringExpenseList: { name: string; amount: number; dayOfMonth: number }[];
+  debtList: { name: string; amount: number }[];
 }
 
 function startOfDay(d: Date): Date {
@@ -67,6 +70,9 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
     recurringExpenseTotal: 0,
     recurringIncomeCount: 0,
     recurringExpenseCount: 0,
+    recurringIncomeList: [],
+    recurringExpenseList: [],
+    debtList: [],
     last30: { income: 0, expense: 0, net: 0 },
     last60: { income: 0, expense: 0, net: 0 },
     last90: { income: 0, expense: 0, net: 0 },
@@ -104,11 +110,11 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
         .eq('archived', false),
       supabase
         .from('debts')
-        .select('monthly_payment')
+        .select('name, monthly_payment')
         .eq('status', 'active'),
       supabase
         .from('recurring_transactions')
-        .select('type, amount, day_of_month')
+        .select('id, type, amount, day_of_month, note, category:categories(name)')
         .eq('user_id', user.id)
         .eq('is_active', true),
     ]);
@@ -190,17 +196,29 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
     let recurringExpenseTotal = 0;
     let recurringIncomeCount = 0;
     let recurringExpenseCount = 0;
+    const debtList: { name: string; amount: number }[] = [];
+    const recurringIncomeList: { name: string; amount: number; dayOfMonth: number }[] = [];
+    const recurringExpenseList: { name: string; amount: number; dayOfMonth: number }[] = [];
+
     for (const d of (debtsRes.data ?? []) as any[]) {
-      debtMonthlyTotal += Number(d.monthly_payment ?? 0);
+      const amt = Number(d.monthly_payment ?? 0);
+      if (amt > 0) {
+        debtMonthlyTotal += amt;
+        debtList.push({ name: d.name, amount: amt });
+      }
     }
     for (const r of (recurRes.data ?? []) as any[]) {
       const monthAmt = Number(r.amount);
+      const cat = Array.isArray(r.category) ? r.category[0] : r.category;
+      const name = cat?.name ?? r.note ?? '—';
       if (r.type === 'income') {
         recurringIncomeTotal += monthAmt;
         recurringIncomeCount++;
+        recurringIncomeList.push({ name, amount: monthAmt, dayOfMonth: r.day_of_month });
       } else if (r.type === 'expense') {
         recurringExpenseTotal += monthAmt;
         recurringExpenseCount++;
+        recurringExpenseList.push({ name, amount: monthAmt, dayOfMonth: r.day_of_month });
       }
       // 'transfer' ignored
     }
@@ -268,6 +286,9 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
       recurringExpenseTotal,
       recurringIncomeCount,
       recurringExpenseCount,
+      recurringIncomeList,
+      recurringExpenseList,
+      debtList,
     };
   } catch (e) {
     console.warn('getCashFlowAnalysis:', e);
