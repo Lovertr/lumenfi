@@ -6,10 +6,9 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { formatTHB } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/server';
-import { Plus, CreditCard, ArrowLeft, Trash2, Target as TargetIcon, Mountain, Snowflake } from 'lucide-react';
+import { Plus, CreditCard, ArrowLeft, Pencil, Target as TargetIcon, Mountain, Snowflake } from 'lucide-react';
 import { Link as IntlLink } from '@/i18n/routing';
 import { debtTypeConfig, type DebtType } from '@/components/debts/debt-type-config';
-import { deleteDebt } from './actions';
 
 interface Debt {
   id: string;
@@ -168,40 +167,39 @@ export default async function DebtsPage({ params }: { params: Promise<{ locale: 
             const cfg = debtTypeConfig[debt.type];
             const Icon = cfg.icon;
             return (
-              <Card key={debt.id}>
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${cfg.bg} ${cfg.color}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate font-semibold">{debt.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {tType(debt.type)} · {Number(debt.interest_rate).toFixed(2)}%
-                      {debt.remaining_term && ` · ${debt.remaining_term} เดือน`}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-destructive">
-                      {formatTHB(Number(debt.current_balance))}
-                    </p>
-                    {debt.monthly_payment && (
+              <Link key={debt.id} href={`/debts/${debt.id}/edit`}>
+                <Card className="transition-all hover:border-primary/40 hover:shadow-sm active:scale-[0.99]">
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${cfg.bg} ${cfg.color}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate font-semibold">{debt.name}</p>
+                      {planIdx >= 0 && planMonth != null && (
+                        <p className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                          <TargetIcon className="h-2.5 w-2.5" />
+                          {locale === 'th' ? `ลำดับที่ ${planIdx + 1} · ปลดเดือน ${planMonth}` : `#${planIdx + 1} · pays off month ${planMonth}`}
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground">
-                        {formatTHB(Number(debt.monthly_payment))}/mo
+                        {tType(debt.type)} · {Number(debt.interest_rate).toFixed(2)}%
+                        {debt.remaining_term && ` · ${debt.remaining_term} เดือน`}
                       </p>
-                    )}
-                  </div>
-                  <form action={deleteDebt}>
-                    <input type="hidden" name="id" value={debt.id} />
-                    <button
-                      type="submit"
-                      className="text-muted-foreground hover:text-destructive"
-                      aria-label="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </form>
-                </CardContent>
-              </Card>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-destructive">
+                        {formatTHB(Number(debt.current_balance))}
+                      </p>
+                      {debt.monthly_payment && (
+                        <p className="text-xs text-muted-foreground">
+                          {formatTHB(Number(debt.monthly_payment))}/mo
+                        </p>
+                      )}
+                    </div>
+                    <Pencil className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
           <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)] lg:bottom-8 lg:right-8">

@@ -341,7 +341,9 @@
       "monthlyPayment": "Monthly payment",
       "totalTerm": "Total months",
       "startDate": "Start date",
-      "submit": "Save"
+      "submit": "Save",
+      "save": "Save",
+      "delete": "Delete this debt"
     },
     "types": {
       "credit_card": "Credit Card",
@@ -352,7 +354,8 @@
       "informal": "Informal Debt",
       "installment_zero": "0% Installment",
       "other": "Other"
-    }
+    },
+    "editTitle": "Edit Debt"
   },
   "More": {
     "title": "More",
@@ -650,6 +653,25 @@
     "aiHint": "AI analyzes all your numbers and gives case-specific advice",
     "noAiKey": "AI API key not set — go to AI Advisor → Settings",
     "aiFailed": "AI failed to analyze, try again",
-    "disclaimer": "Estimate only. Actual bank-offered rates may differ. Compare multiple banks before deciding."
+    "disclaimer": "Estimate only. Actual bank-offered rates may differ. Compare multiple banks before deciding.",
+    "rateType": "Interest method",
+    "rateAvg": "Avg rate %/yr",
+    "rateSteppedNote": "Rate from schedule below",
+    "rateSchedule": "Rate schedule",
+    "fromMonth": "From month",
+    "toMonth": "To",
+    "ongoing": "ongoing",
+    "ratePct": "Rate %/yr",
+    "addStep": "Add step",
+    "amortizationTitle": "Amortization (monthly schedule)",
+    "months": "months",
+    "thMonth": "Month",
+    "thRate": "Rate%",
+    "thPayment": "Payment",
+    "thInterest": "Interest",
+    "thPrincipal": "Principal",
+    "thBalance": "Balance",
+    "total": "Total",
+    "avg": "avg"
   }
 }

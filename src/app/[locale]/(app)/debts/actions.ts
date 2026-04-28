@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 
-const createSchema = z.object({
+const baseSchema = z.object({
   name: z.string().min(1).max(100),
   type: z.enum([
     'credit_card',
@@ -26,15 +26,11 @@ const createSchema = z.object({
   start_date: z.string(),
 });
 
-export async function createDebt(_prev: unknown, formData: FormData) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
-
+function parseDebtForm(formData: FormData) {
   const num = (key: string) => parseFloat((formData.get(key) as string) ?? '0');
   const intNum = (key: string) => parseInt((formData.get(key) as string) ?? '0', 10);
 
-  const parsed = createSchema.safeParse({
+  const parsed = baseSchema.safeParse({
     name: formData.get('name'),
     type: formData.get('type'),
     lender: formData.get('lender') || null,
@@ -45,10 +41,6 @@ export async function createDebt(_prev: unknown, formData: FormData) {
     total_term: intNum('total_term') || null,
     start_date: formData.get('start_date') || new Date().toISOString().slice(0, 10),
   });
-
-  if (!parsed.success) {
-    return { error: 'invalid_data' as const };
-  }
 
   // Type-specific extras
   const rate_type = (formData.get('rate_type') as string) || null;
@@ -75,22 +67,68 @@ export async function createDebt(_prev: unknown, formData: FormData) {
     return v && v.trim() ? v.trim() : null;
   };
 
+  return {
+    parsed,
+    extras: {
+      rate_type,
+      rate_schedule,
+      lock_in_months: intOrNull('lock_in_months'),
+      promo_end_date: strOrNull('promo_end_date'),
+      post_promo_rate: numOrNull('post_promo_rate'),
+      credit_limit: numOrNull('credit_limit'),
+      statement_day: intOrNull('statement_day'),
+      due_day: intOrNull('due_day'),
+    },
+  };
+}
+
+export async function createDebt(_prev: unknown, formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const { parsed, extras } = parseDebtForm(formData);
+  if (!parsed.success) return { error: 'invalid_data' as const };
+
   const { error } = await supabase.from('debts').insert({
     ...parsed.data,
     remaining_term: parsed.data.total_term,
     user_id: user.id,
-    rate_type,
-    rate_schedule,
-    lock_in_months: intOrNull('lock_in_months'),
-    promo_end_date: strOrNull('promo_end_date'),
-    post_promo_rate: numOrNull('post_promo_rate'),
-    credit_limit: numOrNull('credit_limit'),
-    statement_day: intOrNull('statement_day'),
-    due_day: intOrNull('due_day'),
+    ...extras,
   });
 
   if (error) {
     console.error('createDebt:', error);
+    return { error: 'generic' as const };
+  }
+
+  revalidatePath('/debts');
+  revalidatePath('/dashboard');
+  redirect('/debts');
+}
+
+export async function updateDebt(_prev: unknown, formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const id = formData.get('id') as string;
+  if (!id) return { error: 'invalid_data' as const };
+
+  const { parsed, extras } = parseDebtForm(formData);
+  if (!parsed.success) return { error: 'invalid_data' as const };
+
+  const { error } = await supabase
+    .from('debts')
+    .update({
+      ...parsed.data,
+      ...extras,
+    })
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('updateDebt:', error);
     return { error: 'generic' as const };
   }
 
@@ -108,4 +146,5 @@ export async function deleteDebt(formData: FormData) {
   await supabase.from('debts').delete().eq('id', id).eq('user_id', user.id);
   revalidatePath('/debts');
   revalidatePath('/dashboard');
+  redirect('/debts');
 }
