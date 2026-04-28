@@ -28,7 +28,7 @@ async function getRealDebts(): Promise<Debt[]> {
   const { data } = await supabase
     .from('debts')
     .select('id, name, current_balance, interest_rate, monthly_payment')
-    .eq('archived', false)
+    .eq('status', 'active')
     .order('created_at', { ascending: false });
   return ((data ?? []) as any[]).map((d) => ({
     id: d.id,

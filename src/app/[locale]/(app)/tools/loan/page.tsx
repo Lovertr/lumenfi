@@ -19,7 +19,7 @@ async function getFinancialContext() {
     supabase
       .from('debts')
       .select('current_balance, monthly_payment')
-      .eq('archived', false),
+      .eq('status', 'active'),
     supabase
       .from('transactions')
       .select('type, amount')
