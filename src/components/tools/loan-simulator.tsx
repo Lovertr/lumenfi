@@ -22,6 +22,10 @@ interface LoanContext {
   computed_income?: number;
   computed_expense_total?: number;
   computed_expense_excluding_debt?: number;
+  computed_window_months?: number;
+  computed_window_months_max?: number;
+  computed_total_income_window?: number;
+  computed_total_expense_window?: number;
 }
 
 interface DebtRow {
@@ -492,13 +496,26 @@ export function LoanSimulator({ context, debts = [] }: { context: LoanContext; d
           {(context.computed_income != null || context.computed_expense_total != null) && (
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-2.5 text-[11px] text-blue-900">
               <p className="flex items-center gap-1 font-semibold">
-                💡 {t('systemCalcTitle')}
+                💡 {t('systemCalcTitle', { months: context.computed_window_months ?? 6 })}
               </p>
               <ul className="mt-1 space-y-0.5">
-                <li>· {t('calcIncome30d')}: <span className="font-mono font-bold">{formatTHB(context.computed_income ?? 0)}</span></li>
-                <li>· {t('calcExpense30d')}: <span className="font-mono font-bold">{formatTHB(context.computed_expense_total ?? 0)}</span></li>
-                <li>· {t('calcExpenseExclDebt')}: <span className="font-mono font-bold">{formatTHB(context.computed_expense_excluding_debt ?? 0)}</span></li>
+                <li>· {t('avgIncomePerMonth')}: <span className="font-mono font-bold">{formatTHB(context.computed_income ?? 0)}</span>
+                  {context.computed_total_income_window != null && (
+                    <span className="ml-1 text-blue-700/70">({t('total')} {context.computed_window_months}{t('mo')}: {formatTHB(context.computed_total_income_window)})</span>
+                  )}
+                </li>
+                <li>· {t('avgExpensePerMonth')}: <span className="font-mono font-bold">{formatTHB(context.computed_expense_total ?? 0)}</span>
+                  {context.computed_total_expense_window != null && (
+                    <span className="ml-1 text-blue-700/70">({t('total')} {context.computed_window_months}{t('mo')}: {formatTHB(context.computed_total_expense_window)})</span>
+                  )}
+                </li>
+                <li>· {t('avgExpenseExclDebt')}: <span className="font-mono font-bold">{formatTHB(context.computed_expense_excluding_debt ?? 0)}</span></li>
               </ul>
+              {context.computed_window_months != null && context.computed_window_months_max != null && context.computed_window_months < context.computed_window_months_max && (
+                <p className="mt-1 text-[10px] italic text-blue-700/80">
+                  ⓘ {t('partialWindowNote', { active: context.computed_window_months, max: context.computed_window_months_max })}
+                </p>
+              )}
               <button
                 type="button"
                 onClick={() => {

@@ -692,11 +692,16 @@
     "comparePayoff": "Payoff time",
     "compareInterest": "Total interest",
     "compareHint": "Lower monthly = better cash flow; longer payoff = more interest — AI below balances both",
-    "systemCalcTitle": "System-calculated from last 30 days of transactions",
+    "systemCalcTitle": "System-calculated average from last {months} months",
     "calcIncome30d": "Income (last 30d)",
     "calcExpense30d": "Expense total (last 30d, incl. debt)",
     "calcExpenseExclDebt": "Expense excl. debt payments",
     "useSystemCalc": "Use system values",
-    "systemCalc": "System"
+    "systemCalc": "System",
+    "avgIncomePerMonth": "Avg income/month",
+    "avgExpensePerMonth": "Avg expense/month (incl. debt)",
+    "avgExpenseExclDebt": "Avg expense/month (excl. debt)",
+    "mo": "mo",
+    "partialWindowNote": "Only {active} of {max} months have data — average may be off"
   }
 }

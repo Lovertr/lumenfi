@@ -692,11 +692,16 @@
     "comparePayoff": "ระยะเวลาปลด",
     "compareInterest": "ดอกเบี้ยรวม",
     "compareHint": "จ่ายต่อเดือนน้อยลง = Cash Flow ดีขึ้น แต่ถ้าจบช้าลง = ดอกรวมอาจสูงขึ้น ต้อง balance ทั้งคู่ AI ด้านล่างจะวิเคราะห์ให้",
-    "systemCalcTitle": "ระบบคำนวณจากธุรกรรมล่าสุด 30 วัน — ใช้เป็นตัวอ้างอิง",
+    "systemCalcTitle": "ระบบคำนวณค่าเฉลี่ยจาก {months} เดือนล่าสุด — ใช้เป็นตัวอ้างอิง",
     "calcIncome30d": "รายรับรวม 30 วัน",
     "calcExpense30d": "รายจ่ายรวม 30 วัน (รวมหนี้)",
     "calcExpenseExclDebt": "รายจ่ายไม่รวมหนี้",
     "useSystemCalc": "ใช้ตัวเลขจากระบบ",
-    "systemCalc": "ระบบคำนวณ"
+    "systemCalc": "ระบบคำนวณ",
+    "avgIncomePerMonth": "รายรับเฉลี่ย/เดือน",
+    "avgExpensePerMonth": "รายจ่ายเฉลี่ย/เดือน (รวมหนี้)",
+    "avgExpenseExclDebt": "รายจ่ายเฉลี่ย/เดือน (ไม่รวมหนี้)",
+    "mo": "ด.",
+    "partialWindowNote": "มีข้อมูล {active} จาก {max} เดือน — ค่าเฉลี่ยอาจคลาดเคลื่อนถ้าข้อมูลไม่ครบช่วง"
   }
 }

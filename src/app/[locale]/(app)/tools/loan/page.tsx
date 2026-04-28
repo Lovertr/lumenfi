@@ -8,11 +8,17 @@ import { createClient } from '@/lib/supabase/server';
 async function getFinancialContext() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { monthly_income: 0, monthly_fixed_expenses: 0, existing_debt_payments: 0, total_debt: 0 };
+  if (!user) {
+    return {
+      monthly_income: 0, monthly_fixed_expenses: 0,
+      existing_debt_payments: 0, total_debt: 0,
+    };
+  }
 
-  // Last-30-day income / fixed expenses
-  const since = new Date();
-  since.setDate(since.getDate() - 30);
+  // Use a 6-month rolling window for more stable averages
+  const WINDOW_MONTHS = 6;
+  const now = new Date();
+  const since = new Date(now.getFullYear(), now.getMonth() - WINDOW_MONTHS + 1, 1);
   const sinceStr = since.toISOString().slice(0, 10);
 
   const [debtsRes, txRes] = await Promise.all([
@@ -22,16 +28,26 @@ async function getFinancialContext() {
       .eq('status', 'active'),
     supabase
       .from('transactions')
-      .select('type, amount')
+      .select('type, amount, date')
       .gte('date', sinceStr),
   ]);
 
-  let monthlyIncome = 0;
-  let monthlyExpense = 0;
+  let totalIncome = 0;
+  let totalExpense = 0;
+  // Track distinct months that have any activity to compute "active months"
+  const monthsSeen = new Set<string>();
   (txRes.data ?? []).forEach((t: any) => {
-    if (t.type === 'income') monthlyIncome += Number(t.amount);
-    else if (t.type === 'expense') monthlyExpense += Number(t.amount);
+    if (t.type === 'income') totalIncome += Number(t.amount);
+    else if (t.type === 'expense') totalExpense += Number(t.amount);
+    monthsSeen.add(((t.date as string) ?? '').slice(0, 7));
   });
+
+  // Default divisor = WINDOW_MONTHS, but if user has fewer active months, use that to avoid under-estimating
+  const activeMonths = Math.max(1, monthsSeen.size);
+  const divisor = Math.min(WINDOW_MONTHS, Math.max(activeMonths, 1));
+
+  const avgIncome = totalIncome / divisor;
+  const avgExpense = totalExpense / divisor;
 
   let totalDebt = 0;
   let existingDebtPayments = 0;
@@ -41,14 +57,18 @@ async function getFinancialContext() {
   });
 
   return {
-    monthly_income: Math.round(monthlyIncome),
-    monthly_fixed_expenses: Math.max(0, Math.round(monthlyExpense - existingDebtPayments)),
+    monthly_income: Math.round(avgIncome),
+    monthly_fixed_expenses: Math.max(0, Math.round(avgExpense - existingDebtPayments)),
     existing_debt_payments: Math.round(existingDebtPayments),
     total_debt: Math.round(totalDebt),
-    // Raw computed values (for displaying hints to user)
-    computed_income: Math.round(monthlyIncome),
-    computed_expense_total: Math.round(monthlyExpense),
-    computed_expense_excluding_debt: Math.max(0, Math.round(monthlyExpense - existingDebtPayments)),
+    // Hints for UI: average per month + total over window + months counted
+    computed_income: Math.round(avgIncome),
+    computed_expense_total: Math.round(avgExpense),
+    computed_expense_excluding_debt: Math.max(0, Math.round(avgExpense - existingDebtPayments)),
+    computed_window_months: divisor,
+    computed_window_months_max: WINDOW_MONTHS,
+    computed_total_income_window: Math.round(totalIncome),
+    computed_total_expense_window: Math.round(totalExpense),
   };
 }
 
