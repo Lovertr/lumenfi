@@ -173,7 +173,7 @@ export default async function AccountDetailPage({
               {isLiability ? t('outstanding') : t('balance')}
             </p>
             <p className={`text-2xl font-bold ${isLiability ? 'text-destructive' : ''}`}>
-              {formatTHB(Number(account.initial_balance), { compact: true })}
+              {formatTHB(Number(account.initial_balance))}
             </p>
             {account.bank_name && (
               <p className="mt-0.5 text-xs text-muted-foreground">
@@ -197,7 +197,7 @@ export default async function AccountDetailPage({
               {t('movementIn')}
             </p>
             <p className="mt-1 text-base font-bold text-green-600">
-              +{formatTHB(inflow, { compact: true })}
+              +{formatTHB(inflow)}
             </p>
           </CardContent>
         </Card>
@@ -208,7 +208,7 @@ export default async function AccountDetailPage({
               {t('movementOut')}
             </p>
             <p className="mt-1 text-base font-bold text-red-600">
-              -{formatTHB(outflow, { compact: true })}
+              -{formatTHB(outflow)}
             </p>
           </CardContent>
         </Card>
@@ -219,7 +219,7 @@ export default async function AccountDetailPage({
             </p>
             <p className={`mt-1 text-base font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {net >= 0 ? '+' : ''}
-              {formatTHB(net, { compact: true })}
+              {formatTHB(net)}
             </p>
           </CardContent>
         </Card>
@@ -303,7 +303,7 @@ export default async function AccountDetailPage({
                         </div>
                         <p className={colorClass}>
                           {sign}
-                          {formatTHB(Number(tx.amount), { compact: true })}
+                          {formatTHB(Number(tx.amount))}
                         </p>
                       </div>
                     );

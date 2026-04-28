@@ -101,14 +101,14 @@ export default async function DebtsPage({ params }: { params: Promise<{ locale: 
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">{t('totalDebt')}</p>
               <p className="mt-1 text-lg font-bold text-destructive">
-                {formatTHB(totalDebt, { compact: true })}
+                {formatTHB(totalDebt)}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">{t('monthlyPayment')}</p>
-              <p className="mt-1 text-lg font-bold">{formatTHB(totalMonthly, { compact: true })}</p>
+              <p className="mt-1 text-lg font-bold">{formatTHB(totalMonthly)}</p>
             </CardContent>
           </Card>
         </div>
@@ -182,11 +182,11 @@ export default async function DebtsPage({ params }: { params: Promise<{ locale: 
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-destructive">
-                      {formatTHB(Number(debt.current_balance), { compact: true })}
+                      {formatTHB(Number(debt.current_balance))}
                     </p>
                     {debt.monthly_payment && (
                       <p className="text-xs text-muted-foreground">
-                        {formatTHB(Number(debt.monthly_payment), { compact: true })}/mo
+                        {formatTHB(Number(debt.monthly_payment))}/mo
                       </p>
                     )}
                   </div>

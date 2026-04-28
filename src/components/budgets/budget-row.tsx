@@ -93,7 +93,7 @@ export function BudgetRow({
               <>
                 <div className="mt-1 flex items-baseline justify-between text-xs">
                   <span className={isOver ? 'font-semibold text-red-600' : 'text-muted-foreground'}>
-                    {formatTHB(spent, { compact: true })} / {formatTHB(budget, { compact: true })}
+                    {formatTHB(spent)} / {formatTHB(budget)}
                   </span>
                   <span className={isOver ? 'text-red-600' : 'text-muted-foreground'}>
                     {Math.round(percent)}%
@@ -110,7 +110,7 @@ export function BudgetRow({
                 </div>
                 {!isOver && remaining > 0 && (
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {t('remainingThisMonth')}: {formatTHB(remaining, { compact: true })}
+                    {t('remainingThisMonth')}: {formatTHB(remaining)}
                   </p>
                 )}
               </>

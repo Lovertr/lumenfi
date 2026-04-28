@@ -78,11 +78,11 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
           <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
             <div>
               <p className="opacity-70">{t('income')}</p>
-              <p className="font-semibold text-[#10B981]">+{formatTHB(totals.income, { compact: true })}</p>
+              <p className="font-semibold text-[#10B981]">+{formatTHB(totals.income)}</p>
             </div>
             <div>
               <p className="opacity-70">{t('expense')}</p>
-              <p className="font-semibold text-[#FCA5A5]">-{formatTHB(totals.expense, { compact: true })}</p>
+              <p className="font-semibold text-[#FCA5A5]">-{formatTHB(totals.expense)}</p>
             </div>
           </div>
         </CardContent>
@@ -150,7 +150,7 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
                         <div className="text-right">
                           <p className={amountClass}>
                             {sign}
-                            {formatTHB(Number(tx.amount), { compact: true })}
+                            {formatTHB(Number(tx.amount))}
                           </p>
                         </div>
                         <form action={deleteTransaction}>

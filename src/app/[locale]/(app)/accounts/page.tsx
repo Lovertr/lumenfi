@@ -86,7 +86,7 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">{t('totalAssets')}</p>
             <p className="mt-1 text-lg font-bold text-success">
-              {formatTHB(totalAssets, { compact: true })}
+              {formatTHB(totalAssets)}
             </p>
           </CardContent>
         </Card>
@@ -94,7 +94,7 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">{t('totalLiabilities')}</p>
             <p className="mt-1 text-lg font-bold text-destructive">
-              {formatTHB(totalLiabilities, { compact: true })}
+              {formatTHB(totalLiabilities)}
             </p>
           </CardContent>
         </Card>
@@ -139,11 +139,11 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
                     <div className="text-right">
                       <p className={`font-bold ${isLiability ? 'text-destructive' : ''}`}>
                         {isLiability ? '-' : ''}
-                        {formatTHB(Number(account.initial_balance), { compact: true })}
+                        {formatTHB(Number(account.initial_balance))}
                       </p>
                       {account.credit_limit && (
                         <p className="text-xs text-muted-foreground">
-                          / {formatTHB(account.credit_limit, { compact: true })}
+                          / {formatTHB(account.credit_limit)}
                         </p>
                       )}
                     </div>

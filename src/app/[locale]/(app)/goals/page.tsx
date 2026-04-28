@@ -140,9 +140,9 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
                         <Pencil className="h-4 w-4 shrink-0 text-muted-foreground" />
                       </div>
                       <div className="mt-2 flex items-baseline justify-between text-sm">
-                        <span className="font-bold">{formatTHB(current, { compact: true })}</span>
+                        <span className="font-bold">{formatTHB(current)}</span>
                         <span className="text-xs text-muted-foreground">
-                          / {formatTHB(target, { compact: true })}
+                          / {formatTHB(target)}
                         </span>
                       </div>
                       <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -157,7 +157,7 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
                           <span className="font-medium text-success">✓ {t('achieved')}</span>
                         ) : monthlyRequired ? (
                           <span className="text-muted-foreground">
-                            {t('monthlyRequired')}: {formatTHB(monthlyRequired, { compact: true })}
+                            {t('monthlyRequired')}: {formatTHB(monthlyRequired)}
                           </span>
                         ) : null}
                       </div>

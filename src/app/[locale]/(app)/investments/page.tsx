@@ -102,7 +102,7 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
               <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <p className="opacity-70">{t('totalCost')}</p>
-                  <p className="mt-0.5 font-semibold">{formatTHB(totalCost, { compact: true })}</p>
+                  <p className="mt-0.5 font-semibold">{formatTHB(totalCost)}</p>
                 </div>
                 <div>
                   <p className="opacity-70">{t('totalPL')}</p>
@@ -111,7 +111,7 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
                   >
                     {pl >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {pl >= 0 ? '+' : ''}
-                    {formatTHB(pl, { compact: true })} ({plPercent.toFixed(1)}%)
+                    {formatTHB(pl)} ({plPercent.toFixed(1)}%)
                   </p>
                 </div>
               </div>
@@ -133,7 +133,7 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
                           <div className="flex justify-between text-sm">
                             <span>{tType(a.type)}</span>
                             <span className="font-medium">
-                              {formatTHB(a.value, { compact: true })} ({a.pct.toFixed(0)}%)
+                              {formatTHB(a.value)} ({a.pct.toFixed(0)}%)
                             </span>
                           </div>
                           <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
@@ -188,12 +188,12 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
                       {inv.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {qty} × {formatTHB(Number(inv.avg_cost), { compact: true })}
+                      {qty} × {formatTHB(Number(inv.avg_cost))}
                       {inv.broker_account && ` · ${inv.broker_account}`}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold">{formatTHB(value, { compact: true })}</p>
+                    <p className="font-bold">{formatTHB(value)}</p>
                     <p className={`text-xs ${invPL >= 0 ? 'text-success' : 'text-destructive'}`}>
                       {invPL >= 0 ? '+' : ''}
                       {invPLPercent.toFixed(1)}%

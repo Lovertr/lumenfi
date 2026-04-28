@@ -8,12 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createDebt } from '@/app/[locale]/(app)/debts/actions';
 import { debtTypeConfig, debtTypes, type DebtType } from './debt-type-config';
+import { DebtTypeFields } from './debt-type-fields';
+import { useLocale } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 type State = { error?: string } | null;
 
 function SubmitBtn() {
   const t = useTranslations('Debts.form');
+  const locale = useLocale();
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="lg" className="w-full" disabled={pending}>
@@ -24,6 +27,7 @@ function SubmitBtn() {
 
 export function NewDebtForm() {
   const t = useTranslations('Debts.form');
+  const locale = useLocale();
   const tType = useTranslations('Debts.types');
   const [state, action] = useFormState<State, FormData>(createDebt, null);
   const [type, setType] = useState<DebtType>('credit_card');
@@ -72,6 +76,8 @@ export function NewDebtForm() {
         <Label htmlFor="lender">{t('lender')}</Label>
         <Input id="lender" name="lender" placeholder="KTC, SCB, ..." />
       </div>
+
+      <DebtTypeFields type={type} isTh={locale === 'th'} />
 
       {/* Current balance */}
       <div className="space-y-2">

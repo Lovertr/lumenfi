@@ -78,7 +78,7 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
               <p className="opacity-70">{isTh ? 'Net เฉลี่ย/เดือน' : 'Avg net/month'}</p>
               <p className={`mt-0.5 text-lg font-semibold lg:text-2xl ${cf.avgMonthlyNet >= 0 ? 'text-[#10B981]' : 'text-[#FCA5A5]'}`}>
                 {cf.avgMonthlyNet >= 0 ? '+' : ''}
-                {formatTHB(cf.avgMonthlyNet, { compact: true })}
+                {formatTHB(cf.avgMonthlyNet)}
               </p>
             </div>
           </div>
@@ -103,11 +103,11 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
             <p className="text-xs text-muted-foreground">{isTh ? '30 วันที่ผ่านมา' : 'Last 30 days'}</p>
             <p className={`mt-1 text-xl font-bold ${cf.last30.net >= 0 ? 'text-success' : 'text-destructive'}`}>
               {cf.last30.net >= 0 ? '+' : ''}
-              {formatTHB(cf.last30.net, { compact: true })}
+              {formatTHB(cf.last30.net)}
             </p>
             <div className="mt-2 space-y-0.5 text-xs">
-              <p className="text-success">{isTh ? 'รายรับ' : 'In'}: +{formatTHB(cf.last30.income, { compact: true })}</p>
-              <p className="text-destructive">{isTh ? 'รายจ่าย' : 'Out'}: -{formatTHB(cf.last30.expense, { compact: true })}</p>
+              <p className="text-success">{isTh ? 'รายรับ' : 'In'}: +{formatTHB(cf.last30.income)}</p>
+              <p className="text-destructive">{isTh ? 'รายจ่าย' : 'Out'}: -{formatTHB(cf.last30.expense)}</p>
             </div>
           </CardContent>
         </Card>
@@ -116,10 +116,10 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
             <p className="text-xs text-muted-foreground">{isTh ? '60 วัน' : '60 days'}</p>
             <p className={`mt-1 text-xl font-bold ${cf.last60.net >= 0 ? 'text-success' : 'text-destructive'}`}>
               {cf.last60.net >= 0 ? '+' : ''}
-              {formatTHB(cf.last60.net, { compact: true })}
+              {formatTHB(cf.last60.net)}
             </p>
             <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
-              <p>{isTh ? 'เฉลี่ย/เดือน' : 'avg/mo'}: {formatTHB(cf.last60.net / 2, { compact: true })}</p>
+              <p>{isTh ? 'เฉลี่ย/เดือน' : 'avg/mo'}: {formatTHB(cf.last60.net / 2)}</p>
             </div>
           </CardContent>
         </Card>
@@ -128,10 +128,10 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
             <p className="text-xs text-muted-foreground">{isTh ? '90 วัน' : '90 days'}</p>
             <p className={`mt-1 text-xl font-bold ${cf.last90.net >= 0 ? 'text-success' : 'text-destructive'}`}>
               {cf.last90.net >= 0 ? '+' : ''}
-              {formatTHB(cf.last90.net, { compact: true })}
+              {formatTHB(cf.last90.net)}
             </p>
             <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
-              <p>{isTh ? 'เฉลี่ย/เดือน' : 'avg/mo'}: {formatTHB(cf.avgMonthlyNet, { compact: true })}</p>
+              <p>{isTh ? 'เฉลี่ย/เดือน' : 'avg/mo'}: {formatTHB(cf.avgMonthlyNet)}</p>
             </div>
           </CardContent>
         </Card>
@@ -146,17 +146,17 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
           <div className="space-y-2.5 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{isTh ? 'รายรับประจำที่คาดว่าจะได้' : 'Expected fixed income'}</span>
-              <span className="font-semibold text-success">+{formatTHB(cf.upcomingFixedIncome + cf.avgMonthlyIncome - (cf.last30.income > 0 ? 0 : 0), { compact: true })}</span>
+              <span className="font-semibold text-success">+{formatTHB(cf.upcomingFixedIncome + cf.avgMonthlyIncome - (cf.last30.income > 0 ? 0 : 0))}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">{isTh ? 'รายจ่ายประจำ + ค่างวดหนี้' : 'Fixed expense + debt payments'}</span>
-              <span className="font-semibold text-destructive">-{formatTHB(cf.upcomingFixedExpense + cf.avgMonthlyExpense, { compact: true })}</span>
+              <span className="font-semibold text-destructive">-{formatTHB(cf.upcomingFixedExpense + cf.avgMonthlyExpense)}</span>
             </div>
             <div className="border-t pt-2.5 flex justify-between">
               <span className="font-semibold">{isTh ? 'คาดว่าจะเหลือสุทธิ' : 'Projected net'}</span>
               <span className={`font-bold text-lg ${cf.projectedNet30 >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {cf.projectedNet30 >= 0 ? '+' : ''}
-                {formatTHB(cf.projectedNet30, { compact: true })}
+                {formatTHB(cf.projectedNet30)}
               </span>
             </div>
           </div>

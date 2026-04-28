@@ -75,12 +75,12 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
             <div className="mt-4 grid grid-cols-2 gap-3 text-xs lg:mt-6 lg:gap-6 lg:text-sm">
               <div>
                 <p className="opacity-70">Assets</p>
-                <p className="mt-0.5 font-semibold lg:text-lg">{formatTHB(data.totalAssets, { compact: true })}</p>
+                <p className="mt-0.5 font-semibold lg:text-lg">{formatTHB(data.totalAssets)}</p>
               </div>
               <div>
                 <p className="opacity-70">Liabilities</p>
                 <p className="mt-0.5 font-semibold text-[#FCA5A5] lg:text-lg">
-                  -{formatTHB(data.totalLiabilities, { compact: true })}
+                  -{formatTHB(data.totalLiabilities)}
                 </p>
               </div>
             </div>
@@ -95,7 +95,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                 <TrendingUp className="h-4 w-4 text-success" />
               </div>
               <p className="mt-1 text-lg font-bold text-success lg:text-2xl">
-                {formatTHB(data.monthIncome, { compact: true })}
+                {formatTHB(data.monthIncome)}
               </p>
             </CardContent>
           </Card>
@@ -106,7 +106,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                 <TrendingDown className="h-4 w-4 text-destructive" />
               </div>
               <p className="mt-1 text-lg font-bold text-destructive lg:text-2xl">
-                {formatTHB(data.monthExpense, { compact: true })}
+                {formatTHB(data.monthExpense)}
               </p>
             </CardContent>
           </Card>
@@ -158,7 +158,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                       <div className="flex-1">
                         <div className="flex justify-between text-sm">
                           <span>{cat.name}</span>
-                          <span className="font-medium">{formatTHB(cat.amount, { compact: true })}</span>
+                          <span className="font-medium">{formatTHB(cat.amount)}</span>
                         </div>
                         <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                           <div

@@ -71,7 +71,7 @@ export function RecurringRow({ r, nextDate }: { r: Recurring; nextDate: string }
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <span className={`text-sm font-bold ${isExpense ? 'text-red-600' : 'text-green-600'}`}>
-            {isExpense ? '-' : '+'}{formatTHB(Number(r.amount), { compact: true })}
+            {isExpense ? '-' : '+'}{formatTHB(Number(r.amount))}
           </span>
           <Button asChild size="icon" variant="ghost" className="h-8 w-8" aria-label={t('edit')}>
             <Link href={`/recurring/${r.id}/edit`}>

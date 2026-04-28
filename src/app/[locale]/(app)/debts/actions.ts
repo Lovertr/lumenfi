@@ -50,10 +50,43 @@ export async function createDebt(_prev: unknown, formData: FormData) {
     return { error: 'invalid_data' as const };
   }
 
+  // Type-specific extras
+  const rate_type = (formData.get('rate_type') as string) || null;
+  const rate_schedule_raw = formData.get('rate_schedule') as string;
+  let rate_schedule: any = null;
+  try {
+    if (rate_schedule_raw) rate_schedule = JSON.parse(rate_schedule_raw);
+  } catch {}
+
+  const intOrNull = (k: string) => {
+    const v = formData.get(k) as string;
+    if (!v) return null;
+    const n = parseInt(v, 10);
+    return isNaN(n) ? null : n;
+  };
+  const numOrNull = (k: string) => {
+    const v = formData.get(k) as string;
+    if (!v) return null;
+    const n = parseFloat(v);
+    return isNaN(n) ? null : n;
+  };
+  const strOrNull = (k: string) => {
+    const v = formData.get(k) as string;
+    return v && v.trim() ? v.trim() : null;
+  };
+
   const { error } = await supabase.from('debts').insert({
     ...parsed.data,
     remaining_term: parsed.data.total_term,
     user_id: user.id,
+    rate_type,
+    rate_schedule,
+    lock_in_months: intOrNull('lock_in_months'),
+    promo_end_date: strOrNull('promo_end_date'),
+    post_promo_rate: numOrNull('post_promo_rate'),
+    credit_limit: numOrNull('credit_limit'),
+    statement_day: intOrNull('statement_day'),
+    due_day: intOrNull('due_day'),
   });
 
   if (error) {

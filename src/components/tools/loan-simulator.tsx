@@ -154,7 +154,7 @@ export function LoanSimulator({ context }: { context: LoanContext }) {
             </div>
           </div>
           <div className="rounded-lg border bg-muted/30 p-2.5 text-xs">
-            <p className="text-muted-foreground">{t('existingDebt')}: <span className="font-semibold text-foreground">{formatTHB(context.existing_debt_payments, { compact: true })}/เดือน</span> · {t('totalDebt')}: <span className="font-semibold text-foreground">{formatTHB(context.total_debt, { compact: true })}</span></p>
+            <p className="text-muted-foreground">{t('existingDebt')}: <span className="font-semibold text-foreground">{formatTHB(context.existing_debt_payments)}/เดือน</span> · {t('totalDebt')}: <span className="font-semibold text-foreground">{formatTHB(context.total_debt)}</span></p>
           </div>
         </CardContent>
       </Card>
@@ -169,11 +169,11 @@ export function LoanSimulator({ context }: { context: LoanContext }) {
               <div className="mt-2 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
                 <div>
                   <p className="text-muted-foreground">{t('monthlyPayment')}</p>
-                  <p className="text-base font-bold">{formatTHB(calc.monthly, { compact: true })}</p>
+                  <p className="text-base font-bold">{formatTHB(calc.monthly)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('totalInterest')}</p>
-                  <p className="text-base font-bold text-red-600">{formatTHB(calc.totalInterest, { compact: true })}</p>
+                  <p className="text-base font-bold text-red-600">{formatTHB(calc.totalInterest)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('newDTI')}</p>
@@ -185,7 +185,7 @@ export function LoanSimulator({ context }: { context: LoanContext }) {
                 <div>
                   <p className="text-muted-foreground">{t('disposableAfter')}</p>
                   <p className={cn('text-base font-bold', calc.disposableAfter < 0 ? 'text-red-600' : 'text-foreground')}>
-                    {formatTHB(calc.disposableAfter, { compact: true })}
+                    {formatTHB(calc.disposableAfter)}
                   </p>
                 </div>
               </div>

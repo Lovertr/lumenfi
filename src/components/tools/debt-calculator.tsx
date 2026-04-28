@@ -383,7 +383,7 @@ export function DebtCalculator({
                 <p className="font-semibold">{t('comparison')}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t('avalancheSaves', {
-                    amount: formatTHB(snowball.totalInterest - avalanche.totalInterest, { compact: true }),
+                    amount: formatTHB(snowball.totalInterest - avalanche.totalInterest),
                     months: snowball.months - avalanche.months,
                   })}
                 </p>
@@ -449,7 +449,7 @@ function ResultCard({
             </p>
             <p className="mt-1 text-base font-bold">{firstTarget.name}</p>
             <p className="text-xs text-muted-foreground">
-              {firstTarget.rate}%/yr · {formatTHB(firstTarget.balance, { compact: true })}
+              {firstTarget.rate}%/yr · {formatTHB(firstTarget.balance)}
             </p>
             <p className="mt-1 text-[11px] text-muted-foreground">
               {t('focusUntil', { month: firstPhase.to })}
@@ -466,7 +466,7 @@ function ResultCard({
           </div>
           <div>
             <p className="text-xs text-muted-foreground">{t('totalInterest')}</p>
-            <p className="font-bold text-red-600">{formatTHB(data.totalInterest, { compact: true })}</p>
+            <p className="font-bold text-red-600">{formatTHB(data.totalInterest)}</p>
           </div>
         </div>
 
@@ -510,7 +510,7 @@ function CompactCard({ strategy, data }: { strategy: Strategy; data: SimResult }
             {Math.floor(data.months / 12)}{t('years')} {data.months % 12}{t('months')}
           </span>
           <span className="text-red-600">
-            {formatTHB(data.totalInterest, { compact: true })}
+            {formatTHB(data.totalInterest)}
           </span>
         </div>
       </CardContent>

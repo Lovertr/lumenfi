@@ -214,16 +214,16 @@ export function TaxCalculator() {
               {result.remainingRMF > 0 && result.saveIfMaxRMF > 0 && (
                 <p>
                   💎 {t('rmfSuggestion', {
-                    amount: formatTHB(result.remainingRMF, { compact: true }),
-                    saved: formatTHB(result.saveIfMaxRMF, { compact: true }),
+                    amount: formatTHB(result.remainingRMF),
+                    saved: formatTHB(result.saveIfMaxRMF),
                   })}
                 </p>
               )}
               {result.remainingSSF > 0 && result.saveIfMaxSSF > 0 && (
                 <p>
                   ✨ {t('ssfSuggestion', {
-                    amount: formatTHB(result.remainingSSF, { compact: true }),
-                    saved: formatTHB(result.saveIfMaxSSF, { compact: true }),
+                    amount: formatTHB(result.remainingSSF),
+                    saved: formatTHB(result.saveIfMaxSSF),
                   })}
                 </p>
               )}

@@ -123,10 +123,10 @@ export default async function ReportsPage({ params }: { params: Promise<{ locale
             <p className="text-xs text-muted-foreground">{t('ytdIncome')}</p>
             <p className="mt-1 flex items-center gap-1 text-lg font-bold text-green-600">
               <TrendingUp className="h-4 w-4" />
-              {formatTHB(ytdIncome, { compact: true })}
+              {formatTHB(ytdIncome)}
             </p>
             <p className="text-[10px] text-muted-foreground">
-              ~ {formatTHB(avgIncome, { compact: true })}/{t('avgPerMonth')}
+              ~ {formatTHB(avgIncome)}/{t('avgPerMonth')}
             </p>
           </CardContent>
         </Card>
@@ -135,10 +135,10 @@ export default async function ReportsPage({ params }: { params: Promise<{ locale
             <p className="text-xs text-muted-foreground">{t('ytdExpense')}</p>
             <p className="mt-1 flex items-center gap-1 text-lg font-bold text-red-600">
               <TrendingDown className="h-4 w-4" />
-              {formatTHB(ytdExpense, { compact: true })}
+              {formatTHB(ytdExpense)}
             </p>
             <p className="text-[10px] text-muted-foreground">
-              ~ {formatTHB(avgExpense, { compact: true })}/{t('avgPerMonth')}
+              ~ {formatTHB(avgExpense)}/{t('avgPerMonth')}
             </p>
           </CardContent>
         </Card>
@@ -147,7 +147,7 @@ export default async function ReportsPage({ params }: { params: Promise<{ locale
             <p className="text-xs text-muted-foreground">{t('ytdNet')}</p>
             <p className={`mt-1 text-lg font-bold ${ytdNet >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {ytdNet >= 0 ? '+' : ''}
-              {formatTHB(ytdNet, { compact: true })}
+              {formatTHB(ytdNet)}
             </p>
             <p className="text-[10px] text-muted-foreground">{t('last12Months')}</p>
           </CardContent>

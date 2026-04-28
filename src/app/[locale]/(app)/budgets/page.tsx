@@ -81,14 +81,14 @@ export default async function BudgetsPage({ params }: { params: Promise<{ locale
         <Card>
           <CardContent className="p-3">
             <p className="text-[11px] text-muted-foreground">{t('totalBudget')}</p>
-            <p className="mt-0.5 text-base font-bold">{formatTHB(totalBudget, { compact: true })}</p>
+            <p className="mt-0.5 text-base font-bold">{formatTHB(totalBudget)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3">
             <p className="text-[11px] text-muted-foreground">{t('totalSpent')}</p>
             <p className={`mt-0.5 text-base font-bold ${totalSpent > totalBudget ? 'text-red-600' : 'text-foreground'}`}>
-              {formatTHB(totalSpent, { compact: true })}
+              {formatTHB(totalSpent)}
             </p>
           </CardContent>
         </Card>
@@ -96,7 +96,7 @@ export default async function BudgetsPage({ params }: { params: Promise<{ locale
           <CardContent className="p-3">
             <p className="text-[11px] text-muted-foreground">{t('remaining')}</p>
             <p className={`mt-0.5 text-base font-bold ${totalBudget - totalSpent < 0 ? 'text-red-600' : 'text-green-600'}`}>
-              {formatTHB(Math.max(0, totalBudget - totalSpent), { compact: true })}
+              {formatTHB(Math.max(0, totalBudget - totalSpent))}
             </p>
           </CardContent>
         </Card>
@@ -113,7 +113,7 @@ export default async function BudgetsPage({ params }: { params: Promise<{ locale
                   const cat = categories.find((c) => c.id === b.category_id);
                   return (
                     <li key={b.id}>
-                      {cat?.icon} {cat?.name}: {formatTHB(spendingByCat[b.category_id], { compact: true })} / {formatTHB(b.amount, { compact: true })}
+                      {cat?.icon} {cat?.name}: {formatTHB(spendingByCat[b.category_id])} / {formatTHB(b.amount)}
                     </li>
                   );
                 })}
