@@ -22,7 +22,7 @@ export async function getRecentTransactions(limit = 50): Promise<Transaction[]> 
       .select(
         'id, type, amount, account_id, category_id, date, note, photo_url, ' +
           'category:categories(name, icon, color), ' +
-          'account:accounts(name, color)'
+          'account:accounts!transactions_account_id_fkey(name, color)'
       )
       .order('date', { ascending: false })
       .limit(limit);
