@@ -508,6 +508,17 @@ export function DebtCalculator({
                 {snapshot.budget_categories && snapshot.budget_categories.length > 0 && (
                   <li>· {t('ctxBudgets')}: {snapshot.budget_categories.length} {t('categories')}</li>
                 )}
+                {validDebts.length >= 2 && (() => {
+                  const totalBal = validDebts.reduce((s, d) => s + d.balance, 0);
+                  const wAvg = totalBal > 0 ? validDebts.reduce((s, d) => s + d.balance * d.rate, 0) / totalBal : 0;
+                  const maxRate = Math.max(...validDebts.map((d) => d.rate));
+                  const hasHighRate = maxRate >= 12; // worth considering consolidation
+                  return hasHighRate ? (
+                    <li className="text-purple-700 font-medium">
+                      · 🔄 {t('ctxConsolidation', { avg: wAvg.toFixed(1), max: maxRate.toFixed(1) })}
+                    </li>
+                  ) : null;
+                })()}
               </ul>
             </div>
           )}

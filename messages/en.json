@@ -614,7 +614,8 @@
     "payIs": "Min payment",
     "butInterest": "but interest is",
     "shortfall": "shortfall",
-    "underwaterFix": "You must increase minimum payment OR set \"extra per month\" to cover the shortfall, otherwise principal will never decrease"
+    "underwaterFix": "You must increase minimum payment OR set \"extra per month\" to cover the shortfall, otherwise principal will never decrease",
+    "ctxConsolidation": "Consolidation opportunity — avg {avg}% / max {max}% — AI will analyze"
   },
   "Scan": {
     "title": "Scan Receipt with AI",
