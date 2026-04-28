@@ -98,7 +98,8 @@ export function GoalForm({ defaults, mode, accounts = [] }: { defaults?: GoalDef
   }
 
   return (
-    <form action={formAction} className="space-y-5">
+    <div className="space-y-5">
+      <form action={formAction} className="space-y-5">
       {mode === 'edit' && defaults?.id && (
         <input type="hidden" name="id" value={defaults.id} />
       )}
@@ -306,6 +307,7 @@ export function GoalForm({ defaults, mode, accounts = [] }: { defaults?: GoalDef
       )}
 
       <SubmitBtn mode={mode} />
+      </form>
 
       {mode === 'edit' && defaults?.id && (
         <form action={deleteGoal}>
@@ -321,6 +323,6 @@ export function GoalForm({ defaults, mode, accounts = [] }: { defaults?: GoalDef
           </Button>
         </form>
       )}
-    </form>
+    </div>
   );
 }

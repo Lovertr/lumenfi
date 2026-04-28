@@ -57,7 +57,8 @@ export function DebtForm({ defaults, mode }: { defaults?: DebtDefaults; mode: 'c
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <form action={formAction} className="space-y-5">
+    <div className="space-y-5">
+      <form action={formAction} className="space-y-5">
       {mode === 'edit' && defaults?.id && (
         <input type="hidden" name="id" value={defaults.id} />
       )}
@@ -195,6 +196,7 @@ export function DebtForm({ defaults, mode }: { defaults?: DebtDefaults; mode: 'c
       )}
 
       <SubmitBtn mode={mode} />
+      </form>
 
       {mode === 'edit' && defaults?.id && (
         <form action={deleteDebt}>
@@ -210,6 +212,6 @@ export function DebtForm({ defaults, mode }: { defaults?: DebtDefaults; mode: 'c
           </Button>
         </form>
       )}
-    </form>
+    </div>
   );
 }

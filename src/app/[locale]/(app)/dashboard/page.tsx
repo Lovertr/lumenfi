@@ -7,6 +7,7 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { formatTHB } from '@/lib/utils';
 import { getDashboardData } from '@/lib/queries/dashboard';
 import { materializeDueRecurring } from '@/lib/recurring';
+import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
 import { createClient } from '@/lib/supabase/server';
 import {
   TrendingUp,
@@ -187,13 +188,11 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <QuickAction href="/cashflow" icon={Activity} label="Cash Flow" color="text-cyan-600 bg-cyan-50" />
-        <QuickAction href="/debts" icon={CreditCard} label={t('quickActions.debts')} count={data.debtsCount} color="text-red-600 bg-red-50" />
-        <QuickAction href="/investments" icon={TrendingUp} label={t('quickActions.investments')} color="text-green-600 bg-green-50" />
-        <QuickAction href="/goals" icon={Target} label={t('quickActions.goals')} count={data.goalsCount} color="text-purple-600 bg-purple-50" />
-        <QuickAction href="/accounts" icon={Wallet} label={t('quickActions.accounts')} count={data.accountsCount} color="text-blue-600 bg-blue-50" />
-      </div>
+      <DashboardQuickActions counts={{
+        accountsCount: data.accountsCount,
+        debtsCount: data.debtsCount,
+        goalsCount: data.goalsCount,
+      }} />
 
       <Card className="border-primary/30 bg-primary/5">
         <CardContent className="p-4 lg:p-6">

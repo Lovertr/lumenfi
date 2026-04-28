@@ -382,4 +382,5 @@ finance-app/
 - 🎉 **Live: https://lumenfi.vercel.app/th** — Phase 0-2 จบสมบูรณ์
 - ✅ **Long autonomous build session** — Phase 3 (Transactions) + Phase 4 (Dashboard real data) + Phase 5 (Debts) + Phase 6 (Goals) + Phase 7 (AI BYO key) + /more navigation + Settings + Categories
 - ✅ Auth gate ใน `(app)/layout.tsx` (server component)
-- ✅ AES-GCM encryption สำหรับ AI
+- ✅ AES-GCM encryption สำหรับ AI API keys
+- 📌 **Next session:** Photo upload, AI chat UI + streaming, Edit forms, Phase 8 Investments, Phase 11 PWA

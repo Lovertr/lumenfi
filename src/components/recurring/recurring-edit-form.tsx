@@ -71,7 +71,8 @@ export function RecurringEditForm({
   const isTransfer = type === 'transfer';
 
   return (
-    <form action={action} className="space-y-5">
+    <div className="space-y-5">
+      <form action={action} className="space-y-5">
       <input type="hidden" name="id" value={defaults.id} />
       <input type="hidden" name="type" value={type} />
 
@@ -303,6 +304,7 @@ export function RecurringEditForm({
       )}
 
       <SubmitBtn />
+      </form>
 
       <form action={deleteRecurring}>
         <input type="hidden" name="id" value={defaults.id} />
@@ -316,6 +318,6 @@ export function RecurringEditForm({
           {tRec('delete')}
         </Button>
       </form>
-    </form>
+    </div>
   );
 }
