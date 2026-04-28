@@ -672,6 +672,25 @@
     "thPrincipal": "Principal",
     "thBalance": "Balance",
     "total": "Total",
-    "avg": "avg"
+    "avg": "avg",
+    "consolidationMode": "Debt Consolidation Mode",
+    "consolidationHint": "Select multiple existing debts and compare with consolidating into a single new loan",
+    "selectDebtsToConsolidate": "Select debts to consolidate",
+    "consolidationSummary": "Before-consolidation summary",
+    "totalBalanceToConsolidate": "Total balance to clear",
+    "currentMonthlyTotal": "Current total monthly",
+    "currentPayoffMonths": "Payoff time (current rates)",
+    "currentTotalInterest": "Interest until paid off",
+    "neverPayoff": "Never (payment < interest)",
+    "autoFillNote": "New loan amount auto-set to total — you can override above",
+    "beforeAfterCompare": "Before / After Comparison",
+    "metric": "Metric",
+    "before": "Before (current)",
+    "after": "After (consolidated)",
+    "change": "Change",
+    "compareMonthly": "Monthly payment",
+    "comparePayoff": "Payoff time",
+    "compareInterest": "Total interest",
+    "compareHint": "Lower monthly = better cash flow; longer payoff = more interest — AI below balances both"
   }
 }

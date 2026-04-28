@@ -21,6 +21,39 @@ interface LoanContext {
   total_debt: number;
 }
 
+interface DebtRow {
+  id: string;
+  name: string;
+  type: string;
+  current_balance: number;
+  interest_rate: number;
+  monthly_payment: number;
+}
+
+// Compute payoff: months to clear `balance` paying `monthlyPay` at `ratePct` annual interest.
+// If monthly payment is less than monthly interest, payoff impossible — return Infinity-like.
+function computePayoff(balance: number, ratePct: number, monthlyPay: number) {
+  if (balance <= 0) return { months: 0, totalInterest: 0 };
+  if (monthlyPay <= 0) return { months: 9999, totalInterest: balance * 5 };
+  const r = ratePct / 100 / 12;
+  const interestThisMonth = balance * r;
+  if (monthlyPay <= interestThisMonth) {
+    // Will never pay off
+    return { months: 9999, totalInterest: balance * 5 };
+  }
+  let bal = balance;
+  let months = 0;
+  let totalInterest = 0;
+  while (bal > 0.01 && months < 600) {
+    months++;
+    const interest = bal * r;
+    totalInterest += interest;
+    const principal = Math.min(monthlyPay - interest, bal);
+    bal = Math.max(0, bal - principal);
+  }
+  return { months, totalInterest };
+}
+
 type RateType = 'reducing' | 'flat' | 'stepped';
 
 interface RateStep { from_month: number; to_month: number | null; rate: number; }
@@ -125,7 +158,7 @@ const RATE_LABELS = {
   stepped: { th: 'ดอกขั้นบันได', en: 'Stepped rate', desc_th: 'ดอกแตกต่างตามช่วง (สินเชื่อบ้าน)', desc_en: 'Different rates per period (mortgage)' },
 };
 
-export function LoanSimulator({ context }: { context: LoanContext }) {
+export function LoanSimulator({ context, debts = [] }: { context: LoanContext; debts?: DebtRow[] }) {
   const t = useTranslations('Loan');
 
   const [amount, setAmount] = useState('500000');
@@ -136,6 +169,8 @@ export function LoanSimulator({ context }: { context: LoanContext }) {
   const [fixedExp, setFixedExp] = useState(String(context.monthly_fixed_expenses || 10000));
 
   const [rateType, setRateType] = useState<RateType>('reducing');
+  const [consolidationMode, setConsolidationMode] = useState(false);
+  const [selectedDebtIds, setSelectedDebtIds] = useState<string[]>([]);
   const [steps, setSteps] = useState<RateStep[]>([
     { from_month: 1, to_month: 12, rate: 2.99 },
     { from_month: 13, to_month: 24, rate: 3.49 },
@@ -148,13 +183,48 @@ export function LoanSimulator({ context }: { context: LoanContext }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
+  // Compute consolidation 'before' baseline
+  const consolidation = useMemo(() => {
+    if (!consolidationMode || selectedDebtIds.length === 0) {
+      return null;
+    }
+    const selected = debts.filter((d) => selectedDebtIds.includes(d.id));
+    const totalBalance = selected.reduce((s, d) => s + d.current_balance, 0);
+    const totalMonthly = selected.reduce((s, d) => s + d.monthly_payment, 0);
+
+    // Compute "before" payoff for each debt independently, take longest
+    let beforeMaxMonths = 0;
+    let beforeTotalInterest = 0;
+    const perDebt = selected.map((d) => {
+      const r = computePayoff(d.current_balance, d.interest_rate, d.monthly_payment);
+      beforeMaxMonths = Math.max(beforeMaxMonths, r.months);
+      beforeTotalInterest += r.totalInterest;
+      return { ...d, payoff_months: r.months, total_interest: r.totalInterest };
+    });
+
+    return {
+      selected: perDebt,
+      totalBalance,
+      totalMonthly,
+      beforeMaxMonths,
+      beforeTotalInterest,
+    };
+  }, [consolidationMode, selectedDebtIds, debts]);
+
+  // When consolidation enabled and debts selected, auto-set loan amount
+  const effectiveAmount = consolidation
+    ? String(consolidation.totalBalance)
+    : amount;
+
   const calc = useMemo(() => {
-    const A = parseFloat(amount.replace(/,/g, '')) || 0;
+    const A = parseFloat(effectiveAmount.replace(/,/g, '')) || 0;
     const R = parseFloat(rate) || 0;
     const N = (parseFloat(years) || 0) * 12;
     const I = parseFloat(income.replace(/,/g, '')) || 1;
     const E = parseFloat(fixedExp.replace(/,/g, '')) || 0;
-    const existingDebt = context.existing_debt_payments;
+    // If consolidating, subtract the monthly payments of debts being consolidated (they'll be paid off)
+    const consolidatedMonthly = consolidation?.totalMonthly ?? 0;
+    const existingDebt = Math.max(0, context.existing_debt_payments - consolidatedMonthly);
 
     let amortization: AmortizationRow[] = [];
     if (N > 0 && A > 0) {
@@ -183,12 +253,12 @@ export function LoanSimulator({ context }: { context: LoanContext }) {
       oldDTI, newDTI, disposableNow, disposableAfter,
       verdict, amortization,
     };
-  }, [amount, rate, years, rateType, steps, income, fixedExp, context.existing_debt_payments]);
+  }, [effectiveAmount, rate, years, rateType, steps, income, fixedExp, context.existing_debt_payments, consolidation]);
 
   async function askAI() {
     setAiLoading(true); setAiError(null); setAiAnalysis(null);
     const r = await analyzeLoanFeasibility({
-      loan_amount: parseFloat(amount.replace(/,/g, '')) || 0,
+      loan_amount: parseFloat(effectiveAmount.replace(/,/g, '')) || 0,
       loan_rate: parseFloat(rate) || 0,
       loan_months: (parseFloat(years) || 0) * 12,
       monthly_payment: Math.round(calc.monthly),
@@ -197,6 +267,18 @@ export function LoanSimulator({ context }: { context: LoanContext }) {
       existing_debt_payments: context.existing_debt_payments,
       total_debt: context.total_debt,
       reason,
+      consolidation_mode: consolidationMode && !!consolidation,
+      consolidated_debts: consolidation?.selected.map((d) => ({
+        name: d.name,
+        balance: d.current_balance,
+        rate: d.interest_rate,
+        monthly_payment: d.monthly_payment,
+        remaining_months: d.payoff_months,
+        total_interest_remaining: d.total_interest,
+      })),
+      before_total_monthly: consolidation?.totalMonthly,
+      before_total_interest: consolidation?.beforeTotalInterest,
+      before_payoff_months: consolidation?.beforeMaxMonths,
     });
     setAiLoading(false);
     if (r.ok && r.advice) setAiAnalysis(r.advice);
@@ -318,6 +400,88 @@ export function LoanSimulator({ context }: { context: LoanContext }) {
         </CardContent>
       </Card>
 
+
+      {/* Consolidation mode toggle + debt picker */}
+      {debts.length > 0 && (
+        <Card>
+          <CardContent className="space-y-3 p-4">
+            <label className="flex cursor-pointer items-center justify-between">
+              <span className="flex items-center gap-2 text-sm font-semibold">
+                <Brain className="h-4 w-4 text-primary" />
+                {t('consolidationMode')}
+              </span>
+              <input
+                type="checkbox"
+                checked={consolidationMode}
+                onChange={(e) => setConsolidationMode(e.target.checked)}
+                className="h-5 w-5 rounded border-input accent-primary"
+              />
+            </label>
+            <p className="text-xs text-muted-foreground">{t('consolidationHint')}</p>
+
+            {consolidationMode && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold">{t('selectDebtsToConsolidate')}:</p>
+                <div className="space-y-1.5">
+                  {debts.map((d) => {
+                    const checked = selectedDebtIds.includes(d.id);
+                    return (
+                      <label
+                        key={d.id}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-2 rounded-lg border p-2.5 transition-colors",
+                          checked ? "border-primary bg-primary/5" : "hover:bg-muted/40"
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            if (e.target.checked) setSelectedDebtIds([...selectedDebtIds, d.id]);
+                            else setSelectedDebtIds(selectedDebtIds.filter((x) => x !== d.id));
+                          }}
+                          className="h-4 w-4 rounded border-input accent-primary"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-sm font-medium">{d.name}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {formatTHB(d.current_balance)} · {d.interest_rate}%/ปี · ผ่อน {formatTHB(d.monthly_payment)}/เดือน
+                          </p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {consolidation && (
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs space-y-1">
+                    <p className="font-semibold">{t('consolidationSummary')}</p>
+                    <div className="flex justify-between">
+                      <span>{t('totalBalanceToConsolidate')}</span>
+                      <span className="font-bold">{formatTHB(consolidation.totalBalance)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{t('currentMonthlyTotal')}</span>
+                      <span className="font-bold">{formatTHB(consolidation.totalMonthly)}/เดือน</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{t('currentPayoffMonths')}</span>
+                      <span className="font-bold">{consolidation.beforeMaxMonths >= 9999 ? t('neverPayoff') : `${consolidation.beforeMaxMonths} ${t('months')}`}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{t('currentTotalInterest')}</span>
+                      <span className="font-bold text-red-600">{formatTHB(consolidation.beforeTotalInterest)}</span>
+                    </div>
+                    <p className="pt-1 text-[10px] italic text-muted-foreground">
+                      {t('autoFillNote')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
       {/* Income/expenses */}
       <Card>
         <CardContent className="space-y-3 p-4">
@@ -446,6 +610,58 @@ export function LoanSimulator({ context }: { context: LoanContext }) {
         </Card>
       )}
 
+
+      {/* Consolidation comparison */}
+      {consolidation && (
+        <Card className="border-2 border-primary/40">
+          <CardContent className="p-4">
+            <p className="mb-3 text-sm font-semibold">{t('beforeAfterCompare')}</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="px-2 py-1.5 text-left text-[10px] uppercase">{t('metric')}</th>
+                    <th className="px-2 py-1.5 text-right text-[10px] uppercase">{t('before')}</th>
+                    <th className="px-2 py-1.5 text-right text-[10px] uppercase">{t('after')}</th>
+                    <th className="px-2 py-1.5 text-right text-[10px] uppercase">{t('change')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="px-2 py-1.5">{t('compareMonthly')}</td>
+                    <td className="px-2 py-1.5 text-right font-mono">{formatTHB(consolidation.totalMonthly)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono">{formatTHB(calc.monthly)}</td>
+                    <td className={cn("px-2 py-1.5 text-right font-mono font-semibold", calc.monthly < consolidation.totalMonthly ? "text-green-600" : "text-red-600")}>
+                      {calc.monthly < consolidation.totalMonthly ? "−" : "+"}{formatTHB(Math.abs(consolidation.totalMonthly - calc.monthly))}
+                    </td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="px-2 py-1.5">{t('comparePayoff')}</td>
+                    <td className="px-2 py-1.5 text-right font-mono">
+                      {consolidation.beforeMaxMonths >= 9999 ? "∞" : `${consolidation.beforeMaxMonths} ${t('months')}`}
+                    </td>
+                    <td className="px-2 py-1.5 text-right font-mono">{calc.amortization.length} {t('months')}</td>
+                    <td className={cn("px-2 py-1.5 text-right font-mono font-semibold", calc.amortization.length < consolidation.beforeMaxMonths ? "text-green-600" : "text-red-600")}>
+                      {calc.amortization.length < consolidation.beforeMaxMonths ? "−" : "+"}{Math.abs(calc.amortization.length - Math.min(consolidation.beforeMaxMonths, 600))} {t('months')}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-2 py-1.5">{t('compareInterest')}</td>
+                    <td className="px-2 py-1.5 text-right font-mono">{formatTHB(consolidation.beforeTotalInterest)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono">{formatTHB(calc.totalInterest)}</td>
+                    <td className={cn("px-2 py-1.5 text-right font-mono font-semibold", calc.totalInterest < consolidation.beforeTotalInterest ? "text-green-600" : "text-red-600")}>
+                      {calc.totalInterest < consolidation.beforeTotalInterest ? "−" : "+"}{formatTHB(Math.abs(consolidation.beforeTotalInterest - calc.totalInterest))}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 rounded border bg-muted/30 px-2 py-1.5 text-[11px] text-muted-foreground">
+              💡 {t('compareHint')}
+            </p>
+          </CardContent>
+        </Card>
+      )}
       {/* AI advice */}
       <Card>
         <CardContent className="p-4">

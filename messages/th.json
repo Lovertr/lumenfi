@@ -672,6 +672,25 @@
     "thPrincipal": "ส่วนเงินต้น",
     "thBalance": "ยอดคงเหลือ",
     "total": "รวม",
-    "avg": "เฉลี่ย"
+    "avg": "เฉลี่ย",
+    "consolidationMode": "โหมดรวมหนี้",
+    "consolidationHint": "เลือกหนี้เก่าหลายก้อนแล้วเปรียบเทียบกับการรวมเป็นเงินกู้ก้อนเดียว",
+    "selectDebtsToConsolidate": "เลือกหนี้ที่ต้องการรวม",
+    "consolidationSummary": "สรุปก่อนรวมหนี้",
+    "totalBalanceToConsolidate": "ยอดรวมที่จะปิด",
+    "currentMonthlyTotal": "ผ่อนเดิมรวม",
+    "currentPayoffMonths": "ระยะเวลาปลด (ตามอัตราเดิม)",
+    "currentTotalInterest": "ดอกที่จะจ่ายจนปลด",
+    "neverPayoff": "ไม่มีวันหมด (ผ่อนน้อยกว่าดอก)",
+    "autoFillNote": "ยอดเงินกู้ใหม่ถูกตั้งเป็นยอดรวมอัตโนมัติ — ปรับเลขด้านบนได้",
+    "beforeAfterCompare": "เปรียบเทียบก่อน/หลังรวมหนี้",
+    "metric": "รายการ",
+    "before": "ก่อน (เดิม)",
+    "after": "หลัง (รวม)",
+    "change": "เปลี่ยนแปลง",
+    "compareMonthly": "ผ่อน/เดือน",
+    "comparePayoff": "ระยะเวลาปลด",
+    "compareInterest": "ดอกเบี้ยรวม",
+    "compareHint": "จ่ายต่อเดือนน้อยลง = Cash Flow ดีขึ้น แต่ถ้าจบช้าลง = ดอกรวมอาจสูงขึ้น ต้อง balance ทั้งคู่ AI ด้านล่างจะวิเคราะห์ให้"
   }
 }

@@ -5,6 +5,15 @@ import { decrypt } from '@/lib/encryption';
 import { chat, type AIProvider } from '@/lib/ai';
 import { FINANCE_EXPERTISE_TH } from '@/lib/ai/prompts';
 
+interface ConsolidatedDebt {
+  name: string;
+  balance: number;
+  rate: number;
+  monthly_payment: number;
+  remaining_months: number;
+  total_interest_remaining: number;
+}
+
 interface LoanContext {
   loan_amount: number;
   loan_rate: number;
@@ -15,6 +24,12 @@ interface LoanContext {
   existing_debt_payments: number;
   reason: string;
   total_debt: number;
+  // Consolidation extras (optional)
+  consolidation_mode?: boolean;
+  consolidated_debts?: ConsolidatedDebt[];
+  before_total_monthly?: number;
+  before_total_interest?: number;
+  before_payoff_months?: number;
 }
 
 export async function analyzeLoanFeasibility(ctx: LoanContext): Promise<{
@@ -71,7 +86,28 @@ export async function analyzeLoanFeasibility(ctx: LoanContext): Promise<{
 
 ตอบในรูปแบบตัวเลขสกุลบาท (฿) เท่านั้น\n\n${FINANCE_EXPERTISE_TH}`;
 
-  const userMessage = `ผู้ใช้กำลังพิจารณากู้เงิน ช่วยประเมินว่าควรกู้หรือไม่:
+  const consolidationBlock = ctx.consolidation_mode && ctx.consolidated_debts && ctx.consolidated_debts.length > 0 ? `
+
+**🔄 โหมดรวมหนี้ (Debt Consolidation)** — ผู้ใช้ต้องการกู้เพื่อปิดหนี้เก่าหลายก้อนแล้วรวมเป็นก้อนเดียว
+
+หนี้เดิมที่จะปิด (${ctx.consolidated_debts.length} ก้อน):
+${ctx.consolidated_debts.map((d, i) => `${i + 1}. ${d.name}: ฿${d.balance.toLocaleString()} · ดอก ${d.rate}% · ผ่อน ฿${d.monthly_payment.toLocaleString()}/เดือน · ดอกรวมจนปลด ฿${Math.round(d.total_interest_remaining).toLocaleString()} · จบใน ${d.remaining_months} เดือน`).join('\n')}
+
+**สถานการณ์ก่อนรวมหนี้:**
+- ผ่อนหนี้เดิมรวม: ฿${ctx.before_total_monthly?.toLocaleString()}/เดือน
+- ดอกที่ต้องจ่ายจนปลดทุกก้อน: ฿${Math.round(ctx.before_total_interest ?? 0).toLocaleString()}
+- จะปลดทุกก้อนใน: ${ctx.before_payoff_months} เดือน
+
+**สถานการณ์หลังรวม (เงินกู้ใหม่):**
+- ยอดกู้ใหม่: ฿${ctx.loan_amount.toLocaleString()} (= ผลรวมหนี้เดิม)
+- ดอก ${ctx.loan_rate}%/ปี × ${ctx.loan_months} เดือน
+- ผ่อนใหม่: ฿${ctx.monthly_payment.toLocaleString()}/เดือน
+- ลดภาระต่อเดือน: ฿${(ctx.before_total_monthly! - ctx.monthly_payment).toLocaleString()}
+
+**กรุณาเปรียบเทียบและให้คำแนะนำเฉพาะกรณีนี้** — ดอกรวมประหยัดได้กี่บาท, จบเร็วขึ้นหรือช้าลงกี่เดือน, Cash Flow ดีขึ้นแค่ไหน, มีกับดักอะไรไหม (เช่น จ่ายต่อเดือนน้อยลงแต่จบช้าลง = ดอกรวมเยอะขึ้น)
+` : '';
+
+  const userMessage = `ผู้ใช้กำลังพิจารณากู้เงิน${ctx.consolidation_mode ? ' (เพื่อรวมหนี้)' : ''} ช่วยประเมินว่าควรกู้หรือไม่:
 
 **รายละเอียดเงินกู้:**
 - ยอดกู้: ฿${ctx.loan_amount.toLocaleString()}
@@ -91,6 +127,8 @@ export async function analyzeLoanFeasibility(ctx: LoanContext): Promise<{
 - DTI หลังกู้: ${newDTI.toFixed(1)}%
 - เงินเหลือใช้ปัจจุบัน: ฿${disposableIncome.toLocaleString()}/เดือน
 - เงินเหลือใช้หลังกู้: ฿${remainingAfterNewLoan.toLocaleString()}/เดือน
+
+${consolidationBlock}
 
 ช่วยวิเคราะห์ตามโครงสร้างที่กำหนด`;
 

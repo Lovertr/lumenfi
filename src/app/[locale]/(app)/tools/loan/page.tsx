@@ -48,12 +48,33 @@ async function getFinancialContext() {
   };
 }
 
+
+
+async function getActiveDebts() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from('debts')
+    .select('id, name, type, current_balance, interest_rate, monthly_payment')
+    .eq('status', 'active')
+    .order('current_balance', { ascending: false });
+  return ((data ?? []) as any[]).map((d) => ({
+    id: d.id,
+    name: d.name,
+    type: d.type,
+    current_balance: Number(d.current_balance),
+    interest_rate: Number(d.interest_rate),
+    monthly_payment: d.monthly_payment ? Number(d.monthly_payment) : 0,
+  }));
+}
+
 export default async function LoanPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('Loan');
 
-  const context = await getFinancialContext();
+  const [context, debts] = await Promise.all([getFinancialContext(), getActiveDebts()]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -72,7 +93,7 @@ export default async function LoanPage({ params }: { params: Promise<{ locale: s
         </div>
       </header>
 
-      <LoanSimulator context={context} />
+      <LoanSimulator context={context} debts={debts} />
 
       <p className="rounded-lg border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
         ℹ️ {t('disclaimer')}
