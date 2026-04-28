@@ -123,7 +123,7 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
             const Icon = cfg.icon;
             const isLiability = cfg.isLiability;
             return (
-              <Link key={account.id} href={`/accounts/${account.id}/edit`}>
+              <Link key={account.id} href={`/accounts/${account.id}`}>
                 <Card className="transition-all hover:border-primary/40 hover:shadow-sm active:scale-[0.99]">
                   <CardContent className="flex items-center gap-3 p-4">
                     <div

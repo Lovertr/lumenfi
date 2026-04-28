@@ -195,6 +195,19 @@
       "type_required": "กรุณาเลือกประเภท",
       "invalid_balance": "ยอดเงินไม่ถูกต้อง",
       "generic": "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง"
+    },
+    "edit": "แก้ไข",
+    "movementIn": "รับเข้า",
+    "movementOut": "จ่ายออก",
+    "movementNet": "สุทธิ",
+    "outstanding": "คงค้าง",
+    "transferFrom": "รับโอนจาก",
+    "transferTo": "โอนไปยัง",
+    "noMovement": "ยังไม่มี Movement ในช่วงนี้",
+    "periods": {
+      "this_month": "เดือนนี้",
+      "last_3": "3 เดือนล่าสุด",
+      "all": "ทั้งหมด"
     }
   },
   "Language": {

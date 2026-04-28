@@ -195,6 +195,19 @@
       "type_required": "Please choose a type",
       "invalid_balance": "Invalid balance",
       "generic": "Something went wrong. Please try again."
+    },
+    "edit": "Edit",
+    "movementIn": "Money In",
+    "movementOut": "Money Out",
+    "movementNet": "Net",
+    "outstanding": "Outstanding",
+    "transferFrom": "Transfer from",
+    "transferTo": "Transfer to",
+    "noMovement": "No movement in this period",
+    "periods": {
+      "this_month": "This month",
+      "last_3": "Last 3 months",
+      "all": "All time"
     }
   },
   "Language": {
