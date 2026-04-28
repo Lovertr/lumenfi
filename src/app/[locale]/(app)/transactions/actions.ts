@@ -133,6 +133,10 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
   redirect('/transactions');
 }
 
+export async function createTransactionDirect(formData: FormData) {
+  await createTransaction(null, formData);
+}
+
 export async function deleteTransaction(formData: FormData) {
   const id = formData.get('id') as string;
   if (!id) return;
