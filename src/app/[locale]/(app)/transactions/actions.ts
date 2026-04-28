@@ -20,10 +20,8 @@ async function applyGoalContribution(
   supabase: ReturnType<typeof createClient>,
   userId: string,
   goalId: string,
-  amount: number,
-  type: 'income' | 'expense' | 'transfer'
+  amount: number
 ) {
-  // Skip if goal is auto-synced from accounts (current_amount derives from account balances)
   const { data: goal } = await supabase
     .from('goals')
     .select('id, current_amount, linked_account_ids')
@@ -32,13 +30,9 @@ async function applyGoalContribution(
     .maybeSingle();
 
   if (!goal) return;
-  // If goal is auto-synced from linked accounts, skip manual update — page reads from accounts
   if (goal.linked_account_ids && goal.linked_account_ids.length > 0) return;
 
-  // For income or transfer-in-style → add; for expense (rare goal use) → still add
-  // (User's mental model: "I'm contributing this amount toward this goal")
   const next = Number(goal.current_amount ?? 0) + amount;
-
   await supabase
     .from('goals')
     .update({ current_amount: next })
@@ -105,12 +99,10 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
     return { error: 'generic' as const };
   }
 
-  // Goal contribution (skip if goal is auto-synced from accounts)
   if (goal_id) {
-    await applyGoalContribution(supabase, user.id, goal_id, amount, type);
+    await applyGoalContribution(supabase, user.id, goal_id, amount);
   }
 
-  // Recurring template (now supports transfer too)
   if (isRecurring && !isNaN(dayOfMonth) && dayOfMonth >= 1 && dayOfMonth <= 31) {
     const todayStr = new Date().toISOString().slice(0, 10);
     const { error: recErr } = await supabase.from('recurring_transactions').insert({
@@ -149,7 +141,6 @@ export async function deleteTransaction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  // Reverse the goal contribution if any
   const { data: tx } = await supabase
     .from('transactions')
     .select('goal_id, amount')
@@ -196,6 +187,91 @@ export async function toggleRecurring(formData: FormData) {
     .eq('user_id', user.id);
 
   revalidatePath('/recurring');
+}
+
+export async function updateRecurring(_prev: unknown, formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const id = formData.get('id') as string;
+  if (!id) return { error: 'invalid_data' as const };
+
+  const amountStr = (formData.get('amount') as string)?.replace(/,/g, '') ?? '0';
+  const amount = parseFloat(amountStr);
+  if (isNaN(amount) || amount <= 0) return { error: 'amount_required' as const };
+
+  const type = formData.get('type') as 'income' | 'expense' | 'transfer';
+  const account_id = formData.get('account_id') as string;
+  const to_account_id = (formData.get('to_account_id') as string) || null;
+  const category_id = (formData.get('category_id') as string) || null;
+  const goal_id = (formData.get('goal_id') as string) || null;
+  const day_of_month = parseInt((formData.get('day_of_month') as string) ?? '1', 10);
+  const note = (formData.get('note') as string) || null;
+  const notify_enabled = formData.get('notify_enabled') === 'on';
+  const notify_days_before = Math.min(14, Math.max(0,
+    parseInt((formData.get('notify_days_before') as string) ?? '0', 10) || 0
+  ));
+
+  if (type === 'transfer') {
+    if (!to_account_id) return { error: 'to_account_required' as const };
+    if (to_account_id === account_id) return { error: 'transfer_same_account' as const };
+  }
+
+  const { error } = await supabase
+    .from('recurring_transactions')
+    .update({
+      amount,
+      account_id,
+      to_account_id: type === 'transfer' ? to_account_id : null,
+      category_id: type === 'transfer' ? null : category_id,
+      goal_id,
+      day_of_month: Math.min(31, Math.max(1, day_of_month || 1)),
+      note,
+      notify_enabled,
+      notify_days_before,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('updateRecurring:', error);
+    return { error: 'generic' as const };
+  }
+
+  revalidatePath('/recurring');
+  redirect('/recurring');
+}
+
+export async function contributeToGoal(formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const goalId = formData.get('goal_id') as string;
+  const amountStr = (formData.get('amount') as string)?.replace(/,/g, '') ?? '0';
+  const amount = parseFloat(amountStr);
+  if (!goalId || isNaN(amount) || amount === 0) return;
+
+  const { data: goal } = await supabase
+    .from('goals')
+    .select('current_amount, linked_account_ids')
+    .eq('id', goalId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (!goal) return;
+  if (goal.linked_account_ids && goal.linked_account_ids.length > 0) return;
+
+  const next = Math.max(0, Number(goal.current_amount ?? 0) + amount);
+  await supabase
+    .from('goals')
+    .update({ current_amount: next })
+    .eq('id', goalId)
+    .eq('user_id', user.id);
+
+  revalidatePath('/goals');
+  revalidatePath('/dashboard');
 }
 
 export async function deleteRecurring(formData: FormData) {
