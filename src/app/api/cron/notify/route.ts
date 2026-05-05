@@ -163,11 +163,83 @@ export async function GET(req: Request) {
     }
   }
 
+  // === Daily expense reminders ===
+  // Get current hour in Asia/Bangkok timezone
+  const bkkNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+  const bkkHour = bkkNow.getHours();
+  const bkkDateStr = bkkNow.toISOString().slice(0, 10);
+
+  let remindersSent = 0;
+
+  const { data: reminderProfiles } = await supabase
+    .from('profiles')
+    .select('id, reminder_enabled, reminder_hour, reminder_skip_if_logged, reminder_last_sent_on')
+    .eq('reminder_enabled', true)
+    .eq('reminder_hour', bkkHour);
+
+  if (reminderProfiles && reminderProfiles.length > 0) {
+    for (const p of reminderProfiles as any[]) {
+      // Skip if already sent today
+      if (p.reminder_last_sent_on === bkkDateStr) continue;
+
+      // Skip if user already logged a transaction today (when option enabled)
+      if (p.reminder_skip_if_logged) {
+        const { count: txCount } = await supabase
+          .from('transactions')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', p.id)
+          .gte('date', bkkDateStr)
+          .lte('date', bkkDateStr);
+        if ((txCount ?? 0) > 0) continue;
+      }
+
+      // Get push subscriptions
+      const { data: subs } = await supabase
+        .from('push_subscriptions')
+        .select('id, endpoint, p256dh, auth')
+        .eq('user_id', p.id);
+      if (!subs || subs.length === 0) continue;
+
+      const payload = JSON.stringify({
+        title: 'Lumenfi · บันทึกค่าใช้จ่ายวันนี้',
+        body: 'อย่าลืมบันทึกรายรับ-รายจ่ายวันนี้นะ — แตะเพื่อเพิ่มเลย',
+        url: '/transactions/new',
+        tag: 'lumenfi-daily-reminder',
+      });
+
+      let anySent = false;
+      for (const s of subs as PushSub[]) {
+        try {
+          await webpush.sendNotification(
+            { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+            payload,
+            { TTL: 60 * 60 * 4 }
+          );
+          remindersSent++;
+          anySent = true;
+        } catch (e: any) {
+          if (e?.statusCode === 410 || e?.statusCode === 404) {
+            await supabase.from('push_subscriptions').delete().eq('id', s.id);
+          }
+        }
+      }
+
+      if (anySent) {
+        await supabase
+          .from('profiles')
+          .update({ reminder_last_sent_on: bkkDateStr })
+          .eq('id', p.id);
+      }
+    }
+  }
+
   return NextResponse.json({
     ok: true,
     due: due.length,
     sent,
     failed,
     users: byUser.size,
+    remindersSent,
+    bkkHour,
   });
 }
