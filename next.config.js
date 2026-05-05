@@ -20,3 +20,4 @@ const nextConfig = {
 };
 
 module.exports = withNextIntl(nextConfig);
+// trigger 1777947370
