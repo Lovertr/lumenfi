@@ -29,22 +29,13 @@ export function LogoMark({ size = 40, className }: { size?: number; className?: 
         </linearGradient>
         <radialGradient id="lm-coin" cx="35%" cy="28%" r="80%">
           <stop offset="0%" stopColor="#FFFBEB"/><stop offset="40%" stopColor="#FCD34D"/><stop offset="80%" stopColor="#B45309"/><stop offset="100%" stopColor="#7C2D12"/>
-        </radialGradient>
-        <radialGradient id="lm-shine" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.75"/><stop offset="60%" stopColor="#FFFFFF" stopOpacity="0.15"/><stop offset="100%" stopColor="#FFFFFF" stopOpacity="0"/>
-        </radialGradient>
-        <radialGradient id="lm-aura">
+        </radialGradient>        <radialGradient id="lm-aura">
           <stop offset="0%" stopColor="#FCD34D" stopOpacity="0.22"/><stop offset="55%" stopColor="#FCD34D" stopOpacity="0.06"/><stop offset="100%" stopColor="#FCD34D" stopOpacity="0"/>
         </radialGradient>
         <radialGradient id="lm-spark">
           <stop offset="0%" stopColor="#FCD34D" stopOpacity="0.55"/><stop offset="100%" stopColor="#FCD34D" stopOpacity="0"/>
-        </radialGradient>
-        <radialGradient id="lm-prism-shine" cx="50%" cy="0%" r="55%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.7"/><stop offset="40%" stopColor="#FFFBEB" stopOpacity="0.25"/><stop offset="100%" stopColor="#FFFFFF" stopOpacity="0"/>
-        </radialGradient>
-        <clipPath id="lm-clip"><polygon points="100,28 166,100 100,172 34,100"/></clipPath>
-      </defs>
-      <rect width="200" height="200" rx="44" fill="#0A0F1F"/>
+        </radialGradient>      </defs>
+      <rect width="200" height="200" rx="44" fill="#000000"/>
       <circle cx="100" cy="100" r="88" fill="url(#lm-aura)"/>
       <g>
         <circle cx="50" cy="50" r="15" fill="url(#lm-spark)"/>
@@ -60,14 +51,12 @@ export function LogoMark({ size = 40, className }: { size?: number; className?: 
       <polygon points="100,28 166,100 100,100" fill="url(#lm-mid)"/>
       <polygon points="34,100 100,100 100,172" fill="url(#lm-deep)"/>
       <polygon points="100,100 166,100 100,172" fill="url(#lm-shadow)"/>
-      <g clipPath="url(#lm-clip)"><ellipse cx="100" cy="42" rx="55" ry="38" fill="url(#lm-prism-shine)"/></g>
       <polygon points="100,28 166,100 100,172 34,100" fill="none" stroke="#FCD34D" strokeWidth="0.6" opacity="0.45"/>
       <line x1="100" y1="28" x2="100" y2="172" stroke="#FEF3C7" strokeWidth="0.4" opacity="0.35"/>
       <line x1="34" y1="100" x2="166" y2="100" stroke="#FEF3C7" strokeWidth="0.4" opacity="0.25"/>
       <circle cx="100" cy="100" r="38" fill="url(#lm-coin)"/>
       <circle cx="100" cy="100" r="36" fill="none" stroke="#451A03" strokeWidth="0.8" opacity="0.6"/>
       <circle cx="100" cy="100" r="32.5" fill="none" stroke="#451A03" strokeWidth="0.5" opacity="0.4"/>
-      <ellipse cx="90" cy="86" rx="13" ry="7" fill="url(#lm-shine)" transform="rotate(-25 90 86)"/>
       <text x="100" y="119" textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif" fontSize="46" fontWeight="700" fill="#1C0701">L</text>
       <rect x="3" y="3" width="194" height="194" rx="41" fill="none" stroke="#D97706" strokeWidth="0.7" opacity="0.3"/>
     </svg>
