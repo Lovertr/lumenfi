@@ -73,27 +73,22 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
               />
             </div>
 
-            {/* Time picker */}
+            {/* Time — locked to 21:00 on Hobby plan */}
             <div className="space-y-2">
-              <Label htmlFor="reminder_hour">
+              <Label>
                 {isTh ? 'เวลาแจ้งเตือน' : 'Reminder time'}
               </Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="reminder_hour"
-                  name="reminder_hour"
-                  type="number"
-                  min={0}
-                  max={23}
-                  defaultValue={String(hour)}
-                  className="h-10 w-24 text-center"
-                />
+              <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2">
+                <span className="text-base font-semibold">21:00</span>
                 <span className="text-sm text-muted-foreground">
-                  {isTh ? ': 00 น. (เวลาไทย)' : ':00 (Bangkok time)'}
+                  {isTh ? '(3 ทุ่ม เวลาไทย — ก่อนนอนทบทวนค่าใช้จ่าย)' : '(9 PM Bangkok — review before bed)'}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {isTh ? 'แนะนำ: 21:00 (3 ทุ่ม) — ก่อนนอนทบทวนค่าใช้จ่าย' : 'Suggested: 21:00 — review expenses before bed'}
+              <input type="hidden" name="reminder_hour" value="21" />
+              <p className="text-[11px] text-muted-foreground">
+                {isTh
+                  ? 'หมายเหตุ: Vercel Hobby plan จำกัดให้แจ้งเตือนได้วันละ 1 ครั้ง — เวลานี้เหมาะสำหรับการทบทวนรายวัน หากต้องการกำหนดเวลาเอง อัปเกรดเป็น Pro plan'
+                  : 'Note: Vercel Hobby plan limits reminders to once a day. Upgrade to Pro for custom hours.'}
               </p>
             </div>
 
