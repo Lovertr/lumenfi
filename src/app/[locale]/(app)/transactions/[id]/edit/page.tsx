@@ -25,7 +25,7 @@ async function getAccounts() {
   const supabase = createClient();
   const { data } = await supabase
     .from('accounts')
-    .select('id, name, type, color')
+    .select('id, name, type, color, account_number')
     .eq('archived', false)
     .order('name');
   return data ?? [];

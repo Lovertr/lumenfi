@@ -21,6 +21,7 @@ interface Account {
   color: string;
   include_in_net_worth: boolean;
   credit_limit: number | null;
+  account_number: string | null;
 }
 
 async function getAccounts(): Promise<Account[]> {
@@ -28,7 +29,7 @@ async function getAccounts(): Promise<Account[]> {
     const supabase = createClient();
     const { data, error } = await supabase
       .from('accounts')
-      .select('id, name, type, currency, initial_balance, color, include_in_net_worth, credit_limit')
+      .select('id, name, type, currency, initial_balance, color, include_in_net_worth, credit_limit, account_number')
       .eq('archived', false)
       .order('created_at', { ascending: false });
 
@@ -138,7 +139,10 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="truncate font-semibold">{account.name}</p>
-                      <p className="text-xs text-muted-foreground">{tType(account.type)}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {tType(account.type)}
+                        {account.account_number ? ` · ${account.account_number}` : ''}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className={`font-bold ${isLiability ? 'text-destructive' : ''}`}>

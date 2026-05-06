@@ -18,6 +18,7 @@ interface Account {
   name: string;
   type: string;
   color: string;
+  account_number?: string | null;
 }
 interface Category {
   id: string;
@@ -78,7 +79,12 @@ function AccountPicker({
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: acc.color }}
               />
-              <div className="text-sm font-medium truncate">{acc.name}</div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium">{acc.name}</div>
+                {acc.account_number && (
+                  <div className="truncate text-[10px] text-muted-foreground">{acc.account_number}</div>
+                )}
+              </div>
             </div>
           </button>
         );
@@ -97,6 +103,35 @@ interface TransactionDefaults {
   goal_id?: string | null;
   date?: string;
   note?: string | null;
+}
+
+// Normalize account number for matching: strip non-digits, lowercase
+function normalizeAcctNum(s: string | null | undefined): string {
+  if (!s) return '';
+  return String(s).replace(/[^0-9]/g, '');
+}
+
+// Find best account match by detected number from OCR
+function matchAccountByNumber(accounts: Account[], detected: string | null | undefined): Account | undefined {
+  const d = normalizeAcctNum(detected);
+  if (!d || d.length < 3) return undefined;
+  // Exact match first
+  let best = accounts.find((a) => normalizeAcctNum(a.account_number) === d);
+  if (best) return best;
+  // Last-N digit match (e.g. card last-4): match if user's account number digits END WITH detected, or vice versa
+  best = accounts.find((a) => {
+    const an = normalizeAcctNum(a.account_number);
+    if (!an) return false;
+    return an.endsWith(d) || d.endsWith(an);
+  });
+  if (best) return best;
+  // Substring match
+  best = accounts.find((a) => {
+    const an = normalizeAcctNum(a.account_number);
+    if (!an) return false;
+    return an.includes(d) || d.includes(an);
+  });
+  return best;
 }
 
 export function TransactionForm({
@@ -131,10 +166,12 @@ export function TransactionForm({
   // Scan state (for new mode only)
   const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [scanInfo, setScanInfo] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function handleScanFile(file: File) {
     setScanError(null);
+    setScanInfo(null);
     setScanning(true);
     try {
       const fd = new FormData();
@@ -145,7 +182,6 @@ export function TransactionForm({
         setScanError(r.error ?? 'unknown');
         return;
       }
-      // Apply scan results to form state
       if (r.type === 'income' || r.type === 'expense') setType(r.type);
       if (r.total != null) {
         const input = document.getElementById('amount') as HTMLInputElement | null;
@@ -155,7 +191,6 @@ export function TransactionForm({
         const input = document.getElementById('date') as HTMLInputElement | null;
         if (input) input.value = r.date;
       }
-      // Try to match category by name
       if (r.category) {
         const lower = r.category.toLowerCase();
         const matchedCat = categories.find((c) =>
@@ -165,10 +200,19 @@ export function TransactionForm({
         );
         if (matchedCat) setCategoryId(matchedCat.id);
       }
-      // Note from merchant
       if (r.merchant || r.note) {
         const noteInput = document.getElementById('note') as HTMLInputElement | null;
         if (noteInput) noteInput.value = [r.merchant, r.note].filter(Boolean).join(' — ');
+      }
+      // Match by account number from receipt/slip
+      if (r.account_number) {
+        const match = matchAccountByNumber(accounts, r.account_number);
+        if (match) {
+          setAccountId(match.id);
+          setScanInfo(`✓ ${match.name} (${r.account_number})`);
+        } else {
+          setScanInfo(`เลขบัญชีในใบเสร็จ: ${r.account_number} — ไม่ตรงบัญชีไหน`);
+        }
       }
     } catch (e) {
       setScanning(false);
@@ -220,7 +264,6 @@ export function TransactionForm({
         })}
       </div>
 
-      {/* Scan camera + upload — only in create mode */}
       {mode === 'create' && (
         <div className="space-y-2">
           <input
@@ -268,6 +311,9 @@ export function TransactionForm({
           </div>
           {scanning && (
             <p className="text-center text-xs text-muted-foreground">{tForm('scanning')}</p>
+          )}
+          {scanInfo && !scanning && (
+            <p className="text-xs text-muted-foreground">{scanInfo}</p>
           )}
           {scanError && (
             <p className="text-xs text-destructive">

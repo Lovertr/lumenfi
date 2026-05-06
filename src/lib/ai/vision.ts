@@ -7,18 +7,20 @@ interface ParsedReceipt {
   type?: 'income' | 'expense';
   category?: string | null;
   note?: string | null;
+  account_number?: string | null;
 }
 
-const PROMPT = `You are an OCR + structuring assistant. Look at this receipt/bill image and extract:
+const PROMPT = `You are an OCR + structuring assistant. Look at this receipt/bill/transfer slip image and extract:
 - merchant: store/vendor name (string)
 - date: ISO format YYYY-MM-DD (use today if unclear)
 - total: total amount as a number (THB), no commas
-- type: "expense" for purchases, "income" if it's a payment received (rare)
+- type: "expense" for purchases, "income" if it's a payment/transfer received
 - category: best guess from these — Food, Transport, Shopping, Bills, Health, Entertainment, Education, Housing, Other
 - note: short description like "Lunch at X" (Thai if receipt is Thai)
+- account_number: if a payer/source bank account number, card last-4, or e-wallet phone is visible (the account paying or receiving), return ONLY digits/dashes (no labels). Otherwise null.
 
 Respond ONLY with a single JSON object, no markdown fences, no commentary. Example:
-{"merchant":"7-Eleven","date":"2026-04-28","total":135.50,"type":"expense","category":"Food","note":"ของกินที่ 7-11"}`;
+{"merchant":"7-Eleven","date":"2026-04-28","total":135.50,"type":"expense","category":"Food","note":"ของกินที่ 7-11","account_number":"xxx-x-x1234-x"}`;
 
 export async function visionParseReceipt(
   provider: AIProvider,
@@ -38,7 +40,6 @@ export async function visionParseReceipt(
     throw new Error(`Vision not supported for ${provider}`);
   }
 
-  // Strip code fences if any
   const cleaned = raw
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/```\s*$/i, '')
@@ -53,6 +54,7 @@ export async function visionParseReceipt(
       type: parsed.type === 'income' ? 'income' : 'expense',
       category: parsed.category ?? null,
       note: parsed.note ?? null,
+      account_number: typeof parsed.account_number === 'string' ? parsed.account_number : null,
     };
   } catch {
     return {};

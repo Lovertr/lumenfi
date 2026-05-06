@@ -14,6 +14,7 @@ export interface ScanResult {
   type?: 'income' | 'expense';
   category?: string | null;
   note?: string | null;
+  account_number?: string | null;
 }
 
 export async function scanReceipt(formData: FormData): Promise<ScanResult> {
@@ -25,7 +26,6 @@ export async function scanReceipt(formData: FormData): Promise<ScanResult> {
   if (!file || file.size === 0) return { ok: false, error: 'no_image' };
   if (file.size > 10 * 1024 * 1024) return { ok: false, error: 'image_too_large' };
 
-  // Get user's AI key + provider
   const { data: profile } = await supabase
     .from('profiles')
     .select('ai_provider, ai_api_key_encrypted')
@@ -43,7 +43,6 @@ export async function scanReceipt(formData: FormData): Promise<ScanResult> {
     return { ok: false, error: 'decryption_failed' };
   }
 
-  // Convert to base64
   const buf = Buffer.from(await file.arrayBuffer());
   const b64 = buf.toString('base64');
   const mime = file.type || 'image/jpeg';
