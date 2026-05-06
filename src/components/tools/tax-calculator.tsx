@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { InsuranceTaxCTA } from './insurance-tax-cta';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -88,6 +89,16 @@ export function TaxCalculator() {
     const additionalIfMaxRMF = calcTax(taxable) - calcTax(Math.max(0, taxable - remainingRMF));
     const additionalIfMaxSSF = calcTax(taxable) - calcTax(Math.max(0, taxable - remainingSSF));
 
+    // Marginal rate based on taxable income brackets
+    const marginalRate =
+      taxable <= 150000 ? 0 :
+      taxable <= 300000 ? 0.05 :
+      taxable <= 500000 ? 0.10 :
+      taxable <= 750000 ? 0.15 :
+      taxable <= 1000000 ? 0.20 :
+      taxable <= 2000000 ? 0.25 :
+      taxable <= 5000000 ? 0.30 : 0.35;
+
     return {
       income,
       expense,
@@ -95,6 +106,9 @@ export function TaxCalculator() {
       taxable,
       tax,
       effectiveRate,
+      marginalRate,
+      usedLifeDeduction: Math.min(clampNum(lifeInsurance), 100000) + Math.min(clampNum(annuityInsurance), 200000),
+      usedHealthDeduction: Math.min(clampNum(healthInsurance), 25000),
       remainingRMF,
       remainingSSF,
       saveIfMaxRMF: additionalIfMaxRMF,
@@ -231,6 +245,12 @@ export function TaxCalculator() {
           </CardContent>
         </Card>
       )}
+
+      <InsuranceTaxCTA
+        marginalRate={result.marginalRate}
+        usedLifeDeduction={result.usedLifeDeduction}
+        usedHealthDeduction={result.usedHealthDeduction}
+      />
     </div>
   );
 }

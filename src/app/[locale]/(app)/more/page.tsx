@@ -7,7 +7,7 @@ import { ThemeToggle } from '@/components/layout/theme-toggle';
 import {
   TrendingUp, FolderOpen, Settings as SettingsIcon, Brain, FileBarChart,
   ChevronRight, Activity, Repeat, Wallet, Calculator, CreditCard, PiggyBank,
-  Camera, Target, Home as HomeIcon,
+  Camera, Target, Home as HomeIcon, Shield, HelpCircle,
 } from 'lucide-react';
 
 interface MoreItem {
@@ -45,6 +45,7 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
         { href: '/debts', icon: CreditCard, label: tDash('quickActions.debts'), desc: isTh ? 'หนี้สินและการผ่อน' : 'Debts and payments', color: 'text-rose-600 bg-rose-50' },
         { href: '/goals', icon: Target, label: tDash('quickActions.goals'), desc: isTh ? 'เป้าหมายการเงิน' : 'Financial goals', color: 'text-violet-600 bg-violet-50' },
         { href: '/investments', icon: TrendingUp, label: t('investments'), desc: t('investmentsDesc'), color: 'text-green-600 bg-green-50' },
+        { href: '/insurance', icon: Shield, label: 'ประกัน (วิเคราะห์ + ขอใบเสนอ)', desc: 'วิเคราะห์ช่องว่างความคุ้มครอง', color: 'text-rose-600 bg-rose-50' },
       ],
     },
     {
@@ -60,10 +61,12 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
     {
       title: isTh ? 'อื่นๆ' : 'Other',
       items: [
+        { href: '/help', icon: HelpCircle, label: 'คู่มือ + AI ช่วยเหลือ', desc: 'วิธีใช้งาน + ถาม AI', color: 'text-cyan-600 bg-cyan-50' },
         { href: '/ai/settings', icon: Brain, label: t('ai'), desc: t('aiDesc'), color: 'text-purple-600 bg-purple-50' },
         { href: '/reports', icon: FileBarChart, label: t('reports'), desc: t('reportsDesc'), color: 'text-cyan-600 bg-cyan-50' },
         { href: '/categories', icon: FolderOpen, label: t('categories'), desc: t('categoriesDesc'), color: 'text-orange-600 bg-orange-50' },
         { href: '/settings', icon: SettingsIcon, label: t('settings'), desc: t('settingsDesc'), color: 'text-slate-600 bg-slate-100' },
+        { href: '/settings/privacy', icon: Shield, label: 'ความเป็นส่วนตัว', desc: 'ส่งออก / ลบบัญชี (PDPA)', color: 'text-slate-600 bg-slate-100' },
       ],
     },
   ];

@@ -19,6 +19,8 @@ import {
   Calculator,
   Camera,
   PiggyBank,
+  Shield,
+  HelpCircle,
 } from 'lucide-react';
 import { LogoMark, Wordmark } from '@/components/brand/logo-mark';
 import { cn } from '@/lib/utils';
@@ -58,6 +60,7 @@ export function DesktopSidebar() {
         { href: '/debts', icon: CreditCard, label: tDash('quickActions.debts') },
         { href: '/goals', icon: Target, label: tDash('quickActions.goals') },
         { href: '/investments', icon: TrendingUp, label: tDash('quickActions.investments') },
+        { href: '/insurance', icon: Shield, label: 'ประกัน' },
       ],
     },
     {
@@ -74,6 +77,7 @@ export function DesktopSidebar() {
       title: tNav('home') === 'หน้าหลัก' ? 'อื่นๆ' : 'Other',
       items: [
         { href: '/ai', icon: Brain, label: tNav('ai') },
+        { href: '/help', icon: HelpCircle, label: 'คู่มือ' },
         { href: '/reports', icon: FileBarChart, label: tMore('reports') },
         { href: '/categories', icon: FolderOpen, label: tMore('categories') },
         { href: '/settings', icon: Settings, label: tMore('settings') },

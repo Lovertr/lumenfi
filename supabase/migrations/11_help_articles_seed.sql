@@ -30,3 +30,6 @@ insert into help_articles (slug, title, category, body, locale, sort_order) valu
 ('lumenfi-faq-data', 'ข้อมูลเก็บไว้ที่ไหน ปลอดภัยไหม', 'privacy', E'# ความปลอดภัยข้อมูล\n\n## เก็บที่ไหน\nข้อมูลเก็บใน **Supabase** (PostgreSQL) hosting ที่ Singapore (ap-southeast-1)\n\n## RLS (Row Level Security)\nข้อมูลของคุณ user อื่นเห็นไม่ได้ — แม้แอพมี bug\n\n## รหัสผ่าน\nเก็บแบบ hash (bcrypt) — เราเองก็มองไม่เห็น\n\n## API Key ของ AI\nเข้ารหัสด้วย AES-GCM ก่อนเก็บ — เราเองก็ถอดรหัสไม่ได้ (key อยู่ใน server env เท่านั้น)\n\n## ไม่มีการขายข้อมูล\nเราไม่ขายข้อมูลให้ใคร', 'th', 11),
 
 ('lumenfi-faq-cost', 'ใช้ฟรีจริงๆ หรือ?', 'general', E'# ค่าใช้จ่าย\n\n## ตอนนี้\n**ฟรีทั้งหมด** — ทุกฟีเจอร์ใช้ได้ไม่มีค่าใช้จ่าย\n\n## อนาคต\nอาจจะเป็น Freemium\n- Free: ฟีเจอร์ส่วนใหญ่\n- Pro: ฟีเจอร์ขั้นสูง (AI advanced, รายงาน PDF, family sharing)\n\n## API Cost (ของคุณ)\nถ้าใช้ AI Advisor / OCR — เราใช้ API key ของคุณเอง — ค่าใช้จ่าย ~$0.01-0.05 ต่อคำถาม จ่ายให้ provider โดยตรง', 'th', 12);
+
+-- Budget alert tracking column
+alter table profiles add column if not exists budget_alert_last_sent_on date;

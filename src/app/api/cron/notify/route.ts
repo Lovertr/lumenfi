@@ -233,6 +233,66 @@ export async function GET(req: Request) {
     }
   }
 
+
+  // ─── Budget overspend alerts ─────────────────────────────
+  let budgetAlertsSent = 0;
+  try {
+    const { data: usersWithBudgets } = await supabase
+      .from('budgets')
+      .select('user_id')
+      .gt('amount', 0);
+    const userIds = Array.from(new Set((usersWithBudgets ?? []).map((b) => b.user_id)));
+
+    for (const uid of userIds) {
+      const { getBudgetAlerts, formatBudgetMessage } = await import('@/lib/budget-alerts');
+      const alerts = await getBudgetAlerts(uid);
+      const overAlerts = alerts.filter((a) => a.status === 'over');
+      if (overAlerts.length === 0) continue;
+
+      // Only send if not already sent today
+      const { data: lastAlertProfile } = await supabase
+        .from('profiles')
+        .select('budget_alert_last_sent_on')
+        .eq('id', uid)
+        .maybeSingle();
+      if (lastAlertProfile?.budget_alert_last_sent_on === bkkDateStr) continue;
+
+      const { data: subs } = await supabase
+        .from('push_subscriptions')
+        .select('id, endpoint, p256dh, auth')
+        .eq('user_id', uid);
+
+      let anySent = false;
+      const title = `⚠️ มี ${overAlerts.length} หมวดเกินงบ`;
+      const body = overAlerts.slice(0, 3).map(formatBudgetMessage).join('\n').slice(0, 250);
+
+      for (const s of (subs ?? [])) {
+        try {
+          await webpush.sendNotification(
+            { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+            JSON.stringify({ title, body, url: '/budgets', icon: '/icons/icon-192.png' }),
+            { TTL: 60 * 60 * 4 }
+          );
+          budgetAlertsSent++;
+          anySent = true;
+        } catch (e: any) {
+          if (e?.statusCode === 410 || e?.statusCode === 404) {
+            await supabase.from('push_subscriptions').delete().eq('id', s.id);
+          }
+        }
+      }
+
+      if (anySent) {
+        await supabase
+          .from('profiles')
+          .update({ budget_alert_last_sent_on: bkkDateStr })
+          .eq('id', uid);
+      }
+    }
+  } catch (e) {
+    console.warn('Budget alerts failed:', e);
+  }
+
   return NextResponse.json({
     ok: true,
     due: due.length,
@@ -240,6 +300,7 @@ export async function GET(req: Request) {
     failed,
     users: byUser.size,
     remindersSent,
+    budgetAlertsSent,
     bkkHour,
   });
 }
