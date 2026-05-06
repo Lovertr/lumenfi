@@ -129,7 +129,7 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
                     const fallbackLabel = isIncome ? 'Income' : isExpense ? 'Expense' : 'Transfer';
                     const fallbackIcon = isTransfer ? '🔄' : '💰';
                     return (
-                      <div key={tx.id} className="flex items-center gap-3 p-3">
+                      <Link key={tx.id} href={`/transactions/${tx.id}/edit`} className="flex items-center gap-3 p-3 hover:bg-muted/40 transition-colors">
                         <div
                           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xl"
                           style={{
@@ -155,17 +155,7 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
                             {formatTHB(Number(tx.amount))}
                           </p>
                         </div>
-                        <form action={deleteTransaction}>
-                          <input type="hidden" name="id" value={tx.id} />
-                          <button
-                            type="submit"
-                            className="text-muted-foreground hover:text-destructive"
-                            aria-label="Delete"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </form>
-                      </div>
+                      </Link>
                     );
                   })}
                 </CardContent>

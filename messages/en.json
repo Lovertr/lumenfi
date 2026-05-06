@@ -258,7 +258,11 @@
       "notifyMe": "Notify me before",
       "notifyDaysBefore": "Days before due",
       "daysBeforeUnit": "days",
-      "notifyHint": "Browser/mobile push notification — enable permission on the Recurring page first"
+      "notifyHint": "Browser/mobile push notification — enable permission on the Recurring page first",
+      "scanReceipt": "📷 Scan receipt (AI fills the form)",
+      "scanning": "AI reading receipt...",
+      "scanNoAiKey": "Set AI API key first — AI Advisor → Settings",
+      "scanFailed": "AI failed, try again"
     },
     "errors": {
       "amount_required": "Please enter an amount",
@@ -272,7 +276,8 @@
       "transfer_need_two_accounts": "Transfers need at least 2 accounts — add another account first"
     },
     "add": "Add",
-    "scan": "Scan"
+    "scan": "Scan",
+    "editTitle": "Edit Transaction"
   },
   "Goals": {
     "title": "Financial Goals",

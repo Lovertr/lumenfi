@@ -175,6 +175,95 @@ export async function deleteTransaction(formData: FormData) {
   revalidatePath('/goals');
 }
 
+
+
+export async function updateTransaction(_prev: unknown, formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const id = formData.get('id') as string;
+  if (!id) return { error: 'invalid_data' as const };
+
+  const amountStr = (formData.get('amount') as string)?.replace(/,/g, '') ?? '0';
+  const amount = parseFloat(amountStr);
+  if (isNaN(amount) || amount <= 0) return { error: 'amount_required' as const };
+
+  const account_id = formData.get('account_id') as string;
+  if (!account_id) return { error: 'account_required' as const };
+
+  const type = formData.get('type') as 'income' | 'expense' | 'transfer';
+  const category_id = (formData.get('category_id') as string) || null;
+  if (type !== 'transfer' && !category_id) {
+    return { error: 'category_required' as const };
+  }
+
+  const to_account_id = (formData.get('to_account_id') as string) || null;
+  if (type === 'transfer') {
+    if (!to_account_id) return { error: 'to_account_required' as const };
+    if (to_account_id === account_id) return { error: 'transfer_same_account' as const };
+  }
+
+  const goal_id = (formData.get('goal_id') as string) || null;
+  const date = (formData.get('date') as string) || new Date().toISOString();
+  const note = (formData.get('note') as string) || null;
+
+  // Reverse old goal contribution if any (before update)
+  const { data: oldTx } = await supabase
+    .from('transactions')
+    .select('goal_id, amount')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (oldTx?.goal_id) {
+    const { data: oldGoal } = await supabase
+      .from('goals')
+      .select('current_amount, linked_account_ids')
+      .eq('id', oldTx.goal_id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (oldGoal && (!oldGoal.linked_account_ids || oldGoal.linked_account_ids.length === 0)) {
+      const next = Math.max(0, Number(oldGoal.current_amount ?? 0) - Number(oldTx.amount));
+      await supabase
+        .from('goals')
+        .update({ current_amount: next })
+        .eq('id', oldTx.goal_id)
+        .eq('user_id', user.id);
+    }
+  }
+
+  const { error } = await supabase
+    .from('transactions')
+    .update({
+      type,
+      amount,
+      account_id,
+      to_account_id: type === 'transfer' ? to_account_id : null,
+      category_id: type === 'transfer' ? null : category_id,
+      goal_id,
+      date,
+      note,
+    })
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('updateTransaction:', error);
+    return { error: 'generic' as const };
+  }
+
+  // Apply new goal contribution if any
+  if (goal_id) {
+    await applyGoalContribution(supabase, user.id, goal_id, amount);
+  }
+
+  revalidatePath('/transactions');
+  revalidatePath('/dashboard');
+  revalidatePath('/goals');
+  redirect('/transactions');
+}
+
 export async function toggleRecurring(formData: FormData) {
   const id = formData.get('id') as string;
   const next = formData.get('is_active') === 'true';

@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createTransaction } from '@/app/[locale]/(app)/transactions/actions';
+import { createTransaction, updateTransaction } from '@/app/[locale]/(app)/transactions/actions';
+import { scanReceipt, type ScanResult } from '@/app/[locale]/(app)/transactions/scan/actions';
 import { cn } from '@/lib/utils';
 import {
-  TrendingDown, TrendingUp, ArrowLeftRight, Repeat, Target, ArrowDown, Bell,
+  TrendingDown, TrendingUp, ArrowLeftRight, Repeat, Target, ArrowDown, Bell, Camera, Loader2, Trash2,
 } from 'lucide-react';
 
 interface Account {
@@ -86,29 +87,94 @@ function AccountPicker({
   );
 }
 
+interface TransactionDefaults {
+  id?: string;
+  type?: Type;
+  amount?: number | string;
+  account_id?: string;
+  to_account_id?: string | null;
+  category_id?: string | null;
+  goal_id?: string | null;
+  date?: string;
+  note?: string | null;
+}
+
 export function TransactionForm({
   accounts,
   categories,
   goals = [],
+  mode = 'create',
+  defaults,
 }: {
   accounts: Account[];
   categories: Category[];
   goals?: Goal[];
+  mode?: 'create' | 'edit';
+  defaults?: TransactionDefaults;
 }) {
   const t = useTranslations('Transactions');
   const tForm = useTranslations('Transactions.form');
   const tErr = useTranslations('Transactions.errors');
-  const [state, action] = useFormState<State, FormData>(createTransaction, null);
+  const action_fn = mode === 'edit' ? updateTransaction : createTransaction;
+  const [state, action] = useFormState<State, FormData>(action_fn, null);
 
-  const [type, setType] = useState<Type>('expense');
-  const [accountId, setAccountId] = useState(accounts[0]?.id ?? '');
-  const [toAccountId, setToAccountId] = useState(accounts[1]?.id ?? '');
-  const [categoryId, setCategoryId] = useState('');
+  const [type, setType] = useState<Type>(defaults?.type ?? 'expense');
+  const [accountId, setAccountId] = useState(defaults?.account_id ?? accounts[0]?.id ?? '');
+  const [toAccountId, setToAccountId] = useState(defaults?.to_account_id ?? accounts[1]?.id ?? '');
+  const [categoryId, setCategoryId] = useState(defaults?.category_id ?? '');
   const [isRecurring, setIsRecurring] = useState(false);
   const [dayOfMonth, setDayOfMonth] = useState(1);
-  const [goalId, setGoalId] = useState('');
+  const [goalId, setGoalId] = useState(defaults?.goal_id ?? '');
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [notifyDays, setNotifyDays] = useState(1);
+
+  // Scan state (for new mode only)
+  const [scanning, setScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function handleScanFile(file: File) {
+    setScanError(null);
+    setScanning(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const r = await scanReceipt(fd);
+      setScanning(false);
+      if (!r.ok) {
+        setScanError(r.error ?? 'unknown');
+        return;
+      }
+      // Apply scan results to form state
+      if (r.type === 'income' || r.type === 'expense') setType(r.type);
+      if (r.total != null) {
+        const input = document.getElementById('amount') as HTMLInputElement | null;
+        if (input) input.value = String(r.total);
+      }
+      if (r.date) {
+        const input = document.getElementById('date') as HTMLInputElement | null;
+        if (input) input.value = r.date;
+      }
+      // Try to match category by name
+      if (r.category) {
+        const lower = r.category.toLowerCase();
+        const matchedCat = categories.find((c) =>
+          c.name.toLowerCase() === lower ||
+          c.name.toLowerCase().includes(lower) ||
+          lower.includes(c.name.toLowerCase())
+        );
+        if (matchedCat) setCategoryId(matchedCat.id);
+      }
+      // Note from merchant
+      if (r.merchant || r.note) {
+        const noteInput = document.getElementById('note') as HTMLInputElement | null;
+        if (noteInput) noteInput.value = [r.merchant, r.note].filter(Boolean).join(' — ');
+      }
+    } catch (e) {
+      setScanning(false);
+      setScanError('upload_failed');
+    }
+  }
 
   const today = new Date().toISOString().slice(0, 10);
   const filteredCategories = categories.filter(
@@ -125,6 +191,9 @@ export function TransactionForm({
 
   return (
     <form action={action} className="space-y-5">
+      {mode === 'edit' && defaults?.id && (
+        <input type="hidden" name="id" value={defaults.id} />
+      )}
       <input type="hidden" name="type" value={type} />
       <div className="grid grid-cols-3 gap-2 rounded-xl border bg-muted/40 p-1">
         {([
@@ -151,6 +220,38 @@ export function TransactionForm({
         })}
       </div>
 
+      {/* Scan camera button — only in create mode */}
+      {mode === 'create' && (
+        <div className="space-y-2">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleScanFile(f);
+            }}
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full border-dashed"
+            disabled={scanning}
+            onClick={() => fileRef.current?.click()}
+          >
+            {scanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+            {scanning ? tForm('scanning') : tForm('scanReceipt')}
+          </Button>
+          {scanError && (
+            <p className="text-xs text-destructive">
+              {scanError === 'no_ai_key' ? tForm('scanNoAiKey') : scanError === 'ai_error' ? tForm('scanFailed') : scanError}
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="amount">{tForm('amount')}</Label>
         <div className="relative">
@@ -164,6 +265,7 @@ export function TransactionForm({
             inputMode="decimal"
             required
             autoFocus
+            defaultValue={defaults?.amount != null ? String(defaults.amount) : ''}
             placeholder="0.00"
             className="pl-8 text-xl font-bold"
           />
@@ -251,7 +353,7 @@ export function TransactionForm({
 
       <div className="space-y-2">
         <Label htmlFor="date">{tForm('date')}</Label>
-        <Input id="date" name="date" type="date" defaultValue={today} required />
+        <Input id="date" name="date" type="date" defaultValue={defaults?.date ?? today} required />
       </div>
 
       {/* Goal link — now also for transfers */}
@@ -293,10 +395,11 @@ export function TransactionForm({
 
       <div className="space-y-2">
         <Label htmlFor="note">{tForm('note')}</Label>
-        <Input id="note" name="note" placeholder={tForm('notePlaceholder')} maxLength={500} />
+        <Input id="note" name="note" defaultValue={defaults?.note ?? ''} placeholder={tForm('notePlaceholder')} maxLength={500} />
       </div>
 
-      {/* Recurring — now available for all types including transfer */}
+      {/* Recurring — only on create */}
+      {mode === 'create' && (
       <div className="space-y-3 rounded-xl border bg-muted/30 p-3">
         <label className="flex cursor-pointer items-center justify-between">
           <span className="flex items-center gap-2 text-sm font-medium">
@@ -371,6 +474,7 @@ export function TransactionForm({
           </div>
         )}
       </div>
+      )}
 
       {state?.error && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
