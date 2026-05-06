@@ -738,4 +738,6 @@
     "avgExpensePerMonth": "Avg expense/month (incl. debt)",
     "avgExpenseExclDebt": "Avg expense/month (excl. debt)",
     "mo": "mo",
-    "partialWindowNote": 
+    "partialWindowNote": "Only {active} of {max} months have data — average may be off"
+  }
+}
