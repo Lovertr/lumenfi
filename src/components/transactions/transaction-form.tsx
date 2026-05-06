@@ -10,7 +10,7 @@ import { createTransaction, updateTransaction } from '@/app/[locale]/(app)/trans
 import { scanReceipt, type ScanResult } from '@/app/[locale]/(app)/transactions/scan/actions';
 import { cn } from '@/lib/utils';
 import {
-  TrendingDown, TrendingUp, ArrowLeftRight, Repeat, Target, ArrowDown, Bell, Camera, Loader2, Trash2,
+  TrendingDown, TrendingUp, ArrowLeftRight, Repeat, Target, ArrowDown, Bell, Camera, Upload, Loader2, Trash2,
 } from 'lucide-react';
 
 interface Account {
@@ -220,30 +220,56 @@ export function TransactionForm({
         })}
       </div>
 
-      {/* Scan camera button — only in create mode */}
+      {/* Scan camera + upload — only in create mode */}
       {mode === 'create' && (
         <div className="space-y-2">
           <input
             ref={fileRef}
             type="file"
             accept="image/*"
-            capture="environment"
             onChange={(e) => {
               const f = e.target.files?.[0];
               if (f) handleScanFile(f);
+              // Reset so the same file can be re-selected
+              if (e.target) e.target.value = '';
             }}
             className="hidden"
           />
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full border-dashed"
-            disabled={scanning}
-            onClick={() => fileRef.current?.click()}
-          >
-            {scanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
-            {scanning ? tForm('scanning') : tForm('scanReceipt')}
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="border-dashed"
+              disabled={scanning}
+              onClick={() => {
+                if (fileRef.current) {
+                  fileRef.current.removeAttribute('capture');
+                  fileRef.current.click();
+                }
+              }}
+            >
+              {scanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+              {tForm('scanUpload')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-dashed"
+              disabled={scanning}
+              onClick={() => {
+                if (fileRef.current) {
+                  fileRef.current.setAttribute('capture', 'environment');
+                  fileRef.current.click();
+                }
+              }}
+            >
+              {scanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+              {tForm('scanCamera')}
+            </Button>
+          </div>
+          {scanning && (
+            <p className="text-center text-xs text-muted-foreground">{tForm('scanning')}</p>
+          )}
           {scanError && (
             <p className="text-xs text-destructive">
               {scanError === 'no_ai_key' ? tForm('scanNoAiKey') : scanError === 'ai_error' ? tForm('scanFailed') : scanError}
@@ -454,35 +480,4 @@ export function TransactionForm({
               </label>
               {notifyEnabled && (
                 <div className="flex items-center gap-2 pt-1">
-                  <span className="text-xs text-muted-foreground">{tForm('notifyDaysBefore')}</span>
-                  <Input
-                    name="notify_days_before"
-                    type="number"
-                    min={0}
-                    max={14}
-                    value={notifyDays}
-                    onChange={(e) => setNotifyDays(Math.min(14, Math.max(0, parseInt(e.target.value) || 0)))}
-                    className="h-9 w-16 text-center"
-                  />
-                  <span className="text-xs text-muted-foreground">{tForm('daysBeforeUnit')}</span>
-                </div>
-              )}
-              {notifyEnabled && (
-                <p className="text-[11px] text-muted-foreground">{tForm('notifyHint')}</p>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-      )}
-
-      {state?.error && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {tErr(state.error)}
-        </div>
-      )}
-
-      <SubmitBtn />
-    </form>
-  );
-}
+                  <span className="text-xs text-muted-foreground">{tForm('notifyDaysBefore')}

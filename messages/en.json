@@ -260,6 +260,8 @@
       "daysBeforeUnit": "days",
       "notifyHint": "Browser/mobile push notification — enable permission on the Recurring page first",
       "scanReceipt": "📷 Scan receipt (AI fills the form)",
+      "scanUpload": "Upload image",
+      "scanCamera": "Take photo",
       "scanning": "AI reading receipt...",
       "scanNoAiKey": "Set AI API key first — AI Advisor → Settings",
       "scanFailed": "AI failed, try again"
@@ -736,6 +738,4 @@
     "avgExpensePerMonth": "Avg expense/month (incl. debt)",
     "avgExpenseExclDebt": "Avg expense/month (excl. debt)",
     "mo": "mo",
-    "partialWindowNote": "Only {active} of {max} months have data — average may be off"
-  }
-}
+    "partialWindowNote": 
