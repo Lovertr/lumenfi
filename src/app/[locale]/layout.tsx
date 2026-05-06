@@ -14,11 +14,11 @@ export const metadata: Metadata = {
   applicationName: 'Lumenfi',
   icons: {
     icon: [
-      { url: '/icons/favicon-32.png?v=3', sizes: '32x32', type: 'image/png' },
-      { url: '/icons/favicon-16.png?v=3', sizes: '16x16', type: 'image/png' },
-      { url: '/icons/icon-192.png?v=3', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/favicon-32.png?v=4', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/favicon-16.png?v=4', sizes: '16x16', type: 'image/png' },
+      { url: '/icons/icon-192.png?v=4', sizes: '192x192', type: 'image/png' },
     ],
-    apple: [{ url: '/icons/apple-touch-icon.png?v=3', sizes: '180x180', type: 'image/png' }],
+    apple: [{ url: '/icons/apple-touch-icon.png?v=4', sizes: '180x180', type: 'image/png' }],
   },
   appleWebApp: {
     capable: true,
