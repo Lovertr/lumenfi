@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
 import { Send, Sparkles, AlertCircle, User, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { sendChatMessage } from '@/app/[locale]/(app)/ai/actions';
+import { sendChatMessage, createConversation, appendMessage } from '@/app/[locale]/(app)/ai/actions';
 import { renderMarkdown } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/lib/ai/types';
@@ -16,10 +17,20 @@ interface DisplayMessage extends ChatMessage {
   error?: boolean;
 }
 
-export function ChatUI() {
+export function ChatUI({
+  conversationId: initialConversationId,
+  initialMessages = [],
+}: {
+  conversationId?: string;
+  initialMessages?: ChatMessage[];
+} = {}) {
   const t = useTranslations('AI.chat');
   const locale = useLocale();
-  const [messages, setMessages] = useState<DisplayMessage[]>([]);
+  const router = useRouter();
+  const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId);
+  const [messages, setMessages] = useState<DisplayMessage[]>(
+    initialMessages.map((m, i) => ({ id: `init-${i}`, role: m.role, content: m.content }))
+  );
   const [input, setInput] = useState('');
   const [pending, setPending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -50,6 +61,26 @@ export function ChatUI() {
     setInput('');
     setPending(true);
 
+    // Lazy-create conversation on first message
+    let convId = conversationId;
+    if (!convId) {
+      const id = await createConversation(trimmed);
+      if (id) {
+        convId = id;
+        setConversationId(id);
+        // Push URL so the conversation can be reopened
+        // Using replaceState to avoid stacking
+        if (typeof window !== 'undefined') {
+          window.history.replaceState(null, '', `/${locale}/ai/c/${id}`);
+        }
+      }
+    }
+
+    // Save user message
+    if (convId) {
+      appendMessage(convId, 'user', trimmed).catch(() => {});
+    }
+
     const history: ChatMessage[] = messages.map((m) => ({ role: m.role, content: m.content }));
     const result = await sendChatMessage(history, trimmed, locale);
 
@@ -65,6 +96,12 @@ export function ChatUI() {
           : m
       )
     );
+
+    // Save assistant message
+    if (convId && result.reply && !result.error) {
+      appendMessage(convId, 'assistant', result.reply).catch(() => {});
+    }
+
     setPending(false);
   }
 

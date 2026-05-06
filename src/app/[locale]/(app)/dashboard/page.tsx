@@ -8,6 +8,7 @@ import { formatTHB } from '@/lib/utils';
 import { getDashboardData } from '@/lib/queries/dashboard';
 import { materializeDueRecurring } from '@/lib/recurring';
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
+import { NetWorthChart } from '@/components/dashboard/net-worth-chart';
 import { createClient } from '@/lib/supabase/server';
 import {
   TrendingUp,
@@ -60,6 +61,19 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   }
 
   await materializeDueRecurring();
+
+  // Take net worth snapshot if needed (idempotent — upserts today's row)
+  let nwHistory: Array<{ date: string; total_assets: number; total_liabilities: number; net_worth: number }> = [];
+  if (user) {
+    try {
+      const mod = await import('@/lib/queries/net-worth-snapshot');
+      await mod.snapshotTodayForUser(user.id);
+      nwHistory = (await mod.getNetWorthHistory(user.id, 90)) as typeof nwHistory;
+    } catch (e) {
+      console.warn('Net worth snapshot failed:', e);
+    }
+  }
+
   const data = await getDashboardData();
 
   return (
@@ -128,6 +142,18 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           </Card>
         </div>
       </div>
+
+      {nwHistory.length >= 2 && (
+        <Card>
+          <CardContent className="p-4 lg:p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Net Worth ย้อนหลัง 90 วัน</h2>
+              <p className="text-xs text-muted-foreground">{nwHistory.length} จุดข้อมูล</p>
+            </div>
+            <NetWorthChart data={nwHistory} />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -266,4 +292,17 @@ function QuickAction({
         <CardContent className="flex items-center gap-3 p-4 lg:flex-col lg:items-start lg:p-5">
           <div className={`flex h-10 w-10 items-center justify-center rounded-lg lg:h-12 lg:w-12 ${color}`}>
             <Icon className="h-5 w-5" />
-    
+          </div>
+          <div className="flex-1 lg:flex-initial">
+            <p className="font-medium">{label}</p>
+            {count !== undefined && count > 0 && (
+              <p className="text-xs text-muted-foreground lg:mt-0.5">
+                {count} items
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}

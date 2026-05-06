@@ -6,7 +6,10 @@ import { ArrowLeft, Brain, Settings as SettingsIcon } from 'lucide-react';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { ChatUI } from '@/components/ai/chat-ui';
+import { ConversationHistoryBar } from '@/components/ai/conversation-history-bar';
 import { createClient } from '@/lib/supabase/server';
+
+export const dynamic = 'force-dynamic';
 
 async function getAIConfig() {
   const supabase = createClient();
@@ -75,7 +78,10 @@ export default async function AIPage({ params }: { params: Promise<{ locale: str
           </CardContent>
         </Card>
       ) : (
-        <ChatUI />
+        <>
+          <ConversationHistoryBar />
+          <ChatUI />
+        </>
       )}
     </div>
   );

@@ -132,3 +132,93 @@ export async function sendChatMessage(
     return { error: e?.message?.slice(0, 200) ?? 'ai_error' };
   }
 }
+
+// ─────────────────────────────────────────────────────────
+// Conversation history persistence
+// ─────────────────────────────────────────────────────────
+
+export async function listConversations() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from('ai_conversations')
+    .select('id, title, created_at, updated_at')
+    .eq('user_id', user.id)
+    .order('updated_at', { ascending: false })
+    .limit(50);
+
+  return data ?? [];
+}
+
+export async function getConversationMessages(conversationId: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from('ai_messages')
+    .select('role, content, created_at')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', user.id)
+    .order('created_at');
+
+  return (data ?? []).map((m) => ({
+    role: m.role as 'user' | 'assistant' | 'system',
+    content: m.content,
+  }));
+}
+
+export async function createConversation(firstMessage: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  // Title = first 60 chars of message
+  const title = firstMessage.slice(0, 60).trim() + (firstMessage.length > 60 ? '...' : '');
+
+  const { data, error } = await supabase
+    .from('ai_conversations')
+    .insert({ user_id: user.id, title })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('createConversation:', error);
+    return null;
+  }
+  return data?.id ?? null;
+}
+
+export async function appendMessage(conversationId: string, role: 'user' | 'assistant', content: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase.from('ai_messages').insert({
+    conversation_id: conversationId,
+    user_id: user.id,
+    role,
+    content,
+  });
+
+  // Bump updated_at
+  await supabase
+    .from('ai_conversations')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', conversationId)
+    .eq('user_id', user.id);
+}
+
+export async function deleteConversation(formData: FormData) {
+  const id = formData.get('id') as string;
+  if (!id) return;
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  await supabase.from('ai_conversations').delete().eq('id', id).eq('user_id', user.id);
+  revalidatePath('/ai');
+}
