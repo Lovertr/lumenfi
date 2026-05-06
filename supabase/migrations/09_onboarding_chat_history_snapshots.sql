@@ -1,11 +1,14 @@
 -- ─────────────────────────────────────────────────────────
 -- Migration 09: onboarding flag + AI chat threads + net worth snapshots
+--   IDEMPOTENT — safe to re-run
 -- ─────────────────────────────────────────────────────────
 
--- 1) Onboarding flag on profile
+-- 1) Onboarding flag + monetization columns on profile
 alter table profiles add column if not exists onboarded boolean not null default false;
 alter table profiles add column if not exists monthly_income numeric;
 alter table profiles add column if not exists monthly_expense_estimate numeric;
+alter table profiles add column if not exists plan text not null default 'free' check (plan in ('free','pro','family'));
+alter table profiles add column if not exists plan_expires_at timestamptz;
 
 -- 2) AI conversation threads
 create table if not exists ai_conversations (
@@ -39,22 +42,29 @@ create policy "ai_msg_owner_all" on ai_messages
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- 3) Net worth daily snapshots
-create table if not exists net_worth_snapshots (
-  user_id uuid not null references auth.users(id) on delete cascade,
-  snapshot_date date not null,
-  total_assets numeric not null default 0,
-  total_liabilities numeric not null default 0,
-  net_worth numeric generated always as (total_assets - total_liabilities) stored,
-  created_at timestamptz not null default now(),
-  primary key (user_id, snapshot_date)
-);
-create index if not exists idx_nw_snapshots_user on net_worth_snapshots(user_id, snapshot_date desc);
+--    Keep existing schema (column `date`, not `snapshot_date`)
+--    Just ensure RLS is on + policy exists
+do $$
+begin
+  if not exists (select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'net_worth_snapshots') then
+    create table net_worth_snapshots (
+      id uuid primary key default gen_random_uuid(),
+      user_id uuid not null references auth.users(id) on delete cascade,
+      date date not null,
+      total_assets numeric(15,2) not null default 0,
+      total_liabilities numeric(15,2) not null default 0,
+      net_worth numeric(15,2) not null default 0,
+      breakdown jsonb,
+      created_at timestamptz not null default now(),
+      unique(user_id, date)
+    );
+    create index idx_nw_user_date on net_worth_snapshots(user_id, date desc);
+  end if;
+end$$;
 
 alter table net_worth_snapshots enable row level security;
+
 drop policy if exists "nw_snapshots_owner_all" on net_worth_snapshots;
 create policy "nw_snapshots_owner_all" on net_worth_snapshots
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
--- 4) Subscription tier (placeholder for Omise integration later)
-alter table profiles add column if not exists plan text not null default 'free' check (plan in ('free','pro','family'));
-alter table profiles add column if not exists plan_expires_at timestamptz;
