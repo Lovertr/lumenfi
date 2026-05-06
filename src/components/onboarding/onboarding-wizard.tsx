@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronRight, ChevronLeft, Sparkles, Wallet, Target, TrendingUp, Skip } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Sparkles, Wallet, Target, TrendingUp } from 'lucide-react';
 import { completeOnboarding, skipOnboarding } from '@/app/[locale]/(app)/onboarding/actions';
 import { LogoMark, Wordmark } from '@/components/brand/logo-mark';
 

@@ -118,18 +118,6 @@ export async function updateInvestment(_prev: unknown, formData: FormData) {
   redirect('/investments');
 }
 
-export async function deleteInvestment(formData: FormData) {
-  const id = formData.get('id') as string;
-  if (!id) return;
-
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
-
-  await supabase.from('investments').delete().eq('id', id).eq('user_id', user.id);
-  revalidatePath('/investments');
-}
-
 // ─────────────────────────────────────────────────────────
 // Refresh prices using Yahoo Finance / fallback to manual
 // ─────────────────────────────────────────────────────────
