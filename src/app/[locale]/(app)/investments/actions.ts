@@ -74,3 +74,112 @@ export async function deleteInvestment(formData: FormData) {
   await supabase.from('investments').update({ archived: true }).eq('id', id).eq('user_id', user.id);
   revalidatePath('/investments');
 }
+
+// ─────────────────────────────────────────────────────────
+// Update + Delete
+// ─────────────────────────────────────────────────────────
+
+export async function updateInvestment(_prev: unknown, formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const id = formData.get('id') as string;
+  if (!id) return { error: 'invalid_data' as const };
+
+  const num = (key: string) => {
+    const v = (formData.get(key) as string) ?? '';
+    const n = parseFloat(v.replace(/,/g, ''));
+    return isFinite(n) ? n : 0;
+  };
+
+  const { error } = await supabase
+    .from('investments')
+    .update({
+      name: ((formData.get('name') as string) ?? '').trim(),
+      symbol: ((formData.get('symbol') as string) ?? '').trim() || null,
+      type: formData.get('type'),
+      broker_account: ((formData.get('broker_account') as string) ?? '').trim() || null,
+      quantity: num('quantity'),
+      avg_cost: num('avg_cost'),
+      current_price: num('current_price') || null,
+      currency: (formData.get('currency') as string) || 'THB',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('updateInvestment:', error);
+    return { error: 'generic' as const };
+  }
+
+  revalidatePath('/investments');
+  redirect('/investments');
+}
+
+export async function deleteInvestment(formData: FormData) {
+  const id = formData.get('id') as string;
+  if (!id) return;
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  await supabase.from('investments').delete().eq('id', id).eq('user_id', user.id);
+  revalidatePath('/investments');
+}
+
+// ─────────────────────────────────────────────────────────
+// Refresh prices using Yahoo Finance / fallback to manual
+// ─────────────────────────────────────────────────────────
+
+export async function refreshInvestmentPrices() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, updated: 0 };
+
+  const { data: items } = await supabase
+    .from('investments')
+    .select('id, symbol, type, current_price')
+    .eq('user_id', user.id)
+    .not('symbol', 'is', null);
+
+  let updated = 0;
+  for (const inv of items ?? []) {
+    if (!inv.symbol) continue;
+    const price = await fetchYahooPrice(String(inv.symbol), inv.type as string);
+    if (price && price > 0) {
+      await supabase
+        .from('investments')
+        .update({ current_price: price, updated_at: new Date().toISOString() })
+        .eq('id', inv.id)
+        .eq('user_id', user.id);
+      updated++;
+    }
+  }
+
+  revalidatePath('/investments');
+  return { ok: true, updated };
+}
+
+async function fetchYahooPrice(symbol: string, type: string): Promise<number | null> {
+  try {
+    // Thai stocks need .BK suffix on Yahoo
+    let yfSymbol = symbol;
+    if (type === 'thai_stock' && !symbol.includes('.')) yfSymbol = `${symbol}.BK`;
+    if (type === 'crypto' && !symbol.includes('-')) yfSymbol = `${symbol}-USD`;
+
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yfSymbol)}?interval=1d&range=1d`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      next: { revalidate: 600 },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    return typeof price === 'number' ? price : null;
+  } catch {
+    return null;
+  }
+}

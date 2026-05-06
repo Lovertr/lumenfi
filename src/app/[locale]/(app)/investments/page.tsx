@@ -179,36 +179,32 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
             const invPLPercent = cost > 0 ? (invPL / cost) * 100 : 0;
             const cfg = investmentTypeConfig[inv.type];
             return (
-              <Card key={inv.id}>
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl ${cfg.bg}`}>
-                    {cfg.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate font-semibold">
-                      {inv.symbol && <span className="font-mono">{inv.symbol} · </span>}
-                      {inv.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {qty} × {formatTHB(Number(inv.avg_cost))}
-                      {inv.broker_account && ` · ${inv.broker_account}`}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">{formatTHB(value)}</p>
-                    <p className={`text-xs ${invPL >= 0 ? 'text-success' : 'text-destructive'}`}>
-                      {invPL >= 0 ? '+' : ''}
-                      {invPLPercent.toFixed(1)}%
-                    </p>
-                  </div>
-                  <form action={deleteInvestment}>
-                    <input type="hidden" name="id" value={inv.id} />
-                    <button type="submit" className="text-muted-foreground hover:text-destructive" aria-label="Delete">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </form>
-                </CardContent>
-              </Card>
+              <Link key={inv.id} href={`/investments/${inv.id}/edit`}>
+                <Card className="transition-all hover:border-primary/40 hover:shadow-sm">
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl ${cfg.bg}`}>
+                      {cfg.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate font-semibold">
+                        {inv.symbol && <span className="font-mono">{inv.symbol} · </span>}
+                        {inv.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {qty} × {formatTHB(Number(inv.avg_cost))}
+                        {inv.broker_account && ` · ${inv.broker_account}`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">{formatTHB(value)}</p>
+                      <p className={`text-xs ${invPL >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        {invPL >= 0 ? '+' : ''}
+                        {invPLPercent.toFixed(1)}%
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
           <Button asChild size="lg" className="fixed bottom-24 right-4 h-14 rounded-full shadow-lg sm:right-[calc(50%-208px)] lg:bottom-8 lg:right-8">
