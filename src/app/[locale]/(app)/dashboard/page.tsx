@@ -46,6 +46,19 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const { data: { user } } = await supabase.auth.getUser();
   const greeting = user?.user_metadata?.full_name?.split(' ')[0] ?? '';
 
+  // Onboarding gate — redirect new users to wizard
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarded')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (profile && profile.onboarded === false) {
+      const { redirect } = await import('next/navigation');
+      redirect(`/${locale}/onboarding`);
+    }
+  }
+
   await materializeDueRecurring();
   const data = await getDashboardData();
 
@@ -253,17 +266,4 @@ function QuickAction({
         <CardContent className="flex items-center gap-3 p-4 lg:flex-col lg:items-start lg:p-5">
           <div className={`flex h-10 w-10 items-center justify-center rounded-lg lg:h-12 lg:w-12 ${color}`}>
             <Icon className="h-5 w-5" />
-          </div>
-          <div className="flex-1 lg:flex-initial">
-            <p className="font-medium">{label}</p>
-            {count !== undefined && count > 0 && (
-              <p className="text-xs text-muted-foreground lg:mt-0.5">
-                {count} items
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
+    

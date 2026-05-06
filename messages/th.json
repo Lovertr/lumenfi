@@ -129,8 +129,19 @@
       "passwords_dont_match": "รหัสผ่านไม่ตรงกัน",
       "invalid_email": "รูปแบบอีเมลไม่ถูกต้อง",
       "name_required": "กรุณากรอกชื่อ",
-      "generic": "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง"
-    }
+      "generic": "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง",
+      "unauthorized": "หมดเวลา — เปิดลิงก์จากอีเมลใหม่อีกครั้ง"
+    },
+    "forgotPasswordTitle": "รีเซ็ตรหัสผ่าน",
+    "forgotPasswordSubtitle": "กรอกอีเมล เราจะส่งลิงก์รีเซ็ตให้",
+    "resetPasswordTitle": "ตั้งรหัสผ่านใหม่",
+    "resetPasswordSubtitle": "เลือกรหัสผ่านที่ปลอดภัย ไม่เคยใช้มาก่อน",
+    "sendResetLink": "ส่งลิงก์รีเซ็ต",
+    "resetEmailSent": "เช็คอีเมลของคุณ",
+    "resetEmailSentHint": "เราส่งลิงก์รีเซ็ตรหัสผ่านไปแล้ว คลิกภายใน 1 ชั่วโมง",
+    "newPassword": "รหัสผ่านใหม่",
+    "updatePassword": "อัปเดตรหัสผ่าน",
+    "backToLogin": "กลับไปหน้าเข้าสู่ระบบ"
   },
   "Settings": {
     "title": "ตั้งค่า",

@@ -116,3 +116,46 @@ export async function signOut() {
   revalidatePath('/', 'layout');
   redirect('/');
 }
+
+// ─────────────────────────────────────────────────────────
+// Password reset flow
+// ─────────────────────────────────────────────────────────
+
+export async function requestPasswordReset(_prev: unknown, formData: FormData) {
+  const email = formData.get('email') as string;
+  if (!emailSchema.safeParse(email).success) {
+    return { error: 'invalid_email' as const };
+  }
+
+  const supabase = createClient();
+  const origin = (await headers()).get('origin') ?? process.env.NEXT_PUBLIC_APP_URL ?? '';
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/reset-password`,
+  });
+
+  if (error) {
+    return { error: mapAuthError(error.message) };
+  }
+  return { success: true as const };
+}
+
+export async function updatePassword(_prev: unknown, formData: FormData) {
+  const password = formData.get('password') as string;
+  const confirm = formData.get('confirmPassword') as string;
+  if (!passwordSchema.safeParse(password).success) {
+    return { error: 'weak_password' as const };
+  }
+  if (password !== confirm) {
+    return { error: 'passwords_dont_match' as const };
+  }
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'unauthorized' as const };
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: mapAuthError(error.message) };
+
+  revalidatePath('/', 'layout');
+  redirect('/dashboard');
+}

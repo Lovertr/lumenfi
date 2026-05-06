@@ -129,8 +129,19 @@
       "passwords_dont_match": "Passwords don't match",
       "invalid_email": "Invalid email format",
       "name_required": "Please enter your name",
-      "generic": "Something went wrong. Please try again."
-    }
+      "generic": "Something went wrong. Please try again.",
+      "unauthorized": "Session expired — open the reset link from email again"
+    },
+    "forgotPasswordTitle": "Reset your password",
+    "forgotPasswordSubtitle": "Enter your email and we'll send you a reset link",
+    "resetPasswordTitle": "Set a new password",
+    "resetPasswordSubtitle": "Choose a strong password you have not used before",
+    "sendResetLink": "Send reset link",
+    "resetEmailSent": "Check your email",
+    "resetEmailSentHint": "We've sent you a link to reset your password. Click it within 1 hour.",
+    "newPassword": "New password",
+    "updatePassword": "Update password",
+    "backToLogin": "Back to login"
   },
   "Settings": {
     "title": "Settings",
