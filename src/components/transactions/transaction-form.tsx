@@ -230,7 +230,6 @@ export function TransactionForm({
             onChange={(e) => {
               const f = e.target.files?.[0];
               if (f) handleScanFile(f);
-              // Reset so the same file can be re-selected
               if (e.target) e.target.value = '';
             }}
             className="hidden"
@@ -382,7 +381,6 @@ export function TransactionForm({
         <Input id="date" name="date" type="date" defaultValue={defaults?.date ?? today} required />
       </div>
 
-      {/* Goal link — now also for transfers */}
       {goals.length > 0 && (
         <div className="space-y-2">
           <Label className="flex items-center gap-1.5">
@@ -424,7 +422,6 @@ export function TransactionForm({
         <Input id="note" name="note" defaultValue={defaults?.note ?? ''} placeholder={tForm('notePlaceholder')} maxLength={500} />
       </div>
 
-      {/* Recurring — only on create */}
       {mode === 'create' && (
       <div className="space-y-3 rounded-xl border bg-muted/30 p-3">
         <label className="flex cursor-pointer items-center justify-between">
@@ -463,7 +460,6 @@ export function TransactionForm({
               <p className="text-[11px] text-muted-foreground">{tForm('recurringHint')}</p>
             </div>
 
-            {/* Notification settings */}
             <div className="space-y-2 rounded-lg border bg-background p-3">
               <label className="flex cursor-pointer items-center justify-between">
                 <span className="flex items-center gap-2 text-sm font-medium">
@@ -480,4 +476,35 @@ export function TransactionForm({
               </label>
               {notifyEnabled && (
                 <div className="flex items-center gap-2 pt-1">
-                  <span className="text-xs text-muted-foreground">{tForm('notifyDaysBefore')}
+                  <span className="text-xs text-muted-foreground">{tForm('notifyDaysBefore')}</span>
+                  <Input
+                    name="notify_days_before"
+                    type="number"
+                    min={0}
+                    max={14}
+                    value={notifyDays}
+                    onChange={(e) => setNotifyDays(Math.min(14, Math.max(0, parseInt(e.target.value) || 0)))}
+                    className="h-9 w-16 text-center"
+                  />
+                  <span className="text-xs text-muted-foreground">{tForm('daysBeforeUnit')}</span>
+                </div>
+              )}
+              {notifyEnabled && (
+                <p className="text-[11px] text-muted-foreground">{tForm('notifyHint')}</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      )}
+
+      {state?.error && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {tErr(state.error)}
+        </div>
+      )}
+
+      <SubmitBtn />
+    </form>
+  );
+}
