@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 
 /**
- * Lumenfi Logo Mark — Variant C with black background
+ * Lumenfi Logo Mark — prism + coin + L on solid black (no aura)
  */
 export function LogoMark({ size = 40, className }: { size?: number; className?: string }) {
   return (
@@ -41,11 +41,6 @@ export function LogoMark({ size = 40, className }: { size?: number; className?: 
           <stop offset="60%" stopColor="#FFFFFF" stopOpacity="0.15" />
           <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
         </radialGradient>
-        <radialGradient id="lm-aura">
-          <stop offset="0%" stopColor="#FCD34D" stopOpacity="0.22" />
-          <stop offset="55%" stopColor="#FCD34D" stopOpacity="0.06" />
-          <stop offset="100%" stopColor="#FCD34D" stopOpacity="0" />
-        </radialGradient>
         <radialGradient id="lm-spark">
           <stop offset="0%" stopColor="#FCD34D" stopOpacity="0.55" />
           <stop offset="100%" stopColor="#FCD34D" stopOpacity="0" />
@@ -58,7 +53,6 @@ export function LogoMark({ size = 40, className }: { size?: number; className?: 
         <clipPath id="lm-clip"><polygon points="100,28 166,100 100,172 34,100" /></clipPath>
       </defs>
       <rect width="200" height="200" rx="44" fill="#000000" />
-      <circle cx="100" cy="100" r="88" fill="url(#lm-aura)" />
       <g>
         <circle cx="50" cy="50" r="15" fill="url(#lm-spark)" />
         <path d="M50 36 L52.5 47.5 L64 50 L52.5 52.5 L50 64 L47.5 52.5 L36 50 L47.5 47.5 Z" fill="#FFFBEB" />
