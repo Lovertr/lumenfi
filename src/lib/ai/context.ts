@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { getDashboardData } from '@/lib/queries/dashboard';
+import { getPortfolioMetrics } from '@/lib/queries/portfolio';
+import { getTaxFundSummary } from '@/lib/queries/tax-saving';
 
 /**
  * Build a financial context string to inject into the AI system prompt.
@@ -81,6 +83,66 @@ export async function buildFinancialContext(privacyMode: boolean): Promise<strin
           `- ${g.name}${tag}: ฿${Number(g.current_amount).toLocaleString()}/฿${Number(g.target_amount).toLocaleString()} (${pct.toFixed(0)}%)${g.deadline ? `, deadline ${g.deadline}` : ''}`
         );
       }
+    }
+
+    // ── Investments
+    try {
+      const portfolio = await getPortfolioMetrics();
+      if (portfolio.holdings.length > 0) {
+        lines.push('\n## Investment Portfolio');
+        lines.push(`- Total Value (THB): ฿${Math.round(portfolio.totalValue).toLocaleString()}`);
+        lines.push(`- Total Cost (THB): ฿${Math.round(portfolio.totalCost).toLocaleString()}`);
+        lines.push(`- Unrealized P/L: ${portfolio.totalPL >= 0 ? '+' : ''}฿${Math.round(portfolio.totalPL).toLocaleString()} (${portfolio.totalPLPercent.toFixed(2)}%)`);
+        lines.push(`- Holdings: ${portfolio.holdings.length} items`);
+
+        // Allocation by type
+        const typeEntries = Object.entries(portfolio.valueByType)
+          .sort(([, a], [, b]) => Number(b) - Number(a))
+          .slice(0, 6);
+        if (typeEntries.length > 0 && portfolio.totalValue > 0) {
+          lines.push('### Allocation by Type');
+          for (const [t, v] of typeEntries) {
+            const pct = (Number(v) / portfolio.totalValue) * 100;
+            lines.push(`- ${t}: ${pct.toFixed(1)}% (฿${Math.round(Number(v)).toLocaleString()})`);
+          }
+        }
+
+        // Allocation by currency (FX exposure signal)
+        const curEntries = Object.entries(portfolio.valueByCurrency).sort(([, a], [, b]) => Number(b) - Number(a));
+        if (curEntries.length > 0 && portfolio.totalValue > 0) {
+          lines.push('### FX Exposure');
+          for (const [c, v] of curEntries) {
+            const pct = (Number(v) / portfolio.totalValue) * 100;
+            if (pct >= 1) lines.push(`- ${c}: ${pct.toFixed(1)}%`);
+          }
+        }
+
+        // Top holdings (helps the AI reason about concentration)
+        const top = portfolio.holdings.slice(0, 5);
+        lines.push('### Top Holdings');
+        for (const h of top) {
+          const sym = privacyMode ? `[${h.type}]` : (h.symbol ?? h.name);
+          const pct = portfolio.totalValue > 0 ? (h.valueTHB / portfolio.totalValue) * 100 : 0;
+          lines.push(
+            `- ${sym} (${h.type}, ${h.currency}): ฿${Math.round(h.valueTHB).toLocaleString()} = ${pct.toFixed(1)}% of portfolio, P/L ${h.plPercent >= 0 ? '+' : ''}${h.plPercent.toFixed(1)}%`
+          );
+        }
+
+        // Tax-saving funds summary
+        const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10);
+        const tax = await getTaxFundSummary(yearStart);
+        if (tax.holdings.length > 0) {
+          lines.push('### Tax-Saving Funds');
+          lines.push(`- Total contributed this year: ฿${Math.round(tax.totalContributedThisYear).toLocaleString()}`);
+          lines.push(`- Total value: ฿${Math.round(tax.totalValueAll).toLocaleString()}`);
+          for (const [type, agg] of Object.entries(tax.byType)) {
+            const a = agg as { count: number; cost: number; value: number };
+            if (a.count > 0) lines.push(`- ${type.toUpperCase()}: ${a.count} fund(s), cost ฿${Math.round(a.cost).toLocaleString()}, value ฿${Math.round(a.value).toLocaleString()}`);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('investment context:', e);
     }
 
     return lines.join('\n');
