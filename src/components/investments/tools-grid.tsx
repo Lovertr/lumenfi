@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/routing';
-import { Eye, Calculator, Receipt } from 'lucide-react';
+import { Eye, Calculator, Receipt, FileText } from 'lucide-react';
 
 const TOOLS = [
   {
@@ -23,11 +23,18 @@ const TOOLS = [
     description: 'RMF/SSF/PVD',
     color: 'bg-emerald-500',
   },
+  {
+    href: '/investments/tax-report',
+    icon: FileText,
+    label: 'รายงานภาษี',
+    description: 'ใช้ยื่น ภ.ง.ด.',
+    color: 'bg-orange-500',
+  },
 ];
 
 export function ToolsGrid() {
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-4 gap-2">
       {TOOLS.map((t) => {
         const Icon = t.icon;
         return (
