@@ -47,7 +47,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const { data: { user } } = await supabase.auth.getUser();
   const greeting = user?.user_metadata?.full_name?.split(' ')[0] ?? '';
 
-  // Onboarding gate — redirect new users to wizard
+  // Onboarding gate — only show wizard for genuinely new users (no data yet)
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -55,8 +55,17 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       .eq('id', user.id)
       .maybeSingle();
     if (profile && profile.onboarded === false) {
-      const { redirect } = await import('next/navigation');
-      redirect(`/${locale}/onboarding`);
+      // Check if user already has data — if so, auto-mark onboarded
+      const { count: accountCount } = await supabase
+        .from('accounts')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      if ((accountCount ?? 0) > 0) {
+        await supabase.from('profiles').update({ onboarded: true }).eq('id', user.id);
+      } else {
+        const { redirect } = await import('next/navigation');
+        redirect(`/${locale}/onboarding`);
+      }
     }
   }
 

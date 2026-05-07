@@ -7,6 +7,8 @@ import { ProfileForm } from '@/components/settings/profile-form';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProfileSettingsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -18,7 +20,7 @@ export default async function ProfileSettingsPage({ params }: { params: Promise<
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('email, full_name, default_currency, monthly_income_target, monthly_expense_target')
+    .select('email, full_name, default_currency, monthly_income_target, monthly_expense_target, date_of_birth, num_dependents, monthly_income, monthly_expense_estimate')
     .eq('id', user.id)
     .single();
 
@@ -43,6 +45,10 @@ export default async function ProfileSettingsPage({ params }: { params: Promise<
                 default_currency: 'THB',
                 monthly_income_target: null,
                 monthly_expense_target: null,
+                date_of_birth: null,
+                num_dependents: 0,
+                monthly_income: null,
+                monthly_expense_estimate: null,
               }
             }
           />

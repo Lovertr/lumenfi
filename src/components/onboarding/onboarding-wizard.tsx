@@ -243,7 +243,7 @@ export function OnboardingWizard() {
       </div>
 
       <Button
-        type="button"
+        type="submit"
         variant="ghost"
         size="sm"
         formAction={skipOnboarding}
