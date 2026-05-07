@@ -8,14 +8,16 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { formatTHB } from '@/lib/utils';
 import { investmentTypeConfig } from '@/components/investments/investment-type-config';
 import { getPortfolioMetrics } from '@/lib/queries/portfolio';
-import { getTaxFundSummary } from '@/lib/queries/tax-saving';
+import { getPortfolioSnapshots, computeRiskMetrics } from '@/lib/queries/portfolio-snapshot';
+import { createClient } from '@/lib/supabase/server';
 import { PortfolioHero } from '@/components/investments/portfolio-hero';
 import { AssetAllocation } from '@/components/investments/asset-allocation';
 import { TopPerformers } from '@/components/investments/top-performers';
 import { RefreshPricesButton } from '@/components/investments/refresh-prices-button';
 import { AIAdvisor } from '@/components/investments/ai-advisor';
 import { SETBenchmark } from '@/components/investments/set-benchmark';
-import { TaxSavingCard } from '@/components/investments/tax-saving-card';
+import { ToolsGrid } from '@/components/investments/tools-grid';
+import { RiskMetricsCard } from '@/components/investments/risk-metrics';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,11 +26,14 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
   setRequestLocale(locale);
   const t = await getTranslations('Investments');
 
-  const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10);
-  const [metrics, taxSummary] = await Promise.all([
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const [metrics, snapshots] = await Promise.all([
     getPortfolioMetrics(),
-    getTaxFundSummary(yearStart),
+    user ? getPortfolioSnapshots(user.id, 365) : Promise.resolve([]),
   ]);
+  const riskMetrics = computeRiskMetrics(snapshots);
   const { holdings, totalValue, totalCost, totalPL, totalPLPercent, valueByType, valueByCurrency, valueByMarket, topGainers, topLosers } = metrics;
 
   return (
@@ -59,21 +64,24 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
       </header>
 
       {holdings.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-              <Wallet className="h-6 w-6" />
-            </div>
-            <p className="font-semibold">{t('noInvestments')}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t('noInvestmentsHint')}</p>
-            <Button asChild className="mt-4">
-              <Link href="/investments/new">
-                <Plus className="h-4 w-4" />
-                {t('addInvestment')}
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <>
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center p-10 text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <Wallet className="h-6 w-6" />
+              </div>
+              <p className="font-semibold">{t('noInvestments')}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t('noInvestmentsHint')}</p>
+              <Button asChild className="mt-4">
+                <Link href="/investments/new">
+                  <Plus className="h-4 w-4" />
+                  {t('addInvestment')}
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+          <ToolsGrid />
+        </>
       ) : (
         <>
           <PortfolioHero
@@ -84,11 +92,7 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
             holdingsCount={holdings.length}
           />
 
-          <TaxSavingCard
-            totalValue={taxSummary.totalValueAll}
-            totalContributed={taxSummary.totalContributedThisYear}
-            count={taxSummary.holdings.length}
-          />
+          <ToolsGrid />
 
           <AssetAllocation
             valueByType={valueByType}
@@ -96,6 +100,8 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
             valueByMarket={valueByMarket}
             totalValue={totalValue}
           />
+
+          <RiskMetricsCard metrics={riskMetrics} />
 
           <SETBenchmark portfolioPLPercent={totalPLPercent} />
 
