@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { snapshotTodayForUser } from '@/lib/queries/net-worth-snapshot';
 import { snapshotPortfolioForUser } from '@/lib/queries/portfolio-snapshot';
+import { materializeDueRecurringInvestments } from '@/lib/recurring-investments';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -16,29 +17,40 @@ export async function GET(req: Request) {
   try {
     const supa = createServiceClient();
     const { data: users } = await supa.from('profiles').select('id');
-    if (!users) return NextResponse.json({ ok: true, snapshots: 0 });
 
     let netWorthCount = 0;
     let portfolioCount = 0;
-    for (const u of users) {
-      try {
-        await snapshotTodayForUser(u.id);
-        netWorthCount++;
-      } catch (e) {
-        console.error('net-worth snapshot for', u.id, e);
+    if (users) {
+      for (const u of users) {
+        try {
+          await snapshotTodayForUser(u.id);
+          netWorthCount++;
+        } catch (e) {
+          console.error('net-worth snapshot for', u.id, e);
+        }
+        try {
+          await snapshotPortfolioForUser(u.id);
+          portfolioCount++;
+        } catch (e) {
+          console.error('portfolio snapshot for', u.id, e);
+        }
       }
-      try {
-        await snapshotPortfolioForUser(u.id);
-        portfolioCount++;
-      } catch (e) {
-        console.error('portfolio snapshot for', u.id, e);
-      }
+    }
+
+    // Materialize due recurring investments (DCA)
+    let dcaResult = { executed: 0, skipped: 0 };
+    try {
+      dcaResult = await materializeDueRecurringInvestments();
+    } catch (e) {
+      console.error('recurring investments materialize failed:', e);
     }
 
     return NextResponse.json({
       ok: true,
       netWorthSnapshots: netWorthCount,
       portfolioSnapshots: portfolioCount,
+      dcaExecuted: dcaResult.executed,
+      dcaSkipped: dcaResult.skipped,
     });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message ?? 'failed' }, { status: 500 });
