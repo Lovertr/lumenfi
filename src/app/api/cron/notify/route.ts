@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient as createSbClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
+import { logNotification } from '@/lib/notifications';
 
 // Force dynamic + Node runtime (web-push needs Node, not Edge)
 export const dynamic = 'force-dynamic';
@@ -160,6 +161,18 @@ export async function GET(req: Request) {
           .update({ last_notified_on: next })
           .eq('id', r.id);
       }
+      await logNotification({
+        userId: r.user_id,
+        type: 'recurring',
+        severity: 'info',
+        title: 'รายการประจำใกล้ถึงกำหนด',
+        body: `${r.category?.icon ?? '🔔'} ${label} ฿${Number(r.amount).toLocaleString()} · ${whenTh}`,
+        url: '/recurring',
+        icon: r.category?.icon ?? '🔔',
+        tag: `lumenfi-recurring-${r.id}`,
+        sentAsPush: anySent,
+        pushDeliveryStatus: anySent ? 'sent' : 'failed',
+      });
     }
   }
 
@@ -230,6 +243,18 @@ export async function GET(req: Request) {
           .update({ reminder_last_sent_on: bkkDateStr })
           .eq('id', p.id);
       }
+      await logNotification({
+        userId: p.id,
+        type: 'reminder',
+        severity: 'info',
+        title: 'บันทึกค่าใช้จ่ายวันนี้',
+        body: 'อย่าลืมบันทึกรายรับ-รายจ่ายวันนี้นะ — แตะเพื่อเพิ่มเลย',
+        url: '/transactions/new',
+        icon: '📝',
+        tag: 'lumenfi-daily-reminder',
+        sentAsPush: anySent,
+        pushDeliveryStatus: anySent ? 'sent' : (subs.length === 0 ? 'no_subscription' : 'failed'),
+      });
     }
   }
 
@@ -288,6 +313,18 @@ export async function GET(req: Request) {
           .update({ budget_alert_last_sent_on: bkkDateStr })
           .eq('id', uid);
       }
+      await logNotification({
+        userId: uid,
+        type: 'budget',
+        severity: 'warn',
+        title: '⚠️ Budget เกินแล้ว',
+        body: body,
+        url: '/budgets',
+        icon: '💸',
+        tag: 'lumenfi-budget-over',
+        sentAsPush: anySent,
+        pushDeliveryStatus: anySent ? 'sent' : 'failed',
+      });
     }
   } catch (e) {
     console.warn('Budget alerts failed:', e);
@@ -399,6 +436,18 @@ export async function GET(req: Request) {
             .update({ watchlist_alert_last_sent_on: bkkDateStr })
             .eq('id', userId);
         }
+        await logNotification({
+          userId,
+          type: 'watchlist',
+          severity: 'success',
+          title: '🔔 Watchlist alert',
+          body: summary,
+          url: '/investments/watchlist',
+          icon: '🔔',
+          tag: 'lumenfi-watchlist',
+          sentAsPush: anySent,
+          pushDeliveryStatus: anySent ? 'sent' : 'failed',
+        });
       }
     }
   } catch (e) {

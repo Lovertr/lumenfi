@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 import webpush from 'web-push';
+import { logNotification } from '@/lib/notifications';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'tintanee.t@gmail.com';
 
@@ -47,6 +48,9 @@ export async function sendBroadcastPush(_prev: unknown, formData: FormData): Pro
   const payload = JSON.stringify({ title, body, url, tag });
   let sent = 0;
   let failed = 0;
+  // Track per-user success so we log notification once per user
+  const userResults = new Map<string, boolean>();
+
   for (const s of subs as any[]) {
     try {
       await webpush.sendNotification(
@@ -55,12 +59,33 @@ export async function sendBroadcastPush(_prev: unknown, formData: FormData): Pro
         { TTL: 60 * 60 * 24 }
       );
       sent++;
+      userResults.set(s.user_id, true);
     } catch (e: any) {
       failed++;
+      if (!userResults.has(s.user_id)) userResults.set(s.user_id, false);
       if (e?.statusCode === 410 || e?.statusCode === 404) {
         await admin.from('push_subscriptions').delete().eq('id', s.id);
       }
     }
+  }
+
+  // Log in-app notification for every targeted user
+  // Also log for users without push subs so they see it in the bell
+  const { data: allUsers } = await admin.from('profiles').select('id');
+  for (const u of allUsers ?? []) {
+    const userId = (u as any).id;
+    const succeeded = userResults.get(userId);
+    await logNotification({
+      userId,
+      type: 'broadcast',
+      severity: 'info',
+      title,
+      body,
+      url,
+      tag,
+      sentAsPush: succeeded === true,
+      pushDeliveryStatus: succeeded === true ? 'sent' : succeeded === false ? 'failed' : 'no_subscription',
+    });
   }
 
   return { ok: true, sent, failed, totalSubs: subs.length };

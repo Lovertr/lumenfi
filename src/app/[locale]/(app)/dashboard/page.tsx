@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { LogoutButton } from '@/components/auth/logout-button';
+import { NotificationBellServer } from '@/components/notifications/notification-bell-server';
 import { formatTHB } from '@/lib/utils';
 import { getDashboardData } from '@/lib/queries/dashboard';
 import { materializeDueRecurring } from '@/lib/recurring';
@@ -117,13 +118,41 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         </div>
         <div className="flex items-center gap-1.5 lg:hidden">
           <HealthBadge score={data.healthScore} />
+          <NotificationBellServer />
           <LanguageSwitcher />
           <LogoutButton />
         </div>
-        <div className="hidden lg:block">
+        <div className="hidden items-center gap-2 lg:flex">
           <HealthBadge score={data.healthScore} />
+          <NotificationBellServer />
         </div>
       </header>
+
+      {/* Discovery row: Spotlight + Feature Tour */}
+      <div className="grid gap-3 lg:grid-cols-2">
+        {spotlight ? (
+          <SpotlightCard
+            id={spotlight.id}
+            icon={spotlight.icon}
+            title={spotlight.title}
+            description={spotlight.description}
+            url={spotlight.url}
+            cta={spotlight.cta}
+          />
+        ) : (
+          <div className="hidden lg:block" />
+        )}
+        <FeatureTour />
+      </div>
+
+      {unseenVersion && (
+        <WhatsNewBanner
+          version={unseenVersion.version}
+          title={unseenVersion.title}
+          isMajor={unseenVersion.is_major}
+          highlightCount={unseenVersion.highlights?.length ?? 0}
+        />
+      )}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="overflow-hidden bg-gradient-to-br from-[#0A0F1F] to-[#1E293B] text-white lg:col-span-2">
@@ -176,28 +205,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       </div>
 
       <AdvisorEntry lastReport={lastAdvisorReport} />
-
-      {unseenVersion && (
-        <WhatsNewBanner
-          version={unseenVersion.version}
-          title={unseenVersion.title}
-          isMajor={unseenVersion.is_major}
-          highlightCount={unseenVersion.highlights?.length ?? 0}
-        />
-      )}
-
-      {spotlight && (
-        <SpotlightCard
-          id={spotlight.id}
-          icon={spotlight.icon}
-          title={spotlight.title}
-          description={spotlight.description}
-          url={spotlight.url}
-          cta={spotlight.cta}
-        />
-      )}
-
-      <FeatureTour />
 
       <Card>
         <CardContent className="p-4 lg:p-5">
