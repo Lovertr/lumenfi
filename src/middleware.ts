@@ -7,5 +7,6 @@ import { routing } from '@/i18n/routing';
 export default createMiddleware(routing);
 
 export const config = {
-  matcher: ['/', '/(en|th)/:path*', '/((?!api|_next|_vercel|.*\\..*).*)'],
+  // Exclude api/, auth/ (oauth callback), _next, _vercel, and static files
+  matcher: ['/', '/(en|th)/:path*', '/((?!api|auth|_next|_vercel|.*\\..*).*)'],
 };
