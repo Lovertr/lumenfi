@@ -13,6 +13,8 @@ export interface DashboardData {
   dti: number;
   emergencyFundMonths: number;
   healthScore: number;
+  /** Sum of liquid accounts (cash + bank + savings + e-wallet) — money you can spend right now */
+  availableCash: number;
   topCategories: Array<{ name: string; icon: string; color: string; amount: number }>;
   goalsCount: number;
   accountsCount: number;
@@ -31,6 +33,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     dti: 0,
     emergencyFundMonths: 0,
     healthScore: 50,
+    availableCash: 0,
     topCategories: [],
     goalsCount: 0,
     accountsCount: 0,
@@ -75,13 +78,19 @@ export async function getDashboardData(): Promise<DashboardData> {
     );
     let totalAssets = 0;
     let totalLiabilitiesAcc = 0;
+    let availableCash = 0;
+    const LIQUID_TYPES = new Set(['cash', 'bank', 'savings', 'e_wallet']);
     for (const a of allAccounts) {
-      if (!a.include_in_net_worth) continue;
       const bal = balanceMap[a.id] ?? 0;
-      if (a.type === 'credit_card') {
-        totalLiabilitiesAcc += bal;
-      } else {
-        totalAssets += bal;
+      if (a.include_in_net_worth) {
+        if (a.type === 'credit_card') {
+          totalLiabilitiesAcc += bal;
+        } else {
+          totalAssets += bal;
+        }
+      }
+      if (LIQUID_TYPES.has(a.type as string)) {
+        availableCash += bal;
       }
     }
 
@@ -166,6 +175,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       dti,
       emergencyFundMonths,
       healthScore,
+      availableCash,
       topCategories,
       goalsCount: goals.length,
       accountsCount: (accountsRes.data ?? []).length,

@@ -51,6 +51,7 @@ export function DesktopSidebar() {
         { href: '/transactions', icon: ListChecks, label: tNav('transactions') },
         { href: '/transactions/scan', icon: Camera, label: tMore('scan') },
         { href: '/cashflow', icon: Activity, label: 'Cash Flow' },
+        { href: '/networth', icon: TrendingUp, label: 'ฐานะรวม' },
       ],
     },
     {

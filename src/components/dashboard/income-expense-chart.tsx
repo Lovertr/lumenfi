@@ -1,28 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { useState, useEffect, useMemo } from 'react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ReferenceLine } from 'recharts';
 import { Loader2 } from 'lucide-react';
 import { fetchIncomeExpenseTimeSeries } from '@/app/[locale]/(app)/dashboard/actions';
 
 type Granularity = 'day' | 'week' | 'month';
-
-interface RangeOption {
-  granularity: Granularity;
-  months: number;
-  label: string;
-}
-
-const RANGE_OPTIONS: RangeOption[] = [
-  { granularity: 'day', months: 1, label: 'รายวัน · 1 เดือน' },
-  { granularity: 'week', months: 1, label: 'รายสัปดาห์ · 1 เดือน' },
-  { granularity: 'week', months: 3, label: 'รายสัปดาห์ · 3 เดือน' },
-  { granularity: 'week', months: 6, label: 'รายสัปดาห์ · 6 เดือน' },
-  { granularity: 'week', months: 12, label: 'รายสัปดาห์ · 1 ปี' },
-  { granularity: 'month', months: 12, label: 'รายเดือน · 1 ปี' },
-  { granularity: 'month', months: 36, label: 'รายเดือน · 3 ปี' },
-  { granularity: 'month', months: 60, label: 'รายเดือน · 5 ปี' },
-];
 
 interface DataPoint {
   bucket: string;
@@ -32,17 +15,87 @@ interface DataPoint {
   net: number;
 }
 
+const GRANULARITY_LABELS: Record<Granularity, string> = {
+  day: 'รายวัน',
+  week: 'รายสัปดาห์',
+  month: 'รายเดือน',
+};
+
+// Preset chips per granularity (label, fromOffsetDays or special)
+const DAY_PRESETS = [
+  { id: 'last_7', label: '7 วันล่าสุด', days: 7 },
+  { id: 'last_14', label: '14 วันล่าสุด', days: 14 },
+  { id: 'last_30', label: '30 วันล่าสุด', days: 30 },
+  { id: 'this_month', label: 'เดือนนี้', special: 'this_month' as const },
+  { id: 'last_month', label: 'เดือนที่แล้ว', special: 'last_month' as const },
+];
+
+const WEEK_PRESETS = [
+  { id: 'last_4w', label: '1 เดือน', months: 1 },
+  { id: 'last_3m', label: '3 เดือน', months: 3 },
+  { id: 'last_6m', label: '6 เดือน', months: 6 },
+  { id: 'last_12m', label: '1 ปี', months: 12 },
+];
+
+const MONTH_PRESETS = [
+  { id: 'last_6m', label: '6 เดือน', months: 6 },
+  { id: 'last_12m', label: '1 ปี', months: 12 },
+  { id: 'last_24m', label: '2 ปี', months: 24 },
+  { id: 'last_36m', label: '3 ปี', months: 36 },
+  { id: 'last_60m', label: '5 ปี', months: 60 },
+];
+
+// Limits to prevent absurd queries (granularity × maximum days)
+const MAX_RANGE_DAYS: Record<Granularity, number> = {
+  day: 92,    // ~3 months max for daily view
+  week: 730,  // ~2 years max for weekly
+  month: 3650, // ~10 years max for monthly
+};
+
+function isoDate(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+function isoMonth(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function startOfMonth(year: number, month0: number): Date {
+  return new Date(year, month0, 1);
+}
+
+function endOfMonth(year: number, month0: number): Date {
+  return new Date(year, month0 + 1, 0);
+}
+
 export function IncomeExpenseChart() {
-  const [optionIdx, setOptionIdx] = useState(2); // default: week × 3mo
+  const [granularity, setGranularity] = useState<Granularity>('week');
+  const [presetId, setPresetId] = useState<string>('last_3m');
+  const [customMode, setCustomMode] = useState(false);
+
+  // Custom range state — semantics depend on granularity
+  // day:    fromDate / toDate (YYYY-MM-DD)
+  // week:   fromMonth / toMonth (YYYY-MM)
+  // month:  fromYear / toYear  (YYYY)
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+
+  // Resolve range to absolute fromDate/toDate
+  const { fromDate, toDate, isValid, errorMsg } = useMemo(() => {
+    return resolveRange(granularity, presetId, customMode, customFrom, customTo);
+  }, [granularity, presetId, customMode, customFrom, customTo]);
+
   const [data, setData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const opt = RANGE_OPTIONS[optionIdx];
-
   useEffect(() => {
+    if (!isValid || !fromDate || !toDate) {
+      setData([]);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
-    fetchIncomeExpenseTimeSeries(opt.granularity, opt.months)
+    fetchIncomeExpenseTimeSeries(granularity, fromDate, toDate)
       .then((r) => {
         if (!cancelled) setData(r);
       })
@@ -52,35 +105,116 @@ export function IncomeExpenseChart() {
     return () => {
       cancelled = true;
     };
-  }, [optionIdx, opt.granularity, opt.months]);
+  }, [granularity, fromDate, toDate, isValid]);
 
-  // Totals for current range
+  // When granularity changes, set sensible default preset
+  function handleGranularityChange(g: Granularity) {
+    setGranularity(g);
+    setCustomMode(false);
+    if (g === 'day') setPresetId('last_30');
+    else if (g === 'week') setPresetId('last_3m');
+    else setPresetId('last_12m');
+  }
+
+  const presets =
+    granularity === 'day' ? DAY_PRESETS :
+    granularity === 'week' ? WEEK_PRESETS : MONTH_PRESETS;
+
   const totalIncome = data.reduce((s, p) => s + p.income, 0);
   const totalExpense = data.reduce((s, p) => s + p.expense, 0);
   const totalNet = totalIncome - totalExpense;
 
   return (
     <div className="space-y-3">
-      {/* Range picker */}
+      {/* Granularity selector */}
+      <div className="grid grid-cols-3 gap-1 rounded-xl border bg-muted/40 p-1">
+        {(['day', 'week', 'month'] as Granularity[]).map((g) => (
+          <button
+            key={g}
+            type="button"
+            onClick={() => handleGranularityChange(g)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              granularity === g ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {GRANULARITY_LABELS[g]}
+          </button>
+        ))}
+      </div>
+
+      {/* Preset chips + custom toggle */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-        {RANGE_OPTIONS.map((o, i) => {
-          const active = i === optionIdx;
+        {presets.map((p) => {
+          const active = !customMode && presetId === p.id;
           return (
             <button
-              key={`${o.granularity}-${o.months}`}
+              key={p.id}
               type="button"
-              onClick={() => setOptionIdx(i)}
+              onClick={() => {
+                setCustomMode(false);
+                setPresetId(p.id);
+              }}
               className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                 active
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-border bg-background hover:bg-muted/40'
               }`}
             >
-              {o.label}
+              {p.label}
             </button>
           );
         })}
+        <button
+          type="button"
+          onClick={() => {
+            setCustomMode(true);
+            // Pre-fill custom inputs based on current preset's resolved dates
+            if (fromDate && toDate) {
+              if (granularity === 'day') {
+                setCustomFrom(fromDate);
+                setCustomTo(toDate);
+              } else if (granularity === 'week') {
+                setCustomFrom(fromDate.slice(0, 7));
+                setCustomTo(toDate.slice(0, 7));
+              } else {
+                setCustomFrom(fromDate.slice(0, 4));
+                setCustomTo(toDate.slice(0, 4));
+              }
+            }
+          }}
+          className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+            customMode
+              ? 'border-primary bg-primary/10 text-primary'
+              : 'border-border bg-background hover:bg-muted/40'
+          }`}
+        >
+          เลือกเอง
+        </button>
       </div>
+
+      {/* Custom range inputs */}
+      {customMode && (
+        <div className="rounded-lg border bg-background p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <CustomInput
+              granularity={granularity}
+              value={customFrom}
+              onChange={setCustomFrom}
+              placeholder="จาก"
+            />
+            <span className="text-xs text-muted-foreground">→</span>
+            <CustomInput
+              granularity={granularity}
+              value={customTo}
+              onChange={setCustomTo}
+              placeholder="ถึง"
+            />
+          </div>
+          {!isValid && errorMsg && (
+            <p className="text-xs text-amber-700">{errorMsg}</p>
+          )}
+        </div>
+      )}
 
       {/* Totals strip */}
       <div className="grid grid-cols-3 gap-2 text-xs">
@@ -101,10 +235,14 @@ export function IncomeExpenseChart() {
       </div>
 
       {/* Chart */}
-      <div className="h-[260px] w-full">
+      <div className="h-[280px] w-full">
         {loading ? (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : !isValid ? (
+          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+            กรุณาเลือกช่วงให้ถูกต้อง
           </div>
         ) : data.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -141,16 +279,138 @@ export function IncomeExpenseChart() {
               <Legend
                 wrapperStyle={{ fontSize: 11 }}
                 formatter={(v) => {
-                  const labels: Record<string, string> = { income: 'รายรับ', expense: 'รายจ่าย' };
+                  const labels: Record<string, string> = { income: 'รายรับ', expense: 'รายจ่าย', net: 'สุทธิ' };
                   return labels[v] ?? v;
                 }}
               />
+              <ReferenceLine y={0} stroke="#9ca3af" strokeDasharray="2 2" />
               <Line type="monotone" dataKey="income" stroke="#10B981" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
               <Line type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+              <Line type="monotone" dataKey="net" stroke="#3B82F6" strokeWidth={2} strokeDasharray="4 2" dot={false} activeDot={{ r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         )}
       </div>
     </div>
   );
+}
+
+function CustomInput({
+  granularity,
+  value,
+  onChange,
+  placeholder,
+}: {
+  granularity: Granularity;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  if (granularity === 'day') {
+    return (
+      <input
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 rounded-md border bg-background px-2 py-1 text-sm"
+      />
+    );
+  }
+  if (granularity === 'week') {
+    return (
+      <input
+        type="month"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 rounded-md border bg-background px-2 py-1 text-sm"
+      />
+    );
+  }
+  // month → year picker (simple number input)
+  return (
+    <input
+      type="number"
+      min={2000}
+      max={2100}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="flex-1 rounded-md border bg-background px-2 py-1 text-sm"
+    />
+  );
+}
+
+function resolveRange(
+  granularity: Granularity,
+  presetId: string,
+  customMode: boolean,
+  customFrom: string,
+  customTo: string
+): { fromDate: string; toDate: string; isValid: boolean; errorMsg?: string } {
+  const today = new Date();
+  const todayStr = isoDate(today);
+
+  if (customMode) {
+    if (!customFrom || !customTo) {
+      return { fromDate: '', toDate: '', isValid: false, errorMsg: 'กรุณาเลือกช่วงทั้งสองข้าง' };
+    }
+    let from: Date, to: Date;
+    if (granularity === 'day') {
+      from = new Date(customFrom);
+      to = new Date(customTo);
+    } else if (granularity === 'week') {
+      const [fy, fm] = customFrom.split('-').map(Number);
+      const [ty, tm] = customTo.split('-').map(Number);
+      from = startOfMonth(fy, fm - 1);
+      to = endOfMonth(ty, tm - 1);
+    } else {
+      from = startOfMonth(Number(customFrom), 0);
+      to = endOfMonth(Number(customTo), 11);
+    }
+    if (from > to) return { fromDate: '', toDate: '', isValid: false, errorMsg: 'วันเริ่มต้องไม่หลังวันสิ้นสุด' };
+    const diffDays = Math.ceil((to.getTime() - from.getTime()) / 86400000);
+    if (diffDays > MAX_RANGE_DAYS[granularity]) {
+      return {
+        fromDate: '',
+        toDate: '',
+        isValid: false,
+        errorMsg: `ช่วงกว้างเกินไปสำหรับ${GRANULARITY_LABELS[granularity]} — ลด range หรือเปลี่ยน granularity`,
+      };
+    }
+    return { fromDate: isoDate(from), toDate: isoDate(to), isValid: true };
+  }
+
+  // Preset
+  if (granularity === 'day') {
+    const p = DAY_PRESETS.find((p) => p.id === presetId);
+    if (!p) return { fromDate: '', toDate: '', isValid: false };
+    if (p.special === 'this_month') {
+      const first = startOfMonth(today.getFullYear(), today.getMonth());
+      return { fromDate: isoDate(first), toDate: todayStr, isValid: true };
+    }
+    if (p.special === 'last_month') {
+      const first = startOfMonth(today.getFullYear(), today.getMonth() - 1);
+      const last = endOfMonth(today.getFullYear(), today.getMonth() - 1);
+      return { fromDate: isoDate(first), toDate: isoDate(last), isValid: true };
+    }
+    const days = (p as any).days;
+    const from = new Date(today);
+    from.setDate(today.getDate() - days + 1);
+    return { fromDate: isoDate(from), toDate: todayStr, isValid: true };
+  }
+
+  if (granularity === 'week') {
+    const p = WEEK_PRESETS.find((p) => p.id === presetId);
+    const months = p?.months ?? 3;
+    const from = new Date(today);
+    from.setMonth(today.getMonth() - months);
+    return { fromDate: isoDate(from), toDate: todayStr, isValid: true };
+  }
+
+  // month
+  const p = MONTH_PRESETS.find((p) => p.id === presetId);
+  const months = p?.months ?? 12;
+  const from = new Date(today);
+  from.setMonth(today.getMonth() - months);
+  return { fromDate: isoDate(from), toDate: todayStr, isValid: true };
 }

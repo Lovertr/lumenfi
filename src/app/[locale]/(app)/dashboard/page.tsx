@@ -8,7 +8,6 @@ import { formatTHB } from '@/lib/utils';
 import { getDashboardData } from '@/lib/queries/dashboard';
 import { materializeDueRecurring } from '@/lib/recurring';
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
-import { NetWorthChart } from '@/components/dashboard/net-worth-chart';
 import { IncomeExpenseChart } from '@/components/dashboard/income-expense-chart';
 import { createClient } from '@/lib/supabase/server';
 import {
@@ -72,13 +71,12 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
 
   await materializeDueRecurring();
 
-  // Take net worth snapshot if needed (idempotent — upserts today's row)
-  let nwHistory: Array<{ date: string; total_assets: number; total_liabilities: number; net_worth: number }> = [];
+  // Take net worth snapshot (idempotent — upserts today's row)
+  // History display moved to /networth page
   if (user) {
     try {
       const mod = await import('@/lib/queries/net-worth-snapshot');
       await mod.snapshotTodayForUser(user.id);
-      nwHistory = (await mod.getNetWorthHistory(user.id, 90)) as typeof nwHistory;
     } catch (e) {
       console.warn('Net worth snapshot failed:', e);
     }
@@ -108,62 +106,60 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="overflow-hidden bg-gradient-to-br from-[#0A0F1F] to-[#1E293B] text-white lg:col-span-2">
           <CardContent className="p-6 lg:p-8">
-            <p className="text-sm opacity-90">{t('netWorth')}</p>
-            <p className={`mt-1 text-3xl font-bold lg:text-5xl ${data.netWorth < 0 ? 'text-[#FCA5A5]' : ''}`}>
-              {formatTHB(data.netWorth)}
+            <div className="flex items-center justify-between">
+              <p className="text-sm opacity-90">เงินสุทธิเดือนนี้</p>
+              <Link href="/networth" className="text-[11px] opacity-70 hover:opacity-100 transition-opacity">
+                ฐานะการเงินรวม →
+              </Link>
+            </div>
+            <p className={`mt-1 text-3xl font-bold lg:text-5xl ${data.monthBalance < 0 ? 'text-[#FCA5A5]' : 'text-[#10B981]'}`}>
+              {data.monthBalance >= 0 ? '+' : ''}{formatTHB(data.monthBalance)}
             </p>
-            <div className="mt-4 grid grid-cols-2 gap-3 text-xs lg:mt-6 lg:gap-6 lg:text-sm">
+            <p className="mt-1 text-xs opacity-70">
+              {data.monthBalance >= 0 ? 'เก็บได้แล้ว' : 'ใช้เกินรายรับ'} · {(data.savingsRate * 100).toFixed(0)}% ของรายรับ
+            </p>
+            <div className="mt-5 grid grid-cols-3 gap-3 text-xs lg:gap-6 lg:text-sm">
               <div>
-                <p className="opacity-70">Assets</p>
-                <p className="mt-0.5 font-semibold lg:text-lg">{formatTHB(data.totalAssets)}</p>
+                <p className="opacity-70">รายรับเดือนนี้</p>
+                <p className="mt-0.5 font-semibold text-[#10B981] lg:text-lg">+{formatTHB(data.monthIncome)}</p>
               </div>
               <div>
-                <p className="opacity-70">Liabilities</p>
-                <p className="mt-0.5 font-semibold text-[#FCA5A5] lg:text-lg">
-                  -{formatTHB(data.totalLiabilities)}
-                </p>
+                <p className="opacity-70">รายจ่ายเดือนนี้</p>
+                <p className="mt-0.5 font-semibold text-[#FCA5A5] lg:text-lg">-{formatTHB(data.monthExpense)}</p>
+              </div>
+              <div>
+                <p className="opacity-70">เงินใช้ได้ตอนนี้</p>
+                <p className="mt-0.5 font-semibold lg:text-lg">{formatTHB(data.availableCash)}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:gap-4">
-          <Card>
-            <CardContent className="p-4 lg:p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground lg:text-sm">{t('monthIncome')}</span>
-                <TrendingUp className="h-4 w-4 text-success" />
-              </div>
-              <p className="mt-1 text-lg font-bold text-success lg:text-2xl">
-                {formatTHB(data.monthIncome)}
-              </p>
-            </CardContent>
+          <Card className="cursor-pointer transition-all hover:shadow-md">
+            <Link href="/networth">
+              <CardContent className="p-4 lg:p-5">
+                <p className="text-xs text-muted-foreground lg:text-sm">Net Worth</p>
+                <p className={`mt-1 text-lg font-bold lg:text-2xl ${data.netWorth < 0 ? 'text-destructive' : ''}`}>
+                  {formatTHB(data.netWorth)}
+                </p>
+                <p className="mt-1 text-[10px] text-muted-foreground">ดูรายละเอียด →</p>
+              </CardContent>
+            </Link>
           </Card>
-          <Card>
-            <CardContent className="p-4 lg:p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground lg:text-sm">{t('monthExpense')}</span>
-                <TrendingDown className="h-4 w-4 text-destructive" />
-              </div>
-              <p className="mt-1 text-lg font-bold text-destructive lg:text-2xl">
-                {formatTHB(data.monthExpense)}
-              </p>
-            </CardContent>
+          <Card className="cursor-pointer transition-all hover:shadow-md">
+            <Link href="/cashflow">
+              <CardContent className="p-4 lg:p-5">
+                <p className="text-xs text-muted-foreground lg:text-sm">Cash Flow</p>
+                <p className="mt-1 text-lg font-bold lg:text-2xl">
+                  {(data.savingsRate * 100).toFixed(0)}%
+                </p>
+                <p className="mt-1 text-[10px] text-muted-foreground">อัตราการออม →</p>
+              </CardContent>
+            </Link>
           </Card>
         </div>
       </div>
-
-      {nwHistory.length >= 2 && (
-        <Card>
-          <CardContent className="p-4 lg:p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Net Worth ย้อนหลัง 90 วัน</h2>
-              <p className="text-xs text-muted-foreground">{nwHistory.length} จุดข้อมูล</p>
-            </div>
-            <NetWorthChart data={nwHistory} />
-          </CardContent>
-        </Card>
-      )}
 
       <Card>
         <CardContent className="p-4 lg:p-5">

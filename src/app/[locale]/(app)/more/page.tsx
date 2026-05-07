@@ -35,6 +35,7 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
       // (top, no title)
       items: [
         { href: '/cashflow', icon: Activity, label: 'Cash Flow', desc: 'Track income, expense and runway', color: 'text-cyan-600 bg-cyan-50' },
+        { href: '/networth', icon: TrendingUp, label: 'ฐานะการเงินรวม', desc: 'Net Worth + แนวโน้ม 1 ปี', color: 'text-violet-600 bg-violet-50' },
         { href: '/transactions/scan', icon: Camera, label: t('scan'), desc: isTh ? 'สแกนใบเสร็จด้วย AI' : 'Scan receipt with AI', color: 'text-pink-600 bg-pink-50' },
       ],
     },

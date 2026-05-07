@@ -7,9 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 export type Granularity = 'day' | 'week' | 'month';
 
 export interface TimeSeriesPoint {
-  /** ISO start date of the bucket (day for day, Monday for week, 1st for month) */
   bucket: string;
-  /** Display label */
   label: string;
   income: number;
   expense: number;
@@ -20,21 +18,18 @@ function isoDate(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-// Bucket key based on granularity
 function bucketKey(dateStr: string, granularity: Granularity): string {
   const d = new Date(dateStr);
   if (granularity === 'day') {
     return isoDate(d);
   }
   if (granularity === 'week') {
-    // ISO Monday-based week — find Monday of that date
     const day = d.getDay();
     const diff = day === 0 ? -6 : 1 - day;
     const monday = new Date(d);
     monday.setDate(d.getDate() + diff);
     return isoDate(monday);
   }
-  // month
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
 }
 
@@ -58,48 +53,42 @@ function bucketLabel(bucketIso: string, granularity: Granularity, locale = 'th')
   });
 }
 
-/**
- * Build time series of income/expense by bucket.
- * @param granularity day | week | month
- * @param months  number of months to look back (e.g. 3, 6, 12, 36, 60)
- */
 export async function getIncomeExpenseTimeSeries(
   granularity: Granularity,
-  months: number,
+  fromDate: string,
+  toDate: string,
   locale = 'th'
 ): Promise<TimeSeriesPoint[]> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const since = new Date();
-  since.setMonth(since.getMonth() - months);
-  since.setHours(0, 0, 0, 0);
-  const sinceStr = isoDate(since);
-
   const { data: txs } = await supabase
     .from('transactions')
     .select('type, amount, date')
     .eq('user_id', user.id)
-    .gte('date', sinceStr)
+    .gte('date', fromDate)
+    .lte('date', toDate)
     .in('type', ['income', 'expense'])
     .order('date');
 
   const buckets = new Map<string, { income: number; expense: number }>();
 
-  // Pre-fill empty buckets so the chart shows zeros for periods with no data
-  const prefillBuckets = generateBuckets(since, new Date(), granularity);
+  // Pre-fill empty buckets
+  const start = new Date(fromDate);
+  const end = new Date(toDate);
+  const prefillBuckets = generateBuckets(start, end, granularity);
   for (const b of prefillBuckets) {
     buckets.set(b, { income: 0, expense: 0 });
   }
 
   for (const t of txs ?? []) {
     const key = bucketKey(t.date as string, granularity);
-    const cur = buckets.get(key) ?? { income: 0, expense: 0 };
+    if (!buckets.has(key)) buckets.set(key, { income: 0, expense: 0 });
+    const cur = buckets.get(key)!;
     const amt = Number(t.amount ?? 0);
     if (t.type === 'income') cur.income += amt;
     else if (t.type === 'expense') cur.expense += amt;
-    buckets.set(key, cur);
   }
 
   const sortedKeys = Array.from(buckets.keys()).sort();
