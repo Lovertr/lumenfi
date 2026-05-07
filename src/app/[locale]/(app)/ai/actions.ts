@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { encrypt, decrypt } from '@/lib/encryption';
 import { chat as aiChat } from '@/lib/ai';
-import { buildFinancialContext } from '@/lib/ai/context';
+import { buildSuperContext } from '@/lib/ai/super-context';
 import { buildSystemPrompt } from '@/lib/ai/prompts';
 import type { ChatMessage, AIProvider } from '@/lib/ai';
 
@@ -115,8 +115,8 @@ export async function sendChatMessage(
     return { error: 'decryption_failed' };
   }
 
-  // Build context from user's financial data
-  const context = await buildFinancialContext(profile.ai_privacy_mode ?? true);
+  // Build comprehensive context (rich snapshot covering all 12+ domains)
+  const context = await buildSuperContext(profile.ai_privacy_mode ?? true);
   const systemPrompt = buildSystemPrompt(locale, context);
 
   const messages: ChatMessage[] = [

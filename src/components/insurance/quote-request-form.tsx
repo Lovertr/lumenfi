@@ -17,7 +17,7 @@ const TYPE_OPTIONS = [
 ];
 
 const CARRIER_OPTIONS = [
-  { value: 'Allianz', label: 'Allianz Ayudhya' },
+  { value: 'BLA', label: 'กรุงเทพประกันชีวิต (BLA)' },
 ];
 
 type State = { error?: string; success?: boolean } | null;
@@ -93,7 +93,7 @@ export function QuoteRequestForm({
         <select
           id="preferred_carrier"
           name="preferred_carrier"
-          defaultValue="either"
+          defaultValue="BLA"
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         >
           {CARRIER_OPTIONS.map((o) => (

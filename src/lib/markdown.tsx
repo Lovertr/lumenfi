@@ -1,8 +1,12 @@
 import type { ReactNode } from 'react';
+import Link from 'next/link';
+import { ExternalLink } from 'lucide-react';
 
 /**
- * Lightweight markdown renderer — supports h2/h3, bullets, numbered lists,
- * bold/italic/code inline. No external dependency.
+ * Lightweight markdown renderer — supports h1-h3, bullets, numbered lists,
+ * bold/italic/code inline, and [text](url) links. Internal links (starting
+ * with /) use Next Link for client-side navigation; external links open in
+ * a new tab. No external markdown library dependency.
  */
 export function renderMarkdown(text: string): ReactNode {
   const lines = text.split('\n');
@@ -22,15 +26,50 @@ export function renderMarkdown(text: string): ReactNode {
 
   function renderInline(s: string): ReactNode[] {
     const parts: ReactNode[] = [];
-    const regex = /\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`/g;
+    // Order matters: match links first (greedy enough to skip nested * inside text),
+    // then bold/italic/code.
+    const regex = /\[([^\]]+)\]\(([^)]+)\)|\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`/g;
     let lastIdx = 0;
     let m: RegExpExecArray | null;
     let key = 0;
     while ((m = regex.exec(s)) !== null) {
       if (m.index > lastIdx) parts.push(s.slice(lastIdx, m.index));
-      if (m[1]) parts.push(<strong key={key++}>{m[1]}</strong>);
-      else if (m[2]) parts.push(<em key={key++}>{m[2]}</em>);
-      else if (m[3]) parts.push(<code key={key++} className="rounded bg-muted px-1 py-0.5 text-xs">{m[3]}</code>);
+      if (m[1] && m[2]) {
+        // Link
+        const text = m[1];
+        const url = m[2];
+        const isInternal = url.startsWith('/');
+        if (isInternal) {
+          parts.push(
+            <Link
+              key={key++}
+              href={url}
+              className="inline-flex items-center gap-0.5 font-medium text-primary underline-offset-2 hover:underline"
+            >
+              {text}
+              <ExternalLink className="h-3 w-3" />
+            </Link>
+          );
+        } else {
+          parts.push(
+            <a
+              key={key++}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline-offset-2 hover:underline"
+            >
+              {text}
+            </a>
+          );
+        }
+      } else if (m[3]) {
+        parts.push(<strong key={key++}>{m[3]}</strong>);
+      } else if (m[4]) {
+        parts.push(<em key={key++}>{m[4]}</em>);
+      } else if (m[5]) {
+        parts.push(<code key={key++} className="rounded bg-muted px-1 py-0.5 text-xs">{m[5]}</code>);
+      }
       lastIdx = m.index + m[0].length;
     }
     if (lastIdx < s.length) parts.push(s.slice(lastIdx));
