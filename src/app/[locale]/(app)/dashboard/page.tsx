@@ -9,6 +9,7 @@ import { getDashboardData } from '@/lib/queries/dashboard';
 import { materializeDueRecurring } from '@/lib/recurring';
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
 import { NetWorthChart } from '@/components/dashboard/net-worth-chart';
+import { IncomeExpenseChart } from '@/components/dashboard/income-expense-chart';
 import { createClient } from '@/lib/supabase/server';
 import {
   TrendingUp,
@@ -163,6 +164,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardContent className="p-4 lg:p-5">
+          <h2 className="mb-3 text-sm font-semibold">รายรับ-รายจ่าย</h2>
+          <IncomeExpenseChart />
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
