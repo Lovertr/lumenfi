@@ -1,43 +1,56 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
+interface CookieToSet {
+  name: string;
+  value: string;
+  options?: CookieOptions;
+}
+
 /**
- * OAuth callback route — Supabase redirects here after Google sign-in
- * or after email confirmation link is clicked.
+ * OAuth callback — Supabase redirects here after Google sign-in
+ * (or after email confirmation link).
  */
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/dashboard';
+  const url = new URL(request.url);
+  const code = url.searchParams.get('code');
+  const next = url.searchParams.get('next') ?? '/dashboard';
 
-  if (code) {
-    const response = NextResponse.redirect(`${origin}${next}`);
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? url.origin;
+  const response = NextResponse.redirect(`${origin}${next}`);
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return request.cookies.get(name)?.value;
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            response.cookies.set({ name, value, ...options });
-          },
-          remove(name: string, options: CookieOptions) {
-            response.cookies.set({ name, value: '', ...options });
-          },
-        },
-      }
-    );
-
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (!error) {
-      return response;
-    }
+  if (!code) {
+    return NextResponse.redirect(`${origin}/login?error=missing_code`);
   }
 
-  // On error → redirect to login with message
-  return NextResponse.redirect(`${origin}/login?error=generic`);
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll().map((c) => ({ name: c.name, value: c.value }));
+        },
+        setAll(cookiesToSet: CookieToSet[]) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set({
+              name,
+              value,
+              ...(options ?? {}),
+              path: '/',
+            });
+          });
+        },
+      },
+    }
+  );
+
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (error) {
+    console.error('[auth/callback] exchangeCodeForSession failed:', error.message);
+    return NextResponse.redirect(`${origin}/login?error=oauth_failed`);
+  }
+
+  return response;
 }
