@@ -3,50 +3,45 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { decrypt } from '@/lib/encryption';
-import { buildAdvisorSnapshot } from '@/lib/advisor/context';
-import { generateAdvisorReport } from '@/lib/advisor/generate';
-import { ADVISOR_LABELS, type AdvisorDomain } from '@/lib/advisor/prompts';
-import type { AIProvider } from '@/lib/ai/types';
+import { buildAdvisorSnapshot, snapshotToMarkdown } from '@/lib/advisor/context';
+import { ADVISOR_PROMPTS, ADVISOR_LABELS, type AdvisorDomain } from '@/lib/advisor/prompts';
+import { callAIViaGateway, PaywallError } from '@/lib/billing/gateway';
 
 export async function generateAndSaveReport(
   domain: AdvisorDomain,
   userQuestion?: string,
-): Promise<{ ok: boolean; reportId?: string; error?: string }> {
+): Promise<{ ok: boolean; reportId?: string; error?: string; upgradeUrl?: string }> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: 'unauthorized' };
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('ai_provider, ai_api_key_encrypted')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (!profile?.ai_provider || !profile?.ai_api_key_encrypted) {
-    return { ok: false, error: 'no_ai_key' };
-  }
-
-  let apiKey: string;
-  try {
-    apiKey = await decrypt(profile.ai_api_key_encrypted);
-  } catch {
-    return { ok: false, error: 'decryption_failed' };
-  }
-
   const snapshot = await buildAdvisorSnapshot();
   if (!snapshot) return { ok: false, error: 'no_snapshot' };
 
-  let content: string;
+  const systemPrompt = ADVISOR_PROMPTS[domain];
+  const contextMarkdown = snapshotToMarkdown(snapshot);
+  const userMessage = [
+    `นี่คือสถานะการเงินของฉัน:\n\n${contextMarkdown}`,
+    userQuestion ? `\n\nคำถาม/ข้อกังวลเพิ่มเติม: ${userQuestion}` : '',
+    '\n\nกรุณาวิเคราะห์ตามรูปแบบที่กำหนดในระบบ',
+  ].join('');
+
+  let result;
   try {
-    content = await generateAdvisorReport({
-      provider: profile.ai_provider as AIProvider,
-      apiKey,
+    result = await callAIViaGateway({
+      feature: 'advisor',
       domain,
-      snapshot,
-      userQuestion,
+      systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
     });
   } catch (e: any) {
+    if (e instanceof PaywallError) {
+      return {
+        ok: false,
+        error: e.code,
+        upgradeUrl: e.upgradeUrl,
+      };
+    }
     const msg = e?.message ?? '';
     console.error('generateAndSaveReport:', msg);
     if (msg.includes('401') || msg.includes('403')) return { ok: false, error: 'invalid_api_key' };
@@ -54,8 +49,8 @@ export async function generateAndSaveReport(
     return { ok: false, error: 'ai_error' };
   }
 
-  // Extract first H1/H2 for summary preview (first non-header paragraph)
-  const lines = content.split('\n').filter((l) => l.trim());
+  // Extract summary
+  const lines = result.text.split('\n').filter((l) => l.trim());
   let summary: string | null = null;
   for (let i = 0; i < lines.length; i++) {
     const l = lines[i].trim();
@@ -73,9 +68,11 @@ export async function generateAndSaveReport(
       domain,
       title,
       summary,
-      content,
+      content: result.text,
       snapshot,
-      provider: profile.ai_provider,
+      provider: result.provider,
+      input_tokens: result.inputTokens ?? null,
+      output_tokens: result.outputTokens ?? null,
     })
     .select('id')
     .maybeSingle();

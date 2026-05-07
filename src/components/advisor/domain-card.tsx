@@ -22,6 +22,11 @@ export function DomainCard({ domain, title, description, icon, color, hero = fal
 
   const errorText: Record<string, string> = {
     no_ai_key: 'ยังไม่ได้ตั้งค่า AI key — ไปที่ /ai/settings',
+    no_byo_key: 'ยังไม่ได้ตั้งค่า AI key — ไปที่ /ai/settings',
+    no_advisor_quota: 'หมดโควต้าแล้ว — ดูแพลนได้ที่ /pricing',
+    no_ai_access: 'ต้องสมัคร subscription หรือใช้ AI key ของตัวเอง',
+    monthly_limit_exceeded: 'ใช้ครบ quota เดือนนี้แล้ว — รอเดือนหน้าหรืออัพเกรด',
+    daily_limit_exceeded: 'ใช้ครบ quota วันนี้แล้ว — รอพรุ่งนี้หรืออัพเกรด',
     decryption_failed: 'ถอดรหัส API key ไม่สำเร็จ',
     no_snapshot: 'ดึงข้อมูลไม่ได้',
     invalid_api_key: 'API key ไม่ถูกต้อง',
@@ -36,6 +41,9 @@ export function DomainCard({ domain, title, description, icon, color, hero = fal
       const r = await generateAndSaveReport(domain);
       if (r.ok && r.reportId) {
         router.push(`/advisor/r/${r.reportId}`);
+      } else if ((r as any).upgradeUrl) {
+        // Paywall — redirect to pricing
+        router.push((r as any).upgradeUrl);
       } else {
         setError(r.error ?? 'unknown');
       }

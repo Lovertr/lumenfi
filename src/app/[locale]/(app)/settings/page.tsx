@@ -2,7 +2,7 @@ import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Brain, Shield, Download, Trash2, ChevronRight, Bell, Wrench } from 'lucide-react';
+import { ArrowLeft, User, Brain, Shield, Download, Trash2, ChevronRight, Bell, Wrench, CreditCard } from 'lucide-react';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { createClient } from '@/lib/supabase/server';
@@ -33,6 +33,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     { href: '/ai/settings', icon: Brain, label: t('ai'), desc: t('aiDesc'), color: 'text-purple-600 bg-purple-50' },
     { href: '/settings/reminder', icon: Bell, label: 'แจ้งเตือนบันทึกค่าใช้จ่าย', desc: 'เตือนทุกวันให้บันทึกรายรับ-รายจ่าย', color: 'text-amber-600 bg-amber-50' },
     { href: '/settings/privacy', icon: Shield, label: t('privacy'), desc: '', color: 'text-emerald-600 bg-emerald-50' },
+    { href: '/settings/billing', icon: CreditCard, label: 'การชำระเงิน + Subscription', desc: 'จัดการแพลน + ใบเสร็จ', color: 'text-violet-600 bg-violet-50' },
     { href: '/settings/export', icon: Download, label: t('exportData'), desc: '', color: 'text-cyan-600 bg-cyan-50' },
     { href: '/settings/admin', icon: Wrench, label: 'Admin · System Health', desc: 'ตรวจสถานะระบบ + เครื่องมือ admin', color: 'text-rose-600 bg-rose-50' },
   ];

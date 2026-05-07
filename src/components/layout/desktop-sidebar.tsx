@@ -82,6 +82,7 @@ export function DesktopSidebar() {
         { href: '/ai', icon: Brain, label: tNav('ai') },
         { href: '/help', icon: HelpCircle, label: 'คู่มือ' },
         { href: '/reports', icon: FileBarChart, label: tMore('reports') },
+        { href: '/pricing', icon: CreditCard, label: 'แพลน + ราคา' },
         { href: '/categories', icon: FolderOpen, label: tMore('categories') },
         { href: '/settings', icon: Settings, label: tMore('settings') },
       ],
