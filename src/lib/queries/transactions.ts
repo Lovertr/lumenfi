@@ -18,10 +18,14 @@ export interface TransactionFilter {
   categoryId?: string;
   type?: 'income' | 'expense' | 'transfer';
   accountId?: string;
+  /** ISO date YYYY-MM-DD, inclusive */
+  fromDate?: string;
+  /** ISO date YYYY-MM-DD, inclusive */
+  toDate?: string;
 }
 
 export async function getRecentTransactions(
-  limit = 50,
+  limit = 200,
   filter?: TransactionFilter
 ): Promise<Transaction[]> {
   try {
@@ -36,6 +40,8 @@ export async function getRecentTransactions(
     if (filter?.categoryId) query = query.eq('category_id', filter.categoryId);
     if (filter?.type) query = query.eq('type', filter.type);
     if (filter?.accountId) query = query.eq('account_id', filter.accountId);
+    if (filter?.fromDate) query = query.gte('date', filter.fromDate);
+    if (filter?.toDate) query = query.lte('date', filter.toDate);
     const { data, error } = await query
       .order('date', { ascending: false })
       .limit(limit);

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { formatTHB } from '@/lib/utils';
-import { getRecentTransactions, getMonthlyTotals } from '@/lib/queries/transactions';
+import { getRecentTransactions } from '@/lib/queries/transactions';
 import { getCategories } from '@/lib/categories';
 import { TransactionFilters } from '@/components/transactions/transaction-filters';
 import { Plus, Wallet, ArrowLeft, Camera } from 'lucide-react';
@@ -20,12 +20,71 @@ function formatDate(dateStr: string, locale: string) {
   });
 }
 
+function resolveDateRange(
+  range: string,
+  customFrom?: string,
+  customTo?: string
+): { from?: string; to?: string; label: string } {
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = today.getMonth();
+  const todayStr = today.toISOString().slice(0, 10);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+  switch (range) {
+    case 'all':
+      return { label: 'ทั้งหมด' };
+    case 'last_month': {
+      const start = new Date(y, m - 1, 1);
+      const end = new Date(y, m, 0);
+      return { from: iso(start), to: iso(end), label: 'เดือนที่แล้ว' };
+    }
+    case 'last_3': {
+      const start = new Date(y, m - 2, 1);
+      return { from: iso(start), to: todayStr, label: '3 เดือนล่าสุด' };
+    }
+    case 'last_6': {
+      const start = new Date(y, m - 5, 1);
+      return { from: iso(start), to: todayStr, label: '6 เดือนล่าสุด' };
+    }
+    case 'this_year': {
+      const start = new Date(y, 0, 1);
+      return { from: iso(start), to: todayStr, label: 'ปีนี้' };
+    }
+    case 'custom':
+      return {
+        from: customFrom || undefined,
+        to: customTo || undefined,
+        label:
+          customFrom && customTo
+            ? `${customFrom} → ${customTo}`
+            : customFrom
+              ? `จาก ${customFrom}`
+              : customTo
+                ? `ถึง ${customTo}`
+                : 'เลือกช่วง',
+      };
+    case 'this_month':
+    default: {
+      const start = new Date(y, m, 1);
+      return { from: iso(start), to: todayStr, label: 'เดือนนี้' };
+    }
+  }
+}
+
 export default async function TransactionsPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ category?: string; type?: string; account?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    type?: string;
+    account?: string;
+    range?: string;
+    from?: string;
+    to?: string;
+  }>;
 }) {
   const { locale } = await params;
   const sp = await searchParams;
@@ -37,15 +96,32 @@ export default async function TransactionsPage({
       ? sp.type
       : undefined;
 
-  const [transactions, totals, categories] = await Promise.all([
-    getRecentTransactions(50, {
+  const range = sp.range || 'this_month';
+  const { from, to, label: rangeLabel } = resolveDateRange(range, sp.from, sp.to);
+
+  const [transactions, categories] = await Promise.all([
+    getRecentTransactions(500, {
       categoryId: sp.category,
       type: filterType,
       accountId: sp.account,
+      fromDate: from,
+      toDate: to,
     }),
-    getMonthlyTotals(),
     getCategories(),
   ]);
+
+  // Calculate totals from filtered transactions
+  let income = 0;
+  let expense = 0;
+  for (const tx of transactions) {
+    const amt = Number(tx.amount);
+    if (tx.type === 'income') income += amt;
+    else if (tx.type === 'expense') expense += amt;
+  }
+  const balance = income - expense;
+
+  // Selected category info (for display in summary)
+  const selectedCat = sp.category ? (categories as any[]).find((c) => c.id === sp.category) : null;
 
   // Group by date
   const grouped: Record<string, typeof transactions> = {};
@@ -55,7 +131,7 @@ export default async function TransactionsPage({
     grouped[day].push(tx);
   }
 
-  const isFiltered = !!(sp.category || sp.type || sp.account);
+  const isFiltered = !!(sp.category || sp.type || sp.account || sp.range || sp.from || sp.to);
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -89,31 +165,60 @@ export default async function TransactionsPage({
         </div>
       </header>
 
-      {/* Month summary */}
+      {/* Summary — adapts to filters */}
       <Card className="bg-gradient-to-br from-[#0A0F1F] to-[#1E293B] text-white">
         <CardContent className="p-4">
-          <p className="text-xs opacity-80">{t('monthSummary')}</p>
-          <p className="mt-1 text-2xl font-bold">
-            {totals.balance >= 0 ? '+' : ''}
-            {formatTHB(totals.balance)}
-          </p>
-          <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p className="opacity-70">{t('income')}</p>
-              <p className="font-semibold text-[#10B981]">+{formatTHB(totals.income)}</p>
-            </div>
-            <div>
-              <p className="opacity-70">{t('expense')}</p>
-              <p className="font-semibold text-[#FCA5A5]">-{formatTHB(totals.expense)}</p>
-            </div>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs opacity-80">
+              {selectedCat ? (
+                <>
+                  <span className="mr-1">{selectedCat.icon}</span>
+                  {selectedCat.name}
+                </>
+              ) : filterType === 'income' ? (
+                'รายรับ'
+              ) : filterType === 'expense' ? (
+                'รายจ่าย'
+              ) : filterType === 'transfer' ? (
+                'โอน'
+              ) : (
+                t('monthSummary')
+              )}
+              {' · '}
+              <span className="opacity-90">{rangeLabel}</span>
+            </p>
+            <p className="text-[10px] opacity-70">{transactions.length} รายการ</p>
           </div>
+
+          {/* Show appropriate primary number based on filter */}
+          {filterType === 'income' ? (
+            <p className="mt-1 text-2xl font-bold text-[#10B981]">+{formatTHB(income)}</p>
+          ) : filterType === 'expense' ? (
+            <p className="mt-1 text-2xl font-bold text-[#FCA5A5]">-{formatTHB(expense)}</p>
+          ) : (
+            <p className="mt-1 text-2xl font-bold">
+              {balance >= 0 ? '+' : ''}
+              {formatTHB(balance)}
+            </p>
+          )}
+
+          {!filterType && (
+            <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="opacity-70">{t('income')}</p>
+                <p className="font-semibold text-[#10B981]">+{formatTHB(income)}</p>
+              </div>
+              <div>
+                <p className="opacity-70">{t('expense')}</p>
+                <p className="font-semibold text-[#FCA5A5]">-{formatTHB(expense)}</p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Filters */}
       <TransactionFilters categories={categories as any} />
 
-      {/* Transaction list */}
       {transactions.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center p-10 text-center">
