@@ -5,7 +5,7 @@ import { Calculator, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { TAX_FUND_LIMITS, TAX_FUND_LABELS, type TaxFundType } from '@/lib/queries/tax-saving';
+import { TAX_FUND_LIMITS, TAX_FUND_LABELS, type TaxFundType } from '@/lib/tax-saving-config';
 import { formatTHB } from '@/lib/utils';
 
 interface Props {
