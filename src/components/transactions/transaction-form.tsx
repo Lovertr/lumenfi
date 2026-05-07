@@ -105,30 +105,49 @@ interface TransactionDefaults {
   note?: string | null;
 }
 
-// Normalize account number for matching: strip non-digits, lowercase
+// Normalize account number for matching: strip non-digits
 function normalizeAcctNum(s: string | null | undefined): string {
   if (!s) return '';
   return String(s).replace(/[^0-9]/g, '');
 }
 
+// Extract last N consecutive digit groups (handles "xxx-x-x1234-5" → "12345")
+// Thai bank slips often mask early digits — we focus on visible trailing digits
+function extractVisibleDigits(s: string | null | undefined): string {
+  if (!s) return '';
+  // Get only the digits (skip x, *, -, etc.)
+  return String(s).replace(/[^0-9]/g, '');
+}
+
 // Find best account match by detected number from OCR
 function matchAccountByNumber(accounts: Account[], detected: string | null | undefined): Account | undefined {
-  const d = normalizeAcctNum(detected);
+  const d = extractVisibleDigits(detected);
   if (!d || d.length < 3) return undefined;
+
   // Exact match first
-  let best = accounts.find((a) => normalizeAcctNum(a.account_number) === d);
+  let best = accounts.find((a) => extractVisibleDigits(a.account_number) === d);
   if (best) return best;
-  // Last-N digit match (e.g. card last-4): match if user's account number digits END WITH detected, or vice versa
+
+  // Suffix match — common case: slip shows "xxx-x-x1234-5" (digits "12345"),
+  // user stored "123-4-56789-0" (digits "1234567890") → check if digits end the same
+  // Or last-4 of credit card: detected="1234", stored last4="1234"
   best = accounts.find((a) => {
-    const an = normalizeAcctNum(a.account_number);
+    const an = extractVisibleDigits(a.account_number);
     if (!an) return false;
+    if (an.length < 3) return false;
+    // Last 4 digits comparison (most common useful match)
+    const detectedLast4 = d.slice(-4);
+    const storedLast4 = an.slice(-4);
+    if (detectedLast4 === storedLast4 && detectedLast4.length === 4) return true;
+    // Either ends with the other (handles different formats)
     return an.endsWith(d) || d.endsWith(an);
   });
   if (best) return best;
-  // Substring match
+
+  // Substring match (less reliable, last resort)
   best = accounts.find((a) => {
-    const an = normalizeAcctNum(a.account_number);
-    if (!an) return false;
+    const an = extractVisibleDigits(a.account_number);
+    if (!an || an.length < 4) return false;
     return an.includes(d) || d.includes(an);
   });
   return best;

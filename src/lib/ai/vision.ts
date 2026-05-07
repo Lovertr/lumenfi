@@ -19,7 +19,11 @@ Required fields (use null if unclear):
 - type: "expense" or "income" — "income" for transfers received or refunds, "expense" for purchases/payments
 - category: string — best guess from: Food, Transport, Shopping, Bills, Health, Entertainment, Education, Housing, Salary, Transfer, Other
 - note: string — short description in Thai if receipt is Thai (1 line, ≤80 chars)
-- account_number: string — only if a real account number is visible (digits/dashes only, no labels). Return null if not visible.
+- account_number: string — the SOURCE/PAYER account number visible on the slip (the user's own account that paid).
+  Thai bank slips typically show partial numbers like "xxx-x-x1234-5" or "***-*-*1234-5". COPY THE FULL STRING AS-IS
+  including the masking characters. If the slip shows multiple numbers, prefer the "From" / "จาก" / "บัญชีต้นทาง" account.
+  For credit card slips, return last 4 digits like "1234".
+  Return null only if no account number/identifier appears at all.
 
 Output ONLY the JSON object starting with { and ending with }`;
 

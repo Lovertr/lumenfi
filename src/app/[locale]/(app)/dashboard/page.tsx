@@ -108,16 +108,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         <Card className="overflow-hidden bg-gradient-to-br from-[#0A0F1F] to-[#1E293B] text-white lg:col-span-2">
           <CardContent className="p-6 lg:p-8">
             <div className="flex items-center justify-between">
-              <p className="text-sm opacity-90">เงินสุทธิเดือนนี้</p>
+              <p className="text-sm opacity-90">เงินใช้ได้ตอนนี้</p>
               <Link href="/networth" className="text-[11px] opacity-70 hover:opacity-100 transition-opacity">
                 ฐานะการเงินรวม →
               </Link>
             </div>
-            <p className={`mt-1 text-3xl font-bold lg:text-5xl ${data.monthBalance < 0 ? 'text-[#FCA5A5]' : 'text-[#10B981]'}`}>
-              {data.monthBalance >= 0 ? '+' : ''}{formatTHB(data.monthBalance)}
+            <p className="mt-1 text-3xl font-bold lg:text-5xl">
+              {formatTHB(data.availableCash)}
             </p>
             <p className="mt-1 text-xs opacity-70">
-              {data.monthBalance >= 0 ? 'เก็บได้แล้ว' : 'ใช้เกินรายรับ'} · {(data.savingsRate * 100).toFixed(0)}% ของรายรับ
+              ยอดรวมในบัญชี cash + ธนาคาร + ออมทรัพย์ + e-Wallet
             </p>
             <div className="mt-5 grid grid-cols-3 gap-3 text-xs lg:gap-6 lg:text-sm">
               <div>
@@ -129,8 +129,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                 <p className="mt-0.5 font-semibold text-[#FCA5A5] lg:text-lg">-{formatTHB(data.monthExpense)}</p>
               </div>
               <div>
-                <p className="opacity-70">เงินใช้ได้ตอนนี้</p>
-                <p className="mt-0.5 font-semibold lg:text-lg">{formatTHB(data.availableCash)}</p>
+                <p className="opacity-70">สุทธิเดือนนี้</p>
+                <p className={`mt-0.5 font-semibold lg:text-lg ${data.monthBalance < 0 ? 'text-[#FCA5A5]' : 'text-[#10B981]'}`}>
+                  {data.monthBalance >= 0 ? '+' : ''}{formatTHB(data.monthBalance)}
+                </p>
               </div>
             </div>
           </CardContent>
