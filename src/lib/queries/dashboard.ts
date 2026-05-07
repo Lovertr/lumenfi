@@ -16,6 +16,16 @@ export interface DashboardData {
   /** Sum of liquid accounts (cash + bank + savings + e-wallet) — money you can spend right now */
   availableCash: number;
   topCategories: Array<{ name: string; icon: string; color: string; amount: number }>;
+  activeGoals: Array<{
+    id: string;
+    name: string;
+    icon: string | null;
+    color: string | null;
+    current: number;
+    target: number;
+    progress: number;
+    deadline: string | null;
+  }>;
   goalsCount: number;
   accountsCount: number;
   debtsCount: number;
@@ -35,6 +45,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     healthScore: 50,
     availableCash: 0,
     topCategories: [],
+    activeGoals: [],
     goalsCount: 0,
     accountsCount: 0,
     debtsCount: 0,
@@ -61,7 +72,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       supabase
         .from('transactions')
         .select('type, amount, date, account_id, to_account_id, category:categories(name, icon, color)'),
-      supabase.from('goals').select('id, current_amount, is_emergency_fund').eq('status', 'active'),
+      supabase.from('goals').select('id, name, current_amount, target_amount, is_emergency_fund, icon, color, deadline').eq('status', 'active').order('created_at'),
       supabase
         .from('investments')
         .select('quantity, avg_cost, current_price')
@@ -177,6 +188,20 @@ export async function getDashboardData(): Promise<DashboardData> {
       healthScore,
       availableCash,
       topCategories,
+      activeGoals: goals.map((g: any) => {
+        const tgt = Number(g.target_amount ?? 0);
+        const cur = Number(g.current_amount ?? 0);
+        return {
+          id: g.id,
+          name: g.name,
+          icon: g.icon,
+          color: g.color,
+          current: cur,
+          target: tgt,
+          progress: tgt > 0 ? Math.min(1, cur / tgt) : 0,
+          deadline: g.deadline,
+        };
+      }),
       goalsCount: goals.length,
       accountsCount: (accountsRes.data ?? []).length,
       debtsCount: (debtsRes.data ?? []).length,

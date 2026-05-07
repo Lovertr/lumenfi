@@ -124,6 +124,13 @@ export function IncomeExpenseChart() {
   const totalExpense = data.reduce((s, p) => s + p.expense, 0);
   const totalNet = totalIncome - totalExpense;
 
+  // Compute running cumulative net for the chart line
+  let running = 0;
+  const chartData = data.map((p) => {
+    running += p.net;
+    return { ...p, cumNet: running };
+  });
+
   return (
     <div className="space-y-3">
       {/* Granularity selector */}
@@ -250,7 +257,7 @@ export function IncomeExpenseChart() {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 10, bottom: 5, left: 0 }}>
+            <LineChart data={chartData} margin={{ top: 10, right: 10, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
               <XAxis
                 dataKey="label"
@@ -271,7 +278,7 @@ export function IncomeExpenseChart() {
               />
               <Tooltip
                 formatter={(v: number, name: string) => {
-                  const labels: Record<string, string> = { income: 'รายรับ', expense: 'รายจ่าย', net: 'สุทธิ' };
+                  const labels: Record<string, string> = { income: 'รายรับ', expense: 'รายจ่าย', cumNet: 'สุทธิสะสม' };
                   return [`฿${v.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`, labels[name] ?? name];
                 }}
                 contentStyle={{ fontSize: 12, borderRadius: 8 }}
@@ -279,14 +286,14 @@ export function IncomeExpenseChart() {
               <Legend
                 wrapperStyle={{ fontSize: 11 }}
                 formatter={(v) => {
-                  const labels: Record<string, string> = { income: 'รายรับ', expense: 'รายจ่าย', net: 'สุทธิ' };
+                  const labels: Record<string, string> = { income: 'รายรับ', expense: 'รายจ่าย', cumNet: 'สุทธิสะสม' };
                   return labels[v] ?? v;
                 }}
               />
               <ReferenceLine y={0} stroke="#9ca3af" strokeDasharray="2 2" />
               <Line type="monotone" dataKey="income" stroke="#10B981" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
               <Line type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-              <Line type="monotone" dataKey="net" stroke="#3B82F6" strokeWidth={2} strokeDasharray="4 2" dot={false} activeDot={{ r: 4 }} />
+              <Line type="monotone" dataKey="cumNet" stroke="#3B82F6" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         )}

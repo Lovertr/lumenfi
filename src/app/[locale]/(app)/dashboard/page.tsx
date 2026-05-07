@@ -9,6 +9,7 @@ import { getDashboardData } from '@/lib/queries/dashboard';
 import { materializeDueRecurring } from '@/lib/recurring';
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
 import { IncomeExpenseChart } from '@/components/dashboard/income-expense-chart';
+import { GoalProgressCard } from '@/components/dashboard/goal-progress-card';
 import { createClient } from '@/lib/supabase/server';
 import {
   TrendingUp,
@@ -136,17 +137,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         </Card>
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:gap-4">
-          <Card className="cursor-pointer transition-all hover:shadow-md">
-            <Link href="/networth">
-              <CardContent className="p-4 lg:p-5">
-                <p className="text-xs text-muted-foreground lg:text-sm">Net Worth</p>
-                <p className={`mt-1 text-lg font-bold lg:text-2xl ${data.netWorth < 0 ? 'text-destructive' : ''}`}>
-                  {formatTHB(data.netWorth)}
-                </p>
-                <p className="mt-1 text-[10px] text-muted-foreground">ดูรายละเอียด →</p>
-              </CardContent>
-            </Link>
-          </Card>
+          <GoalProgressCard goals={data.activeGoals} />
           <Card className="cursor-pointer transition-all hover:shadow-md">
             <Link href="/cashflow">
               <CardContent className="p-4 lg:p-5">
