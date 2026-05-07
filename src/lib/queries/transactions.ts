@@ -14,16 +14,29 @@ export interface Transaction {
   account?: { name: string; color: string } | null;
 }
 
-export async function getRecentTransactions(limit = 50): Promise<Transaction[]> {
+export interface TransactionFilter {
+  categoryId?: string;
+  type?: 'income' | 'expense' | 'transfer';
+  accountId?: string;
+}
+
+export async function getRecentTransactions(
+  limit = 50,
+  filter?: TransactionFilter
+): Promise<Transaction[]> {
   try {
     const supabase = createClient();
-    const { data, error } = await supabase
+    let query = supabase
       .from('transactions')
       .select(
         'id, type, amount, account_id, category_id, date, note, photo_url, ' +
           'category:categories(name, icon, color), ' +
           'account:accounts!transactions_account_id_fkey(name, color)'
-      )
+      );
+    if (filter?.categoryId) query = query.eq('category_id', filter.categoryId);
+    if (filter?.type) query = query.eq('type', filter.type);
+    if (filter?.accountId) query = query.eq('account_id', filter.accountId);
+    const { data, error } = await query
       .order('date', { ascending: false })
       .limit(limit);
 

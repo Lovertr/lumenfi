@@ -6,8 +6,9 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { formatTHB } from '@/lib/utils';
 import { getRecentTransactions, getMonthlyTotals } from '@/lib/queries/transactions';
-import { Plus, Wallet, ArrowLeft, Trash2, Camera } from 'lucide-react';
-import { deleteTransaction } from './actions';
+import { getCategories } from '@/lib/categories';
+import { TransactionFilters } from '@/components/transactions/transaction-filters';
+import { Plus, Wallet, ArrowLeft, Camera } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,14 +20,31 @@ function formatDate(dateStr: string, locale: string) {
   });
 }
 
-export default async function TransactionsPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function TransactionsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ category?: string; type?: string; account?: string }>;
+}) {
   const { locale } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations('Transactions');
 
-  const [transactions, totals] = await Promise.all([
-    getRecentTransactions(50),
+  const filterType =
+    sp.type === 'income' || sp.type === 'expense' || sp.type === 'transfer'
+      ? sp.type
+      : undefined;
+
+  const [transactions, totals, categories] = await Promise.all([
+    getRecentTransactions(50, {
+      categoryId: sp.category,
+      type: filterType,
+      accountId: sp.account,
+    }),
     getMonthlyTotals(),
+    getCategories(),
   ]);
 
   // Group by date
@@ -36,6 +54,8 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
     grouped[day] = grouped[day] || [];
     grouped[day].push(tx);
   }
+
+  const isFiltered = !!(sp.category || sp.type || sp.account);
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -90,6 +110,9 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
         </CardContent>
       </Card>
 
+      {/* Filters */}
+      <TransactionFilters categories={categories as any} />
+
       {/* Transaction list */}
       {transactions.length === 0 ? (
         <Card className="border-dashed">
@@ -97,14 +120,20 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <Wallet className="h-6 w-6" />
             </div>
-            <p className="font-semibold">{t('noTransactions')}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t('noTransactionsHint')}</p>
-            <Button asChild className="mt-4">
-              <Link href="/transactions/new">
-                <Plus className="h-4 w-4" />
-                {t('form.submit')}
-              </Link>
-            </Button>
+            <p className="font-semibold">
+              {isFiltered ? 'ไม่พบรายการตามตัวกรอง' : t('noTransactions')}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {isFiltered ? 'ลองเปลี่ยนตัวกรองหรือล้างตัวกรอง' : t('noTransactionsHint')}
+            </p>
+            {!isFiltered && (
+              <Button asChild className="mt-4">
+                <Link href="/transactions/new">
+                  <Plus className="h-4 w-4" />
+                  {t('form.submit')}
+                </Link>
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -129,7 +158,11 @@ export default async function TransactionsPage({ params }: { params: Promise<{ l
                     const fallbackLabel = isIncome ? 'Income' : isExpense ? 'Expense' : 'Transfer';
                     const fallbackIcon = isTransfer ? '🔄' : '💰';
                     return (
-                      <Link key={tx.id} href={`/transactions/${tx.id}/edit`} className="flex items-center gap-3 p-3 hover:bg-muted/40 transition-colors">
+                      <Link
+                        key={tx.id}
+                        href={`/transactions/${tx.id}/edit`}
+                        className="flex items-center gap-3 p-3 hover:bg-muted/40 transition-colors"
+                      >
                         <div
                           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xl"
                           style={{
