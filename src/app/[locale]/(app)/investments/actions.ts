@@ -27,6 +27,10 @@ const createSchema = z.object({
   avg_cost: z.number().min(0),
   current_price: z.number().min(0).nullable().optional(),
   currency: z.string().default('THB'),
+  is_tax_saving: z.boolean().default(false),
+  tax_fund_type: z.enum(['rmf', 'ssf', 'ssfx', 'pvd', 'gpf']).nullable().optional(),
+  lock_in_until: z.string().nullable().optional(),
+  goal_id: z.string().uuid().nullable().optional(),
 });
 
 export async function createInvestment(_prev: unknown, formData: FormData) {
@@ -45,6 +49,10 @@ export async function createInvestment(_prev: unknown, formData: FormData) {
     avg_cost: num('avg_cost'),
     current_price: num('current_price') || null,
     currency: formData.get('currency') || 'THB',
+    is_tax_saving: formData.get('is_tax_saving') === 'true',
+    tax_fund_type: (formData.get('tax_fund_type') as string) || null,
+    lock_in_until: (formData.get('lock_in_until') as string) || null,
+    goal_id: (formData.get('goal_id') as string) || null,
   });
 
   if (!parsed.success) {

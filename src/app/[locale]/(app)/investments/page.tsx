@@ -8,12 +8,14 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { formatTHB } from '@/lib/utils';
 import { investmentTypeConfig } from '@/components/investments/investment-type-config';
 import { getPortfolioMetrics } from '@/lib/queries/portfolio';
+import { getTaxFundSummary } from '@/lib/queries/tax-saving';
 import { PortfolioHero } from '@/components/investments/portfolio-hero';
 import { AssetAllocation } from '@/components/investments/asset-allocation';
 import { TopPerformers } from '@/components/investments/top-performers';
 import { RefreshPricesButton } from '@/components/investments/refresh-prices-button';
 import { AIAdvisor } from '@/components/investments/ai-advisor';
 import { SETBenchmark } from '@/components/investments/set-benchmark';
+import { TaxSavingCard } from '@/components/investments/tax-saving-card';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +24,11 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
   setRequestLocale(locale);
   const t = await getTranslations('Investments');
 
-  const metrics = await getPortfolioMetrics();
+  const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10);
+  const [metrics, taxSummary] = await Promise.all([
+    getPortfolioMetrics(),
+    getTaxFundSummary(yearStart),
+  ]);
   const { holdings, totalValue, totalCost, totalPL, totalPLPercent, valueByType, valueByCurrency, valueByMarket, topGainers, topLosers } = metrics;
 
   return (
@@ -78,6 +84,12 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
             holdingsCount={holdings.length}
           />
 
+          <TaxSavingCard
+            totalValue={taxSummary.totalValueAll}
+            totalContributed={taxSummary.totalContributedThisYear}
+            count={taxSummary.holdings.length}
+          />
+
           <AssetAllocation
             valueByType={valueByType}
             valueByCurrency={valueByCurrency}
@@ -85,10 +97,8 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
             totalValue={totalValue}
           />
 
-          {/* SET Benchmark */}
           <SETBenchmark portfolioPLPercent={totalPLPercent} />
 
-          {/* AI Advisor */}
           <AIAdvisor />
 
           <TopPerformers gainers={topGainers} losers={topLosers} />

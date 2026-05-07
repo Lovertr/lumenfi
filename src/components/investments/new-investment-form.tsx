@@ -22,11 +22,13 @@ function SubmitBtn() {
   );
 }
 
-export function NewInvestmentForm() {
+export function NewInvestmentForm({ defaultTaxSaving = false }: { defaultTaxSaving?: boolean }) {
   const t = useTranslations('Investments.form');
   const tType = useTranslations('Investments.types');
   const [state, action] = useFormState<State, FormData>(createInvestment, null);
-  const [type, setType] = useState<InvestmentType>('thai_stock');
+  const [type, setType] = useState<InvestmentType>(defaultTaxSaving ? 'mutual_fund' : 'thai_stock');
+  const [isTaxSaving, setIsTaxSaving] = useState(defaultTaxSaving);
+  const [taxFundType, setTaxFundType] = useState<'rmf' | 'ssf' | 'ssfx' | 'pvd' | 'gpf'>('ssf');
 
   return (
     <form action={action} className="space-y-5">
@@ -116,6 +118,54 @@ export function NewInvestmentForm() {
           <option value="EUR">EUR (€)</option>
           <option value="JPY">JPY (¥)</option>
         </select>
+      </div>
+
+      {/* Tax-saving toggle */}
+      <div className="space-y-3 rounded-lg border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-4 dark:bg-emerald-950/20">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            name="is_tax_saving"
+            value="true"
+            checked={isTaxSaving}
+            onChange={(e) => setIsTaxSaving(e.target.checked)}
+            className="h-4 w-4 rounded border-emerald-300 accent-emerald-600"
+          />
+          <div className="flex-1">
+            <p className="text-sm font-semibold">นี่คือกองทุนลดหย่อนภาษี?</p>
+            <p className="text-[11px] text-muted-foreground">RMF, SSF, PVD, กบข.</p>
+          </div>
+        </label>
+
+        {isTaxSaving && (
+          <div className="space-y-3 border-t border-emerald-200 pt-3">
+            <div>
+              <Label htmlFor="tax_fund_type" className="text-xs">ประเภทกองทุน</Label>
+              <select
+                id="tax_fund_type"
+                name="tax_fund_type"
+                value={taxFundType}
+                onChange={(e) => setTaxFundType(e.target.value as any)}
+                className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
+              >
+                <option value="ssf">SSF (Super Savings Fund)</option>
+                <option value="rmf">RMF (Retirement Mutual Fund)</option>
+                <option value="ssfx">SSF Extra</option>
+                <option value="pvd">PVD (กองทุนสำรองเลี้ยงชีพ)</option>
+                <option value="gpf">กบข. (กองทุนบำเหน็จบำนาญข้าราชการ)</option>
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="lock_in_until" className="text-xs">วันที่ปลดล็อก (ไม่บังคับ)</Label>
+              <Input id="lock_in_until" name="lock_in_until" type="date" className="h-10 text-sm" />
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                {taxFundType === 'ssf' && '*SSF ต้องถือ 10 ปีนับจากวันที่ซื้อ'}
+                {taxFundType === 'rmf' && '*RMF ต้องถือ 5 ปี + อายุ 55 ปีขึ้นไป'}
+                {(taxFundType === 'pvd' || taxFundType === 'gpf') && '*ตามเงื่อนไขของกองทุน'}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {state?.error && (
