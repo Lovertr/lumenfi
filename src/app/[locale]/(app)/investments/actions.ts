@@ -153,7 +153,6 @@ export async function refreshInvestmentPrices() {
 
 async function fetchYahooPrice(symbol: string, type: string): Promise<number | null> {
   try {
-    // Thai stocks need .BK suffix on Yahoo
     let yfSymbol = symbol;
     if (type === 'thai_stock' && !symbol.includes('.')) yfSymbol = `${symbol}.BK`;
     if (type === 'crypto' && !symbol.includes('-')) yfSymbol = `${symbol}-USD`;
@@ -169,5 +168,53 @@ async function fetchYahooPrice(symbol: string, type: string): Promise<number | n
     return typeof price === 'number' ? price : null;
   } catch {
     return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// Fetch historical price data for chart display
+// ─────────────────────────────────────────────────────────
+
+type Range = '1mo' | '3mo' | '6mo' | '1y' | '5y';
+
+export async function fetchPriceHistory(
+  symbol: string,
+  type: string,
+  range: Range = '6mo',
+): Promise<{ ok: boolean; data: { date: string; close: number }[]; error?: string }> {
+  if (!symbol) return { ok: false, data: [], error: 'no_symbol' };
+  try {
+    let yfSymbol = symbol;
+    if (type === 'thai_stock' && !symbol.includes('.')) yfSymbol = `${symbol}.BK`;
+    if (type === 'crypto' && !symbol.includes('-')) yfSymbol = `${symbol}-USD`;
+
+    const interval = range === '5y' ? '1wk' : '1d';
+
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
+      yfSymbol,
+    )}?interval=${interval}&range=${range}`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      next: { revalidate: 1800 },
+    });
+    if (!res.ok) return { ok: false, data: [], error: 'fetch_failed' };
+    const data = await res.json();
+    const result = data?.chart?.result?.[0];
+    const timestamps: number[] | undefined = result?.timestamp;
+    const closes: (number | null)[] | undefined = result?.indicators?.quote?.[0]?.close;
+    if (!timestamps || !closes) return { ok: false, data: [], error: 'no_data' };
+
+    const series = timestamps
+      .map((t, i) => ({
+        date: new Date(t * 1000).toISOString().slice(0, 10),
+        close: closes[i],
+      }))
+      .filter((p): p is { date: string; close: number } => typeof p.close === 'number')
+      .map(p => ({ date: p.date, close: Number(p.close.toFixed(2)) }));
+
+    return { ok: true, data: series };
+  } catch (e: any) {
+    console.error('fetchPriceHistory:', e?.message);
+    return { ok: false, data: [], error: 'error' };
   }
 }

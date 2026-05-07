@@ -24,7 +24,7 @@ async function getGoals() {
   const { data } = await supabase
     .from('goals')
     .select('id, name, icon')
-    .eq('is_completed', false)
+    .eq('status', 'active')
     .order('created_at', { ascending: false });
   return data ?? [];
 }
