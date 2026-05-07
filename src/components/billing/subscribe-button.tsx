@@ -32,7 +32,7 @@ export function SubscribeButton() {
             cycle === 'monthly' ? 'bg-background shadow-sm' : 'text-muted-foreground'
           }`}
         >
-          รายเดือน · ฿129
+          รายเดือน · ฿149
         </button>
         <button
           type="button"
@@ -41,7 +41,7 @@ export function SubscribeButton() {
             cycle === 'yearly' ? 'bg-background shadow-sm' : 'text-muted-foreground'
           }`}
         >
-          รายปี · ฿1,290 <span className="text-success">-17%</span>
+          รายปี · ฿1,490 <span className="text-success">-17%</span>
         </button>
       </div>
 
@@ -56,7 +56,7 @@ export function SubscribeButton() {
       </Button>
 
       <p className="text-center text-[10px] text-muted-foreground">
-        ยกเลิกได้ทุกเมื่อ · charge ครั้งแรก {cycle === 'monthly' ? '฿129' : '฿1,290'} หลังครบ 14 วัน
+        ยกเลิกได้ทุกเมื่อ · charge ครั้งแรก {cycle === 'monthly' ? '฿149' : '฿1,490'} หลังครบ 14 วัน
       </p>
 
       {error && (

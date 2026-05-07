@@ -12,8 +12,8 @@ const PACK_PRICES: Record<number, number> = {
 };
 
 const SUBSCRIPTION_PRICES = {
-  monthly: 129,
-  yearly: 1290,
+  monthly: 149,
+  yearly: 1490,
 };
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://lumenfi.projectostech.com';

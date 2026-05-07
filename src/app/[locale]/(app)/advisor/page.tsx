@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { ADVISOR_LABELS, type AdvisorDomain } from '@/lib/advisor/prompts';
 import { DomainCard } from '@/components/advisor/domain-card';
+import { QuotaBanner } from '@/components/advisor/quota-banner';
+import { checkAIAccess } from '@/lib/billing/access';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +27,8 @@ export default async function AdvisorPage({ params }: { params: Promise<{ locale
         .maybeSingle()
     : { data: null };
   const hasAIKey = !!(profile?.ai_provider && profile?.ai_api_key_encrypted);
+
+  const access = await checkAIAccess('advisor');
 
   // Recent reports
   const { data: reports } = await supabase
@@ -70,6 +74,8 @@ export default async function AdvisorPage({ params }: { params: Promise<{ locale
           </CardContent>
         </Card>
       )}
+
+      <QuotaBanner via={access.via} quota={access.quota} feature="advisor" />
 
       {/* Hero — comprehensive */}
       <DomainCard

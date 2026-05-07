@@ -1,6 +1,10 @@
 // ─────────────────────────────────────────────────────────
-// AI access checker — figures out whether user can call AI,
-// and via what billing path (subscription / credits / BYO key)
+// AI access checker — figures out whether user can call AI
+// 3-tier model:
+//  1. Pro subscription → unlimited Lumenfi AI
+//  2. Pay-as-you-go credits (advisor only) → Lumenfi AI + deduct
+//  3. BYO key → user's encrypted key (unlimited)
+//  4. Free plan with limited Lumenfi AI quota (5 chat/day, 1 advisor/month)
 // ─────────────────────────────────────────────────────────
 
 import { createClient } from '@/lib/supabase/server';
@@ -13,38 +17,40 @@ export interface AIAccess {
   allowed: boolean;
   via: BillingVia | null;
   reason?: string;
-  // What model + provider to use
   provider?: AIProvider;
   apiKey?: string;
-  // For UI — current quota state
   quota?: {
     used: number;
-    limit: number | null; // null = unlimited
+    limit: number | null;
     remaining: number | null;
     period: 'day' | 'month';
   };
-  // Available actions to fix (no-quota / no-key states)
   upgradeUrl?: string;
 }
 
-// Cost estimates per feature (USD per call) — used for analytics
+// Free plan quotas (per user) — using Lumenfi key
+const FREE_QUOTAS = {
+  chat_per_day: 5,
+  advisor_per_month: 1,
+};
+
 export const FEATURE_COST_USD: Record<AIFeature, number> = {
-  chat: 0.005,      // ~30 chat × $0.005 = $0.15/mo
-  advisor: 0.03,    // longer context + output
-  secretary: 0.002, // short summary
-  vision: 0.01,    // image processing
+  chat: 0.005,
+  advisor: 0.03,
+  secretary: 0.002,
+  vision: 0.01,
 };
 
 interface UserCtx {
   userId: string;
   hasBYOKey: boolean;
   byoProvider: AIProvider | null;
-  byoApiKeyEncrypted: string | null;
   subscription: {
     plan_code: string;
     status: string;
     current_period_end: string | null;
     has_lumenfi_ai: boolean;
+    has_secretary: boolean;
     advisor_reports_per_month: number | null;
     ai_chat_per_day: number | null;
   } | null;
@@ -64,7 +70,7 @@ async function loadUserCtx(): Promise<UserCtx | null> {
       .maybeSingle(),
     supabase
       .from('user_subscriptions')
-      .select('plan_code, status, current_period_end, plan:subscription_plans(has_lumenfi_ai, advisor_reports_per_month, ai_chat_per_day)')
+      .select('plan_code, status, current_period_end, plan:subscription_plans(has_lumenfi_ai, has_secretary, advisor_reports_per_month, ai_chat_per_day)')
       .eq('user_id', user.id)
       .maybeSingle(),
     supabase
@@ -79,13 +85,13 @@ async function loadUserCtx(): Promise<UserCtx | null> {
     userId: user.id,
     hasBYOKey: !!(profileRes.data?.ai_provider && profileRes.data?.ai_api_key_encrypted),
     byoProvider: (profileRes.data?.ai_provider as AIProvider) ?? null,
-    byoApiKeyEncrypted: profileRes.data?.ai_api_key_encrypted ?? null,
     subscription: sub
       ? {
           plan_code: sub.plan_code,
           status: sub.status,
           current_period_end: sub.current_period_end,
           has_lumenfi_ai: sub.plan?.has_lumenfi_ai ?? false,
+          has_secretary: sub.plan?.has_secretary ?? false,
           advisor_reports_per_month: sub.plan?.advisor_reports_per_month ?? null,
           ai_chat_per_day: sub.plan?.ai_chat_per_day ?? null,
         }
@@ -94,8 +100,8 @@ async function loadUserCtx(): Promise<UserCtx | null> {
   };
 }
 
-function isSubscriptionActive(sub: UserCtx['subscription']): boolean {
-  if (!sub) return false;
+function isProActive(sub: UserCtx['subscription']): boolean {
+  if (!sub || sub.plan_code !== 'pro') return false;
   if (!['trial', 'active'].includes(sub.status)) return false;
   if (sub.current_period_end && new Date(sub.current_period_end) < new Date()) return false;
   return true;
@@ -116,71 +122,26 @@ async function countUsage(userId: string, feature: AIFeature, period: 'day' | 'm
   return count ?? 0;
 }
 
-/**
- * Determine if user can call AI for a given feature.
- * Order of preference:
- * 1. Active subscription with Lumenfi AI → use Lumenfi key
- * 2. Pay-as-you-go credits (advisor only) → use Lumenfi key, deduct credit
- * 3. BYO key → use user's encrypted key
- * 4. Free trial counter (limited use)
- * 5. Block + show paywall
- */
 export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
   const ctx = await loadUserCtx();
   if (!ctx) return { allowed: false, via: null, reason: 'unauthorized' };
 
-  // ─── Path 1: Active subscription with Lumenfi AI
-  if (isSubscriptionActive(ctx.subscription) && ctx.subscription?.has_lumenfi_ai) {
-    const sub = ctx.subscription!;
-
-    // Check chat daily limit
-    if (feature === 'chat' && sub.ai_chat_per_day !== null) {
-      const usedToday = await countUsage(ctx.userId, 'chat', 'day');
-      if (usedToday >= sub.ai_chat_per_day) {
-        return {
-          allowed: false,
-          via: 'subscription',
-          reason: 'daily_limit_exceeded',
-          quota: { used: usedToday, limit: sub.ai_chat_per_day, remaining: 0, period: 'day' },
-        };
-      }
-    }
-
-    // Check advisor monthly limit
-    if (feature === 'advisor' && sub.advisor_reports_per_month !== null) {
-      const usedThisMonth = await countUsage(ctx.userId, 'advisor', 'month');
-      if (usedThisMonth >= sub.advisor_reports_per_month) {
-        return {
-          allowed: false,
-          via: 'subscription',
-          reason: 'monthly_limit_exceeded',
-          quota: {
-            used: usedThisMonth,
-            limit: sub.advisor_reports_per_month,
-            remaining: 0,
-            period: 'month',
-          },
-        };
-      }
-    }
-
+  // ─── Path 1: Active Pro subscription → unlimited Lumenfi AI
+  if (isProActive(ctx.subscription)) {
     return {
       allowed: true,
       via: 'subscription',
       provider: getLumenfiProvider(),
       apiKey: getLumenfiKey(),
-      quota: feature === 'advisor' && sub.advisor_reports_per_month !== null
-        ? {
-            used: await countUsage(ctx.userId, 'advisor', 'month'),
-            limit: sub.advisor_reports_per_month,
-            remaining: sub.advisor_reports_per_month - await countUsage(ctx.userId, 'advisor', 'month'),
-            period: 'month',
-          }
-        : undefined,
     };
   }
 
-  // ─── Path 2: Pay-as-you-go credits (advisor only)
+  // ─── Path 2: BYO key (works for ALL features, unlimited)
+  if (ctx.hasBYOKey && ctx.byoProvider) {
+    return { allowed: true, via: 'byo', provider: ctx.byoProvider };
+  }
+
+  // ─── Path 3: Pay-as-you-go credits (advisor only)
   if (feature === 'advisor' && ctx.creditBalance > 0) {
     return {
       allowed: true,
@@ -191,21 +152,84 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
     };
   }
 
-  // ─── Path 3: BYO key
-  if (ctx.hasBYOKey && ctx.byoProvider && ctx.byoApiKeyEncrypted) {
+  // ─── Path 4: Free quota with Lumenfi AI (limited)
+
+  // Secretary is Pro-only
+  if (feature === 'secretary') {
     return {
-      allowed: true,
-      via: 'byo',
-      provider: ctx.byoProvider,
-      // Decrypt happens at call site
+      allowed: false,
+      via: null,
+      reason: 'secretary_pro_only',
+      upgradeUrl: '/pricing',
     };
   }
 
-  // ─── Path 4 / 5: blocked, no access
+  // Chat: 5 per day on Free
+  if (feature === 'chat') {
+    const usedToday = await countUsage(ctx.userId, 'chat', 'day');
+    if (usedToday >= FREE_QUOTAS.chat_per_day) {
+      return {
+        allowed: false,
+        via: null,
+        reason: 'free_chat_quota_exceeded',
+        quota: { used: usedToday, limit: FREE_QUOTAS.chat_per_day, remaining: 0, period: 'day' },
+        upgradeUrl: '/pricing',
+      };
+    }
+    return {
+      allowed: true,
+      via: 'free',
+      provider: getLumenfiProvider(),
+      apiKey: getLumenfiKey(),
+      quota: {
+        used: usedToday,
+        limit: FREE_QUOTAS.chat_per_day,
+        remaining: FREE_QUOTAS.chat_per_day - usedToday,
+        period: 'day',
+      },
+    };
+  }
+
+  // Advisor: 1 per month on Free
+  if (feature === 'advisor') {
+    const usedThisMonth = await countUsage(ctx.userId, 'advisor', 'month');
+    if (usedThisMonth >= FREE_QUOTAS.advisor_per_month) {
+      return {
+        allowed: false,
+        via: null,
+        reason: 'free_advisor_quota_exceeded',
+        quota: { used: usedThisMonth, limit: FREE_QUOTAS.advisor_per_month, remaining: 0, period: 'month' },
+        upgradeUrl: '/pricing',
+      };
+    }
+    return {
+      allowed: true,
+      via: 'free',
+      provider: getLumenfiProvider(),
+      apiKey: getLumenfiKey(),
+      quota: {
+        used: usedThisMonth,
+        limit: FREE_QUOTAS.advisor_per_month,
+        remaining: FREE_QUOTAS.advisor_per_month - usedThisMonth,
+        period: 'month',
+      },
+    };
+  }
+
+  // Vision (OCR scan) — Free with reasonable limit, BYO unlimited
+  if (feature === 'vision') {
+    return {
+      allowed: true,
+      via: 'free',
+      provider: getLumenfiProvider(),
+      apiKey: getLumenfiKey(),
+    };
+  }
+
   return {
     allowed: false,
     via: null,
-    reason: feature === 'advisor' ? 'no_advisor_quota' : 'no_ai_access',
+    reason: 'no_ai_access',
     upgradeUrl: '/pricing',
   };
 }
@@ -217,3 +241,5 @@ function getLumenfiKey(): string {
 function getLumenfiProvider(): AIProvider {
   return (process.env.LUMENFI_AI_PROVIDER as AIProvider) ?? 'anthropic';
 }
+
+export { FREE_QUOTAS };

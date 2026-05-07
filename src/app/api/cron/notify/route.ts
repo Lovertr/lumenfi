@@ -406,16 +406,25 @@ export async function GET(req: Request) {
   }
 
 
-  // ─── AI Financial Secretary — proactive insights ─────────
+  // ─── AI Financial Secretary — Pro subscribers only ────────
   let secretaryAlertsSent = 0;
   try {
     const { detectInsightsForUser, pickTopInsight } = await import('@/lib/advisor/secretary');
-    const { data: allUsers } = await supabase.from('profiles').select('id, secretary_last_notified_on');
-    for (const u of allUsers ?? []) {
-      // Skip if already sent today
-      if ((u as any).secretary_last_notified_on === bkkDateStr) continue;
+    // Only users with active Pro subscription get the secretary
+    const { data: proUsers } = await supabase
+      .from('user_subscriptions')
+      .select('user_id, profiles!inner(secretary_last_notified_on)')
+      .eq('plan_code', 'pro')
+      .in('status', ['trial', 'active'])
+      .gte('current_period_end', new Date().toISOString());
 
-      const insights = await detectInsightsForUser((u as any).id);
+    for (const u of (proUsers ?? []) as any[]) {
+      const userId = u.user_id;
+      const lastSent = u.profiles?.secretary_last_notified_on;
+      // Skip if already sent today
+      if (lastSent === bkkDateStr) continue;
+
+      const insights = await detectInsightsForUser(userId);
       const top = pickTopInsight(insights);
       if (!top) continue;
 
@@ -425,7 +434,7 @@ export async function GET(req: Request) {
       const { data: subs } = await supabase
         .from('push_subscriptions')
         .select('id, endpoint, p256dh, auth')
-        .eq('user_id', (u as any).id);
+        .eq('user_id', userId);
       if (!subs || subs.length === 0) continue;
 
       const payload = JSON.stringify({
@@ -456,7 +465,7 @@ export async function GET(req: Request) {
         await supabase
           .from('profiles')
           .update({ secretary_last_notified_on: bkkDateStr })
-          .eq('id', (u as any).id);
+          .eq('id', userId);
       }
     }
   } catch (e) {

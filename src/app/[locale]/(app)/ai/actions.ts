@@ -4,9 +4,9 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { encrypt, decrypt } from '@/lib/encryption';
-import { chat as aiChat } from '@/lib/ai';
 import { buildSuperContext } from '@/lib/ai/super-context';
 import { buildSystemPrompt } from '@/lib/ai/prompts';
+import { callAIViaGateway, PaywallError } from '@/lib/billing/gateway';
 import type { ChatMessage, AIProvider } from '@/lib/ai';
 
 const VALID_PROVIDERS = ['anthropic', 'openai', 'gemini', 'openrouter'] as const;
@@ -99,24 +99,12 @@ export async function sendChatMessage(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('ai_provider, ai_api_key_encrypted, ai_privacy_mode')
+    .select('ai_privacy_mode')
     .eq('id', user.id)
     .single();
 
-  if (!profile?.ai_provider || !profile?.ai_api_key_encrypted) {
-    return { error: 'no_key_configured' };
-  }
-
-  let apiKey: string;
-  try {
-    apiKey = await decrypt(profile.ai_api_key_encrypted);
-    if (!apiKey) return { error: 'decryption_failed' };
-  } catch {
-    return { error: 'decryption_failed' };
-  }
-
   // Build comprehensive context (rich snapshot covering all 12+ domains)
-  const context = await buildSuperContext(profile.ai_privacy_mode ?? true);
+  const context = await buildSuperContext(profile?.ai_privacy_mode ?? true);
   const systemPrompt = buildSystemPrompt(locale, context);
 
   const messages: ChatMessage[] = [
@@ -125,9 +113,19 @@ export async function sendChatMessage(
   ];
 
   try {
-    const result = await aiChat(profile.ai_provider as AIProvider, apiKey, messages, systemPrompt);
+    const result = await callAIViaGateway({
+      feature: 'chat',
+      systemPrompt,
+      messages,
+    });
     return { reply: result.text };
   } catch (e: any) {
+    if (e instanceof PaywallError) {
+      // Map paywall codes → friendly errors
+      if (e.code === 'free_chat_quota_exceeded') return { error: 'quota_chat_exceeded' };
+      if (e.code === 'no_ai_access' || e.code === 'no_byo_key') return { error: 'no_key_configured' };
+      return { error: e.code };
+    }
     console.error('sendChatMessage:', e);
     return { error: e?.message?.slice(0, 200) ?? 'ai_error' };
   }
