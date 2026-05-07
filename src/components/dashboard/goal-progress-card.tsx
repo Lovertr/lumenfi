@@ -77,23 +77,29 @@ export function GoalProgressCard({ goals }: { goals: Goal[] }) {
   return (
     <Card className="relative overflow-hidden">
       <CardContent className="p-4 lg:p-5">
-        {/* Header with goal picker (if multiple) */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
+        {/* Header — clickable to switch goal (if multiple) */}
+        {goals.length > 1 ? (
+          <button
+            type="button"
+            onClick={() => setPickerOpen(!pickerOpen)}
+            className="flex w-full items-center justify-between gap-2 rounded-md -mx-1 px-1 py-0.5 hover:bg-muted/40"
+            aria-label="เลือกเป้าหมาย"
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              {goal.icon && <span className="text-base">{goal.icon}</span>}
+              <p className="truncate text-xs font-medium">{goal.name}</p>
+            </div>
+            <span className="flex shrink-0 items-center gap-0.5 text-[10px] font-medium text-primary">
+              เปลี่ยน
+              <ChevronDown className="h-3 w-3" />
+            </span>
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
             {goal.icon && <span className="text-base">{goal.icon}</span>}
             <p className="truncate text-xs font-medium">{goal.name}</p>
           </div>
-          {goals.length > 1 && (
-            <button
-              type="button"
-              onClick={() => setPickerOpen(!pickerOpen)}
-              className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted/40"
-              aria-label="เลือกเป้าหมาย"
-            >
-              <ChevronDown className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        )}
 
         {/* Big percentage */}
         <p className="mt-1 text-2xl font-bold lg:text-3xl">
