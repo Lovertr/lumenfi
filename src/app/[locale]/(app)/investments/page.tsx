@@ -181,23 +181,26 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
             return (
               <Link key={inv.id} href={`/investments/${inv.id}/edit`}>
                 <Card className="transition-all hover:border-primary/40 hover:shadow-sm">
-                  <CardContent className="flex items-center gap-3 p-4">
-                    <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl ${cfg.bg}`}>
+                  <CardContent className="flex items-center gap-2 p-3 sm:gap-3 sm:p-4">
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg sm:h-11 sm:w-11 sm:text-xl ${cfg.bg}`}>
                       {cfg.icon}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">
-                        {inv.symbol && <span className="font-mono">{inv.symbol} · </span>}
-                        {inv.name}
+                        {inv.symbol ? (
+                          <span className="font-mono">{inv.symbol}</span>
+                        ) : (
+                          <span className="text-sm">{inv.name}</span>
+                        )}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="truncate text-[11px] text-muted-foreground">
                         {qty} × {formatTHB(Number(inv.avg_cost))}
                         {inv.broker_account && ` · ${inv.broker_account}`}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold">{formatTHB(value)}</p>
-                      <p className={`text-xs ${invPL >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    <div className="shrink-0 text-right">
+                      <p className="text-sm font-bold sm:text-base">{formatTHB(value)}</p>
+                      <p className={`text-[11px] ${invPL >= 0 ? 'text-success' : 'text-destructive'}`}>
                         {invPL >= 0 ? '+' : ''}
                         {invPLPercent.toFixed(1)}%
                       </p>
