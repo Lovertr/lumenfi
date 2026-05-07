@@ -41,3 +41,6 @@ next-env.d.ts
 .vscode/
 .idea/
 *.swp
+
+# OAuth client secrets — never commit
+client_secret_*.json
