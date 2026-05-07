@@ -12,6 +12,12 @@ import { cn } from '@/lib/utils';
 
 type State = { error?: string } | null;
 
+interface Goal {
+  id: string;
+  name: string;
+  icon: string | null;
+}
+
 function SubmitBtn() {
   const t = useTranslations('Investments.form');
   const { pending } = useFormStatus();
@@ -22,13 +28,22 @@ function SubmitBtn() {
   );
 }
 
-export function NewInvestmentForm({ defaultTaxSaving = false }: { defaultTaxSaving?: boolean }) {
+export function NewInvestmentForm({
+  defaultTaxSaving = false,
+  goals = [],
+  defaultGoalId = null,
+}: {
+  defaultTaxSaving?: boolean;
+  goals?: Goal[];
+  defaultGoalId?: string | null;
+}) {
   const t = useTranslations('Investments.form');
   const tType = useTranslations('Investments.types');
   const [state, action] = useFormState<State, FormData>(createInvestment, null);
   const [type, setType] = useState<InvestmentType>(defaultTaxSaving ? 'mutual_fund' : 'thai_stock');
   const [isTaxSaving, setIsTaxSaving] = useState(defaultTaxSaving);
   const [taxFundType, setTaxFundType] = useState<'rmf' | 'ssf' | 'ssfx' | 'pvd' | 'gpf'>('ssf');
+  const [goalId, setGoalId] = useState<string>(defaultGoalId ?? '');
 
   return (
     <form action={action} className="space-y-5">
@@ -119,6 +134,40 @@ export function NewInvestmentForm({ defaultTaxSaving = false }: { defaultTaxSavi
           <option value="JPY">JPY (¥)</option>
         </select>
       </div>
+
+      {/* Goal linking */}
+      {goals.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="goal_id">เชื่อมกับเป้าหมาย (ไม่บังคับ)</Label>
+          <input type="hidden" name="goal_id" value={goalId} />
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => setGoalId('')}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                goalId === '' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background hover:bg-muted/40'
+              }`}
+            >
+              — ไม่ผูก —
+            </button>
+            {goals.map((g) => (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() => setGoalId(g.id)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  goalId === g.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background hover:bg-muted/40'
+                }`}
+              >
+                {g.icon ?? '🎯'} {g.name}
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            {goalId ? '✓ มูลค่าการลงทุนนี้จะนับรวมความก้าวหน้าของเป้าหมาย' : 'เลือกเป้าหมายเพื่อให้การลงทุนนี้นับเป็นความก้าวหน้า'}
+          </p>
+        </div>
+      )}
 
       {/* Tax-saving toggle */}
       <div className="space-y-3 rounded-lg border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-4 dark:bg-emerald-950/20">

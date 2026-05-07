@@ -7,7 +7,8 @@ import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { formatTHB } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/server';
 import { getAccountBalanceMap } from '@/lib/queries/balances';
-import { Plus, Target, ArrowLeft, Pencil } from 'lucide-react';
+import { getGoalInvestmentMap } from '@/lib/queries/goal-investments';
+import { Plus, Target, ArrowLeft, Pencil, TrendingUp } from 'lucide-react';
 import { QuickContribute } from '@/components/goals/quick-contribute';
 
 export const dynamic = 'force-dynamic';
@@ -60,7 +61,11 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
   setRequestLocale(locale);
   const t = await getTranslations('Goals');
 
-  const [goals, accountBalances] = await Promise.all([getGoals(), getAccountBalances()]);
+  const [goals, accountBalances, investmentMap] = await Promise.all([
+    getGoals(),
+    getAccountBalances(),
+    getGoalInvestmentMap(),
+  ]);
 
   return (
     <div className="mx-auto max-w-5xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -109,9 +114,12 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
           {goals.map((goal) => {
             const target = Number(goal.target_amount);
             const isLinked = goal.linked_account_ids && goal.linked_account_ids.length > 0;
-            const current = isLinked
+            const baseCurrent = isLinked
               ? goal.linked_account_ids!.reduce((s, id) => s + (accountBalances[id] ?? 0), 0)
               : Number(goal.current_amount);
+            const invContribution = investmentMap[goal.id]?.totalValueTHB ?? 0;
+            const invCount = investmentMap[goal.id]?.count ?? 0;
+            const current = baseCurrent + invContribution;
             const percent = target > 0 ? Math.min(100, (current / target) * 100) : 0;
             const remaining = Math.max(0, target - current);
             const months = monthsBetween(goal.deadline);
@@ -155,6 +163,12 @@ export default async function GoalsPage({ params }: { params: Promise<{ locale: 
                           </span>
                         ) : null}
                       </div>
+                      {invCount > 0 && (
+                        <div className="mt-1.5 flex items-center gap-1.5 rounded-md bg-primary/5 px-2 py-1 text-[10px] text-primary">
+                          <TrendingUp className="h-3 w-3" />
+                          <span>การลงทุน {invCount} รายการ มูลค่า {formatTHB(invContribution)}</span>
+                        </div>
+                      )}
                     </div>
                   </Link>
                   {!isLinked && (

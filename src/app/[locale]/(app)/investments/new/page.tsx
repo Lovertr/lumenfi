@@ -4,22 +4,34 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { NewInvestmentForm } from '@/components/investments/new-investment-form';
+import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
+
+async function getActiveGoals() {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('goals')
+    .select('id, name, icon')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
+  return data ?? [];
+}
 
 export default async function NewInvestmentPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ tax_saving?: string }>;
+  searchParams: Promise<{ tax_saving?: string; goal?: string }>;
 }) {
   const { locale } = await params;
-  const { tax_saving } = await searchParams;
+  const { tax_saving, goal } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations('Investments');
 
   const defaultTaxSaving = tax_saving === '1';
+  const goals = await getActiveGoals();
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -41,7 +53,11 @@ export default async function NewInvestmentPage({
 
       <Card>
         <CardContent className="p-5">
-          <NewInvestmentForm defaultTaxSaving={defaultTaxSaving} />
+          <NewInvestmentForm
+            defaultTaxSaving={defaultTaxSaving}
+            goals={goals as any}
+            defaultGoalId={goal ?? null}
+          />
         </CardContent>
       </Card>
     </div>

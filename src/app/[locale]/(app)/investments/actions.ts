@@ -112,6 +112,10 @@ export async function updateInvestment(_prev: unknown, formData: FormData) {
       avg_cost: num('avg_cost'),
       current_price: num('current_price') || null,
       currency: (formData.get('currency') as string) || 'THB',
+      goal_id: (formData.get('goal_id') as string) || null,
+      is_tax_saving: formData.get('is_tax_saving') === 'true',
+      tax_fund_type: (formData.get('tax_fund_type') as string) || null,
+      lock_in_until: (formData.get('lock_in_until') as string) || null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)

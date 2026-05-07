@@ -10,6 +10,16 @@ import { deleteInvestment } from '@/app/[locale]/(app)/investments/actions';
 
 export const dynamic = 'force-dynamic';
 
+async function getActiveGoals() {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('goals')
+    .select('id, name, icon')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
+  return data ?? [];
+}
+
 export default async function EditInvestmentPage({
   params,
 }: {
@@ -19,11 +29,10 @@ export default async function EditInvestmentPage({
   setRequestLocale(locale);
 
   const supabase = createClient();
-  const { data: inv } = await supabase
-    .from('investments')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
+  const [{ data: inv }, goals] = await Promise.all([
+    supabase.from('investments').select('*').eq('id', id).maybeSingle(),
+    getActiveGoals(),
+  ]);
 
   if (!inv) notFound();
 
@@ -45,6 +54,7 @@ export default async function EditInvestmentPage({
         <CardContent className="p-5">
           <InvestmentForm
             mode="edit"
+            goals={goals as any}
             defaults={{
               id: inv.id,
               name: inv.name,
@@ -55,6 +65,10 @@ export default async function EditInvestmentPage({
               avg_cost: Number(inv.avg_cost),
               current_price: inv.current_price !== null ? Number(inv.current_price) : null,
               currency: inv.currency,
+              goal_id: inv.goal_id,
+              is_tax_saving: inv.is_tax_saving ?? false,
+              tax_fund_type: inv.tax_fund_type,
+              lock_in_until: inv.lock_in_until,
             }}
           />
         </CardContent>
