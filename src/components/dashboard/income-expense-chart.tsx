@@ -13,6 +13,7 @@ interface DataPoint {
   income: number;
   expense: number;
   net: number;
+  cumNet: number;
 }
 
 const GRANULARITY_LABELS: Record<Granularity, string> = {
@@ -124,12 +125,8 @@ export function IncomeExpenseChart() {
   const totalExpense = data.reduce((s, p) => s + p.expense, 0);
   const totalNet = totalIncome - totalExpense;
 
-  // Compute running cumulative net for the chart line
-  let running = 0;
-  const chartData = data.map((p) => {
-    running += p.net;
-    return { ...p, cumNet: running };
-  });
+  // Server already computes cumNet against all-time baseline
+  const chartData = data;
 
   return (
     <div className="space-y-3">

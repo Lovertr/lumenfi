@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────────────────
 // Income/Expense time series — flexible granularity (day/week/month)
+// Cumulative net is computed against ALL-TIME baseline (not window-only)
 // ─────────────────────────────────────────────────────────
 
 import { createClient } from '@/lib/supabase/server';
@@ -12,6 +13,8 @@ export interface TimeSeriesPoint {
   income: number;
   expense: number;
   net: number;
+  /** Running cumulative net from the very first transaction (all-time) */
+  cumNet: number;
 }
 
 function isoDate(d: Date): string {
@@ -63,6 +66,23 @@ export async function getIncomeExpenseTimeSeries(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
+  // All-time prior net — sum of all income/expense BEFORE fromDate
+  // This is the baseline for the cumulative line
+  const { data: priorRows } = await supabase
+    .from('transactions')
+    .select('type, amount')
+    .eq('user_id', user.id)
+    .lt('date', fromDate)
+    .in('type', ['income', 'expense']);
+
+  let priorNet = 0;
+  for (const t of priorRows ?? []) {
+    const amt = Number(t.amount ?? 0);
+    if (t.type === 'income') priorNet += amt;
+    else if (t.type === 'expense') priorNet -= amt;
+  }
+
+  // In-range transactions
   const { data: txs } = await supabase
     .from('transactions')
     .select('type, amount, date')
@@ -73,12 +93,9 @@ export async function getIncomeExpenseTimeSeries(
     .order('date');
 
   const buckets = new Map<string, { income: number; expense: number }>();
-
-  // Pre-fill empty buckets
   const start = new Date(fromDate);
   const end = new Date(toDate);
-  const prefillBuckets = generateBuckets(start, end, granularity);
-  for (const b of prefillBuckets) {
+  for (const b of generateBuckets(start, end, granularity)) {
     buckets.set(b, { income: 0, expense: 0 });
   }
 
@@ -92,14 +109,18 @@ export async function getIncomeExpenseTimeSeries(
   }
 
   const sortedKeys = Array.from(buckets.keys()).sort();
+  let running = priorNet;  // ← key fix: start from all-time baseline
   return sortedKeys.map((k) => {
     const v = buckets.get(k)!;
+    const net = v.income - v.expense;
+    running += net;
     return {
       bucket: k,
       label: bucketLabel(k, granularity, locale),
       income: v.income,
       expense: v.expense,
-      net: v.income - v.expense,
+      net,
+      cumNet: running,
     };
   });
 }
