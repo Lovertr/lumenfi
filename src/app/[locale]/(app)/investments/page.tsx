@@ -12,6 +12,8 @@ import { PortfolioHero } from '@/components/investments/portfolio-hero';
 import { AssetAllocation } from '@/components/investments/asset-allocation';
 import { TopPerformers } from '@/components/investments/top-performers';
 import { RefreshPricesButton } from '@/components/investments/refresh-prices-button';
+import { AIAdvisor } from '@/components/investments/ai-advisor';
+import { SETBenchmark } from '@/components/investments/set-benchmark';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,6 +84,12 @@ export default async function InvestmentsPage({ params }: { params: Promise<{ lo
             valueByMarket={valueByMarket}
             totalValue={totalValue}
           />
+
+          {/* SET Benchmark */}
+          <SETBenchmark portfolioPLPercent={totalPLPercent} />
+
+          {/* AI Advisor */}
+          <AIAdvisor />
 
           <TopPerformers gainers={topGainers} losers={topLosers} />
 
