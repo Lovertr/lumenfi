@@ -293,6 +293,118 @@ export async function GET(req: Request) {
     console.warn('Budget alerts failed:', e);
   }
 
+
+  // ─── Watchlist price alerts ─────────────────────────────
+  let watchlistAlertsSent = 0;
+  try {
+    const { data: watchItems } = await supabase
+      .from('investment_watchlist')
+      .select('id, user_id, symbol, type, name, target_price, alert_above')
+      .not('target_price', 'is', null);
+
+    if (watchItems && watchItems.length > 0) {
+      // Group by user for efficient processing
+      const byUserW = new Map<string, any[]>();
+      for (const w of watchItems) {
+        if (!byUserW.has(w.user_id)) byUserW.set(w.user_id, []);
+        byUserW.get(w.user_id)!.push(w);
+      }
+
+      for (const [userId, items] of byUserW) {
+        // Check rate-limiting: only send max 1 alert batch per user per day
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('watchlist_alert_last_sent_on')
+          .eq('id', userId)
+          .maybeSingle();
+        if (profile?.watchlist_alert_last_sent_on === bkkDateStr) continue;
+
+        const triggered: { symbol: string; current: number; target: number; above: boolean }[] = [];
+
+        // Fetch current prices for each symbol
+        for (const w of items) {
+          let yfSym = w.symbol as string;
+          if (w.type === 'thai_stock' && !yfSym.includes('.')) yfSym = `${yfSym}.BK`;
+          if (w.type === 'crypto' && !yfSym.includes('-')) yfSym = `${yfSym}-USD`;
+          try {
+            const res = await fetch(
+              `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yfSym)}?interval=1d&range=1d`,
+              { headers: { 'User-Agent': 'Mozilla/5.0' } }
+            );
+            if (!res.ok) continue;
+            const data = await res.json();
+            const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+            if (typeof price !== 'number') continue;
+
+            const target = Number(w.target_price);
+            const hit = w.alert_above ? price >= target : price <= target;
+
+            // Save current price back
+            await supabase
+              .from('investment_watchlist')
+              .update({ current_price: price, last_checked: new Date().toISOString() })
+              .eq('id', w.id);
+
+            if (hit) {
+              triggered.push({
+                symbol: w.symbol,
+                current: price,
+                target,
+                above: w.alert_above,
+              });
+            }
+          } catch { /* skip */ }
+        }
+
+        if (triggered.length === 0) continue;
+
+        // Send notification
+        const { data: subs } = await supabase
+          .from('push_subscriptions')
+          .select('id, endpoint, p256dh, auth')
+          .eq('user_id', userId);
+        if (!subs || subs.length === 0) continue;
+
+        const summary = triggered.length === 1
+          ? `${triggered[0].symbol} ${triggered[0].above ? 'แตะ' : 'ลงถึง'} ฿${triggered[0].current.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+          : `${triggered.length} symbols ถึงเป้าแล้ว: ${triggered.slice(0, 3).map(t => t.symbol).join(', ')}${triggered.length > 3 ? '...' : ''}`;
+
+        const payload = JSON.stringify({
+          title: 'Lumenfi · 🔔 Watchlist alert',
+          body: summary,
+          url: '/investments/watchlist',
+          tag: 'lumenfi-watchlist',
+        });
+
+        let anySent = false;
+        for (const s of subs as PushSub[]) {
+          try {
+            await webpush.sendNotification(
+              { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+              payload,
+              { TTL: 60 * 60 * 12 }
+            );
+            watchlistAlertsSent++;
+            anySent = true;
+          } catch (e: any) {
+            if (e?.statusCode === 410 || e?.statusCode === 404) {
+              await supabase.from('push_subscriptions').delete().eq('id', s.id);
+            }
+          }
+        }
+
+        if (anySent) {
+          await supabase
+            .from('profiles')
+            .update({ watchlist_alert_last_sent_on: bkkDateStr })
+            .eq('id', userId);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Watchlist alerts failed:', e);
+  }
+
   return NextResponse.json({
     ok: true,
     due: due.length,
@@ -301,6 +413,7 @@ export async function GET(req: Request) {
     users: byUser.size,
     remindersSent,
     budgetAlertsSent,
+    watchlistAlertsSent,
     bkkHour,
   });
 }
