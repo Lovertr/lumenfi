@@ -25,7 +25,7 @@ alter table profiles add column if not exists dismissed_spotlights jsonb default
 
 -- Seed initial versions (the past few weeks of work)
 insert into app_versions (version, released_on, title, summary, highlights, is_major) values
-  ('2026.05.07', '2026-05-07', 'AI Advisor & Secretary',
+  ('2026.05.08', '2026-05-08', 'AI Advisor & Secretary',
    'ที่ปรึกษาการเงิน AI ครบทุกมิติ + เลขาคอยเฝ้าระวังสุขภาพการเงินให้',
    '[
      {"icon":"🌟","text":"AI Advisor 8 มิติ — วางแผน หนี้ ลงทุน ภาษี เกษียณ เป้าหมาย ประกัน Emergency","url":"/advisor"},
@@ -33,7 +33,7 @@ insert into app_versions (version, released_on, title, summary, highlights, is_m
      {"icon":"🧠","text":"AI Chat ฉลาดขึ้น — เห็นข้อมูลครบ 12 มิติ รวมประกัน budget DCA","url":"/ai"},
      {"icon":"📊","text":"Net Worth chart รายเดือน","url":"/dashboard"}
    ]'::jsonb, true),
-  ('2026.05.06', '2026-05-06', 'Investment Platform Complete',
+  ('2026.05.07', '2026-05-07', 'Investment Platform Complete',
    'ระบบลงทุนครบสมบูรณ์ — DCA Auto, Watchlist, รายงานภาษี, ลดหย่อนภาษี',
    '[
      {"icon":"🔁","text":"DCA Auto — ลงทุนรายเดือนอัตโนมัติ","url":"/investments/recurring"},
@@ -43,7 +43,7 @@ insert into app_versions (version, released_on, title, summary, highlights, is_m
      {"icon":"🎯","text":"Goal ↔ Investment linking","url":"/goals"},
      {"icon":"📊","text":"Risk metrics + SET benchmark","url":"/investments"}
    ]'::jsonb, true),
-  ('2026.05.05', '2026-05-05', 'Investment Dashboard',
+  ('2026.05.06', '2026-05-06', 'Investment Dashboard',
    'หน้า Portfolio เต็มรูปแบบ + AI Investment Advisor',
    '[
      {"icon":"📊","text":"Portfolio dashboard + Asset Allocation","url":"/investments"},

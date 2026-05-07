@@ -12,6 +12,11 @@ import { IncomeExpenseChart } from '@/components/dashboard/income-expense-chart'
 import { GoalProgressCard } from '@/components/dashboard/goal-progress-card';
 import { NetWorthMini } from '@/components/dashboard/net-worth-mini';
 import { AdvisorEntry } from '@/components/dashboard/advisor-entry';
+import { WhatsNewBanner } from '@/components/dashboard/whats-new-banner';
+import { SpotlightCard } from '@/components/dashboard/spotlight-card';
+import { FeatureTour } from '@/components/dashboard/feature-tour';
+import { getUnseenVersion } from '@/lib/queries/versions';
+import { getSpotlight } from '@/lib/queries/feature-spotlight';
 import { createClient } from '@/lib/supabase/server';
 import {
   TrendingUp,
@@ -96,6 +101,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
     } catch {}
   }
 
+  const unseenVersion = await getUnseenVersion().catch(() => null);
+  const spotlight = await getSpotlight().catch(() => null);
+
   const data = await getDashboardData();
 
   return (
@@ -168,6 +176,28 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       </div>
 
       <AdvisorEntry lastReport={lastAdvisorReport} />
+
+      {unseenVersion && (
+        <WhatsNewBanner
+          version={unseenVersion.version}
+          title={unseenVersion.title}
+          isMajor={unseenVersion.is_major}
+          highlightCount={unseenVersion.highlights?.length ?? 0}
+        />
+      )}
+
+      {spotlight && (
+        <SpotlightCard
+          id={spotlight.id}
+          icon={spotlight.icon}
+          title={spotlight.title}
+          description={spotlight.description}
+          url={spotlight.url}
+          cta={spotlight.cta}
+        />
+      )}
+
+      <FeatureTour />
 
       <Card>
         <CardContent className="p-4 lg:p-5">
