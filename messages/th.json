@@ -275,7 +275,12 @@
       "scanCamera": "ถ่ายรูป",
       "scanning": "AI กำลังอ่านใบเสร็จ...",
       "scanNoAiKey": "ต้องตั้ง AI API Key ก่อน — ไปที่ AI Advisor → Settings",
-      "scanFailed": "AI วิเคราะห์ไม่ได้ ลองใหม่"
+      "scanFailed": "AI วิเคราะห์ไม่ได้ ลองใหม่",
+      "scanNoData": "AI อ่านข้อมูลไม่ได้ — ลองถ่ายให้ชัดกว่านี้",
+      "scanInvalidKey": "API Key ไม่ถูกต้อง — ตรวจที่ AI Settings",
+      "scanRateLimit": "AI ถูก rate limit — รอสักครู่",
+      "scanProviderDown": "AI provider ขัดข้อง — ลองใหม่ภายหลัง",
+      "scanBadResponse": "AI ตอบรูปแบบผิด — ลองอีกครั้ง"
     },
     "errors": {
       "amount_required": "กรุณาใส่จำนวนเงิน",
@@ -667,7 +672,12 @@
     "error_ai_error": "AI วิเคราะห์ไม่ได้ ลองใหม่อีกครั้ง",
     "error_unauthorized": "กรุณาเข้าสู่ระบบ",
     "error_unknown": "ผิดพลาดไม่ทราบสาเหตุ",
-    "error_upload_failed": "อัปโหลดไม่สำเร็จ"
+    "error_upload_failed": "อัปโหลดไม่สำเร็จ",
+    "error_ai_no_data": "AI อ่านข้อมูลไม่ได้ — ลองถ่ายให้ชัดกว่านี้",
+    "error_invalid_api_key": "API Key ไม่ถูกต้อง — ตรวจที่ AI Settings",
+    "error_rate_limited": "AI ถูก rate limit — รอสักครู่",
+    "error_ai_provider_down": "AI provider ขัดข้อง — ลองใหม่ภายหลัง",
+    "error_ai_bad_response": "AI ตอบรูปแบบผิด — ลองอีกครั้ง"
   },
   "Loan": {
     "title": "จำลองเงินกู้",

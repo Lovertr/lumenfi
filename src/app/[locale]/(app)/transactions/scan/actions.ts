@@ -49,9 +49,27 @@ export async function scanReceipt(formData: FormData): Promise<ScanResult> {
 
   try {
     const parsed = await visionParseReceipt(profile.ai_provider as AIProvider, apiKey, b64, mime);
+    // Sanity check — if AI returned no useful data at all, treat as failure
+    if (parsed.total == null && !parsed.merchant && !parsed.date && !parsed.note) {
+      console.warn('scanReceipt: AI returned empty result');
+      return { ok: false, error: 'ai_no_data' };
+    }
     return { ok: true, ...parsed };
   } catch (e: any) {
-    console.error('scanReceipt error:', e?.message);
+    const msg = e?.message ?? '';
+    console.error('scanReceipt error:', msg);
+    if (msg.includes('401') || msg.includes('403') || msg.toLowerCase().includes('invalid')) {
+      return { ok: false, error: 'invalid_api_key' };
+    }
+    if (msg.includes('429')) {
+      return { ok: false, error: 'rate_limited' };
+    }
+    if (msg.includes('500') || msg.includes('502') || msg.includes('503')) {
+      return { ok: false, error: 'ai_provider_down' };
+    }
+    if (msg.toLowerCase().includes('json')) {
+      return { ok: false, error: 'ai_bad_response' };
+    }
     return { ok: false, error: 'ai_error' };
   }
 }

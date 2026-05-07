@@ -275,7 +275,12 @@
       "scanCamera": "Take photo",
       "scanning": "AI reading receipt...",
       "scanNoAiKey": "Set AI API key first — AI Advisor → Settings",
-      "scanFailed": "AI failed, try again"
+      "scanFailed": "AI failed, try again",
+      "scanNoData": "AI couldn't extract any data — try a clearer photo",
+      "scanInvalidKey": "API key invalid — check AI Settings",
+      "scanRateLimit": "AI rate limit reached — wait a moment",
+      "scanProviderDown": "AI provider is down right now — try again later",
+      "scanBadResponse": "AI returned an unexpected format — try again"
     },
     "errors": {
       "amount_required": "Please enter an amount",
@@ -667,7 +672,12 @@
     "error_ai_error": "AI failed to analyze, try again",
     "error_unauthorized": "Please log in",
     "error_unknown": "Unknown error",
-    "error_upload_failed": "Upload failed"
+    "error_upload_failed": "Upload failed",
+    "error_ai_no_data": "AI couldn't extract any data — try a clearer photo",
+    "error_invalid_api_key": "API key invalid — check AI Settings",
+    "error_rate_limited": "AI rate limit reached — wait a moment",
+    "error_ai_provider_down": "AI provider is down right now — try again later",
+    "error_ai_bad_response": "AI returned an unexpected format — try again"
   },
   "Loan": {
     "title": "Loan Simulator",

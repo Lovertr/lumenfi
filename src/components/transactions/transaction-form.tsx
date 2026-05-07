@@ -317,7 +317,16 @@ export function TransactionForm({
           )}
           {scanError && (
             <p className="text-xs text-destructive">
-              {scanError === 'no_ai_key' ? tForm('scanNoAiKey') : scanError === 'ai_error' ? tForm('scanFailed') : scanError}
+              {scanError === 'no_ai_key' ? tForm('scanNoAiKey') :
+               scanError === 'ai_no_data' ? tForm('scanNoData') :
+               scanError === 'invalid_api_key' ? tForm('scanInvalidKey') :
+               scanError === 'rate_limited' ? tForm('scanRateLimit') :
+               scanError === 'ai_provider_down' ? tForm('scanProviderDown') :
+               scanError === 'ai_bad_response' ? tForm('scanBadResponse') :
+               scanError === 'ai_error' ? tForm('scanFailed') :
+               scanError === 'image_too_large' ? 'รูปใหญ่เกินไป (เกิน 10MB)' :
+               scanError === 'no_image' ? 'กรุณาเลือกรูป' :
+               tForm('scanFailed')}
             </p>
           )}
         </div>

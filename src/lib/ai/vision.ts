@@ -10,17 +10,18 @@ interface ParsedReceipt {
   account_number?: string | null;
 }
 
-const PROMPT = `You are an OCR + structuring assistant. Look at this receipt/bill/transfer slip image and extract:
-- merchant: store/vendor name (string)
-- date: ISO format YYYY-MM-DD (use today if unclear)
-- total: total amount as a number (THB), no commas
-- type: "expense" for purchases, "income" if it's a payment/transfer received
-- category: best guess from these — Food, Transport, Shopping, Bills, Health, Entertainment, Education, Housing, Other
-- note: short description like "Lunch at X" (Thai if receipt is Thai)
-- account_number: if a payer/source bank account number, card last-4, or e-wallet phone is visible (the account paying or receiving), return ONLY digits/dashes (no labels). Otherwise null.
+const PROMPT = `Extract data from this receipt/bill/transfer slip image. Return ONLY a JSON object — no markdown, no prose, no comments.
 
-Respond ONLY with a single JSON object, no markdown fences, no commentary. Example:
-{"merchant":"7-Eleven","date":"2026-04-28","total":135.50,"type":"expense","category":"Food","note":"ของกินที่ 7-11","account_number":"xxx-x-x1234-x"}`;
+Required fields (use null if unclear):
+- merchant: string — store/vendor/sender/receiver name
+- date: string — ISO YYYY-MM-DD (use today's date if unclear)
+- total: number — amount in THB without commas (positive)
+- type: "expense" or "income" — "income" for transfers received or refunds, "expense" for purchases/payments
+- category: string — best guess from: Food, Transport, Shopping, Bills, Health, Entertainment, Education, Housing, Salary, Transfer, Other
+- note: string — short description in Thai if receipt is Thai (1 line, ≤80 chars)
+- account_number: string — only if a real account number is visible (digits/dashes only, no labels). Return null if not visible.
+
+Output ONLY the JSON object starting with { and ending with }`;
 
 export async function visionParseReceipt(
   provider: AIProvider,
@@ -40,25 +41,66 @@ export async function visionParseReceipt(
     throw new Error(`Vision not supported for ${provider}`);
   }
 
-  const cleaned = raw
-    .replace(/^```(?:json)?\s*/i, '')
-    .replace(/```\s*$/i, '')
-    .trim();
-
-  try {
-    const parsed = JSON.parse(cleaned);
-    return {
-      merchant: parsed.merchant ?? null,
-      date: parsed.date ?? null,
-      total: typeof parsed.total === 'number' ? parsed.total : parseFloat(String(parsed.total ?? '')) || null,
-      type: parsed.type === 'income' ? 'income' : 'expense',
-      category: parsed.category ?? null,
-      note: parsed.note ?? null,
-      account_number: typeof parsed.account_number === 'string' ? parsed.account_number : null,
-    };
-  } catch {
-    return {};
+  const parsed = robustJsonParse(raw);
+  if (!parsed) {
+    console.error('[vision] JSON parse failed. Raw response:', raw.slice(0, 1000));
+    throw new Error('AI returned invalid JSON. Try again or switch provider.');
   }
+
+  return {
+    merchant: typeof parsed.merchant === 'string' ? parsed.merchant : null,
+    date: typeof parsed.date === 'string' ? parsed.date : null,
+    total: parseNumber(parsed.total),
+    type: parsed.type === 'income' ? 'income' : 'expense',
+    category: typeof parsed.category === 'string' ? parsed.category : null,
+    note: typeof parsed.note === 'string' ? parsed.note : null,
+    account_number:
+      typeof parsed.account_number === 'string' && parsed.account_number.trim() !== ''
+        ? parsed.account_number
+        : null,
+  };
+}
+
+/**
+ * Robust JSON parsing — handles AI wrapping output in markdown fences,
+ * prose before/after, or returning multiple JSON-like blocks.
+ */
+function robustJsonParse(raw: string): any {
+  if (!raw) return null;
+
+  // Strategy 1: try parsing directly
+  try {
+    return JSON.parse(raw);
+  } catch {}
+
+  // Strategy 2: strip markdown fences
+  const noFences = raw
+    .replace(/^\s*```(?:json)?\s*/i, '')
+    .replace(/\s*```\s*$/i, '')
+    .trim();
+  try {
+    return JSON.parse(noFences);
+  } catch {}
+
+  // Strategy 3: extract first {...} block (handles prose before/after)
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (match) {
+    try {
+      return JSON.parse(match[0]);
+    } catch {}
+  }
+
+  return null;
+}
+
+function parseNumber(v: any): number | null {
+  if (typeof v === 'number' && isFinite(v)) return v;
+  if (typeof v === 'string') {
+    const cleaned = v.replace(/[,\s฿$]/g, '');
+    const n = parseFloat(cleaned);
+    return isFinite(n) ? n : null;
+  }
+  return null;
 }
 
 async function anthropicVision(apiKey: string, b64: string, mime: string): Promise<string> {
@@ -71,7 +113,7 @@ async function anthropicVision(apiKey: string, b64: string, mime: string): Promi
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
+      max_tokens: 2048,
       messages: [
         {
           role: 'user',
@@ -92,22 +134,27 @@ async function openaiVision(apiKey: string, b64: string, mime: string, isOpenRou
   const url = isOpenRouter
     ? 'https://openrouter.ai/api/v1/chat/completions'
     : 'https://api.openai.com/v1/chat/completions';
+  const body: any = {
+    model: isOpenRouter ? 'openai/gpt-4o-mini' : 'gpt-4o-mini',
+    max_tokens: 2048,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: PROMPT },
+          { type: 'image_url', image_url: { url: `data:${mime};base64,${b64}` } },
+        ],
+      },
+    ],
+  };
+  // Force JSON output for OpenAI to avoid prose wrapping
+  if (!isOpenRouter) {
+    body.response_format = { type: 'json_object' };
+  }
   const res = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
-    body: JSON.stringify({
-      model: isOpenRouter ? 'openai/gpt-4o-mini' : 'gpt-4o-mini',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: PROMPT },
-            { type: 'image_url', image_url: { url: `data:${mime};base64,${b64}` } },
-          ],
-        },
-      ],
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`OpenAI vision ${res.status}: ${await res.text()}`);
   const data = await res.json();
@@ -129,7 +176,10 @@ async function geminiVision(apiKey: string, b64: string, mime: string): Promise<
           ],
         },
       ],
-      generationConfig: { maxOutputTokens: 1024 },
+      generationConfig: {
+        maxOutputTokens: 2048,
+        responseMimeType: 'application/json',
+      },
     }),
   });
   if (!res.ok) throw new Error(`Gemini vision ${res.status}: ${await res.text()}`);
