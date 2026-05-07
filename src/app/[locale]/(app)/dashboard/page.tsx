@@ -10,6 +10,7 @@ import { materializeDueRecurring } from '@/lib/recurring';
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
 import { IncomeExpenseChart } from '@/components/dashboard/income-expense-chart';
 import { GoalProgressCard } from '@/components/dashboard/goal-progress-card';
+import { NetWorthMini } from '@/components/dashboard/net-worth-mini';
 import { createClient } from '@/lib/supabase/server';
 import {
   TrendingUp,
@@ -72,12 +73,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
 
   await materializeDueRecurring();
 
-  // Take net worth snapshot (idempotent — upserts today's row)
-  // History display moved to /networth page
+  // Take net worth snapshot (idempotent — upserts today's row) + fetch history for chart
+  let nwHistory: Array<{ date: string; total_assets: number; total_liabilities: number; net_worth: number }> = [];
   if (user) {
     try {
       const mod = await import('@/lib/queries/net-worth-snapshot');
       await mod.snapshotTodayForUser(user.id);
+      nwHistory = (await mod.getNetWorthHistory(user.id, 365)) as typeof nwHistory;
     } catch (e) {
       console.warn('Net worth snapshot failed:', e);
     }
@@ -160,6 +162,18 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           <IncomeExpenseChart />
         </CardContent>
       </Card>
+
+      {nwHistory.length >= 2 && (
+        <Card>
+          <CardContent className="p-4 lg:p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Net Worth ตามเวลา</h2>
+              <p className="text-[11px] text-muted-foreground">{nwHistory.length} จุดข้อมูล</p>
+            </div>
+            <NetWorthMini data={nwHistory} />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
