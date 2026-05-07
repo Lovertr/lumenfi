@@ -11,6 +11,7 @@ import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-ac
 import { IncomeExpenseChart } from '@/components/dashboard/income-expense-chart';
 import { GoalProgressCard } from '@/components/dashboard/goal-progress-card';
 import { NetWorthMini } from '@/components/dashboard/net-worth-mini';
+import { AdvisorEntry } from '@/components/dashboard/advisor-entry';
 import { createClient } from '@/lib/supabase/server';
 import {
   TrendingUp,
@@ -75,6 +76,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
 
   // Take net worth snapshot (idempotent — upserts today's row) + fetch history for chart
   let nwHistory: Array<{ date: string; total_assets: number; total_liabilities: number; net_worth: number }> = [];
+  let lastAdvisorReport: { domain: string; created_at: string; title: string } | null = null;
   if (user) {
     try {
       const mod = await import('@/lib/queries/net-worth-snapshot');
@@ -83,6 +85,15 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
     } catch (e) {
       console.warn('Net worth snapshot failed:', e);
     }
+    try {
+      const { data: r } = await supabase
+        .from('advisor_reports')
+        .select('domain, created_at, title')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (r) lastAdvisorReport = r as any;
+    } catch {}
   }
 
   const data = await getDashboardData();
@@ -155,6 +166,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           </Card>
         </div>
       </div>
+
+      <AdvisorEntry lastReport={lastAdvisorReport} />
 
       <Card>
         <CardContent className="p-4 lg:p-5">

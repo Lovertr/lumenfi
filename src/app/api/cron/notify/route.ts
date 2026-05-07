@@ -405,6 +405,64 @@ export async function GET(req: Request) {
     console.warn('Watchlist alerts failed:', e);
   }
 
+
+  // ─── AI Financial Secretary — proactive insights ─────────
+  let secretaryAlertsSent = 0;
+  try {
+    const { detectInsightsForUser, pickTopInsight } = await import('@/lib/advisor/secretary');
+    const { data: allUsers } = await supabase.from('profiles').select('id, secretary_last_notified_on');
+    for (const u of allUsers ?? []) {
+      // Skip if already sent today
+      if ((u as any).secretary_last_notified_on === bkkDateStr) continue;
+
+      const insights = await detectInsightsForUser((u as any).id);
+      const top = pickTopInsight(insights);
+      if (!top) continue;
+
+      // Only ping for warn/critical insights — info insights are too noisy
+      if (top.severity === 'info') continue;
+
+      const { data: subs } = await supabase
+        .from('push_subscriptions')
+        .select('id, endpoint, p256dh, auth')
+        .eq('user_id', (u as any).id);
+      if (!subs || subs.length === 0) continue;
+
+      const payload = JSON.stringify({
+        title: `Lumenfi · ${top.title}`,
+        body: top.body,
+        url: top.url,
+        tag: top.tag,
+      });
+
+      let anySent = false;
+      for (const s of subs as PushSub[]) {
+        try {
+          await webpush.sendNotification(
+            { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+            payload,
+            { TTL: 60 * 60 * 12 }
+          );
+          secretaryAlertsSent++;
+          anySent = true;
+        } catch (e: any) {
+          if (e?.statusCode === 410 || e?.statusCode === 404) {
+            await supabase.from('push_subscriptions').delete().eq('id', s.id);
+          }
+        }
+      }
+
+      if (anySent) {
+        await supabase
+          .from('profiles')
+          .update({ secretary_last_notified_on: bkkDateStr })
+          .eq('id', (u as any).id);
+      }
+    }
+  } catch (e) {
+    console.warn('Secretary alerts failed:', e);
+  }
+
   return NextResponse.json({
     ok: true,
     due: due.length,
@@ -414,6 +472,7 @@ export async function GET(req: Request) {
     remindersSent,
     budgetAlertsSent,
     watchlistAlertsSent,
+    secretaryAlertsSent,
     bkkHour,
   });
 }

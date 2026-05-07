@@ -21,6 +21,7 @@ import {
   PiggyBank,
   Shield,
   HelpCircle,
+  Sparkles,
 } from 'lucide-react';
 import { LogoMark, Wordmark } from '@/components/brand/logo-mark';
 import { cn } from '@/lib/utils';
@@ -77,6 +78,7 @@ export function DesktopSidebar() {
     {
       title: tNav('home') === 'หน้าหลัก' ? 'อื่นๆ' : 'Other',
       items: [
+        { href: '/advisor', icon: Sparkles, label: 'ที่ปรึกษา AI' },
         { href: '/ai', icon: Brain, label: tNav('ai') },
         { href: '/help', icon: HelpCircle, label: 'คู่มือ' },
         { href: '/reports', icon: FileBarChart, label: tMore('reports') },
