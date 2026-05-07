@@ -79,7 +79,7 @@ export function PolicyForm({ mode = 'create', defaults }: { mode?: 'create' | 'e
 
       <div className="space-y-2">
         <Label htmlFor="carrier">บริษัทประกัน *</Label>
-        <Input id="carrier" name="carrier" defaultValue={defaults?.carrier ?? ''} placeholder="เช่น BLA, Allianz, AIA" required />
+        <Input id="carrier" name="carrier" defaultValue={defaults?.carrier ?? ''} placeholder="เช่น Allianz, AIA, FWD" required />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">

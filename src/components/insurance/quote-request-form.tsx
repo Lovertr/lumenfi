@@ -17,8 +17,6 @@ const TYPE_OPTIONS = [
 ];
 
 const CARRIER_OPTIONS = [
-  { value: 'either', label: 'ทั้งคู่ติดต่อมา (BLA + Allianz)' },
-  { value: 'BLA', label: 'กรุงเทพประกันชีวิต (BLA)' },
   { value: 'Allianz', label: 'Allianz Ayudhya' },
 ];
 

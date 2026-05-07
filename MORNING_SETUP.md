@@ -33,9 +33,8 @@ AGENT_NOTIFY_EMAIL=tintanee.t@gmail.com
 
 ### ข้อมูลตัวแทน (แสดงในแอพ)
 ```
-NEXT_PUBLIC_AGENT_NAME=ทินทนี (BLA) + คุณภรรยา (Allianz)
-NEXT_PUBLIC_BLA_LICENSE=000000      # เลขที่ใบอนุญาตของคุณ
-NEXT_PUBLIC_ALLIANZ_LICENSE=000000  # เลขที่ใบอนุญาตภรรยา
+NEXT_PUBLIC_AGENT_NAME=ทินทนี
+NEXT_PUBLIC_ALLIANZ_LICENSE=000000  # เลขที่ใบอนุญาต Allianz Ayudhya
 NEXT_PUBLIC_AGENT_CONTACT=tintanee.t@gmail.com
 ```
 
