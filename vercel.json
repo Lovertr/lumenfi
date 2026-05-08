@@ -1,8 +1,13 @@
 {
+  "regions": ["sin1"],
   "crons": [
     {
       "path": "/api/cron/notify",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/snapshot",
+      "schedule": "0 15 * * *"
     }
   ]
 }
