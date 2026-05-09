@@ -78,6 +78,34 @@ export interface AdvisorSnapshot {
   hasActiveDCA: boolean;
   // Profile
   hasAIKey: boolean;
+  // Profile fallback estimates (used when transaction data is sparse)
+  profileEstimates: {
+    incomeBreakdown: {
+      salary: number | null;
+      side: number | null;
+      investment: number | null;
+      other: number | null;
+      total: number;
+    };
+    expenseBreakdown: {
+      housing: number | null;
+      food: number | null;
+      utilities: number | null;
+      phone_internet: number | null;
+      transport: number | null;
+      debt_payment: number | null;
+      insurance: number | null;
+      subscription: number | null;
+      other: number | null;
+      total: number;
+    };
+    occupation: string | null;
+    employmentType: string | null;
+    province: string | null;
+    riskTolerance: string | null;
+    investmentExperience: string | null;
+    financialGoalSummary: string | null;
+  };
 }
 
 function safeNum(n: any): number {
@@ -123,7 +151,7 @@ export async function buildAdvisorSnapshot(): Promise<AdvisorSnapshot | null> {
     supabase.from('budgets').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gt('amount', 0),
     supabase.from('recurring_transactions').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
     supabase.from('recurring_investments').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
-    supabase.from('profiles').select('ai_provider, ai_api_key_encrypted').eq('id', user.id).maybeSingle(),
+    supabase.from('profiles').select('ai_provider, ai_api_key_encrypted, income_salary_monthly, income_side_monthly, income_investment_monthly, income_other_monthly, expense_food_monthly, expense_utilities_monthly, expense_phone_internet_monthly, expense_transport_monthly, expense_housing_monthly, expense_debt_payment_monthly, expense_insurance_monthly, expense_subscription_monthly, expense_other_monthly, occupation, employment_type, province, risk_tolerance, investment_experience, financial_goal_summary').eq('id', user.id).maybeSingle(),
   ]);
 
   const debts = (debtsRes.data ?? []).map((d: any) => ({
@@ -240,6 +268,53 @@ export async function buildAdvisorSnapshot(): Promise<AdvisorSnapshot | null> {
     hasRecurringExpenses: (recurringCountRes.count ?? 0) > 0,
     hasActiveDCA: (recurringInvCountRes.count ?? 0) > 0,
     hasAIKey: !!(profileRes.data?.ai_provider && profileRes.data?.ai_api_key_encrypted),
+    profileEstimates: (() => {
+      const p = profileRes.data ?? {};
+      const incomeBreakdown = {
+        salary: (p as any).income_salary_monthly ?? null,
+        side: (p as any).income_side_monthly ?? null,
+        investment: (p as any).income_investment_monthly ?? null,
+        other: (p as any).income_other_monthly ?? null,
+        total: 0,
+      };
+      incomeBreakdown.total =
+        Number(incomeBreakdown.salary ?? 0) +
+        Number(incomeBreakdown.side ?? 0) +
+        Number(incomeBreakdown.investment ?? 0) +
+        Number(incomeBreakdown.other ?? 0);
+      const expenseBreakdown = {
+        housing: (p as any).expense_housing_monthly ?? null,
+        food: (p as any).expense_food_monthly ?? null,
+        utilities: (p as any).expense_utilities_monthly ?? null,
+        phone_internet: (p as any).expense_phone_internet_monthly ?? null,
+        transport: (p as any).expense_transport_monthly ?? null,
+        debt_payment: (p as any).expense_debt_payment_monthly ?? null,
+        insurance: (p as any).expense_insurance_monthly ?? null,
+        subscription: (p as any).expense_subscription_monthly ?? null,
+        other: (p as any).expense_other_monthly ?? null,
+        total: 0,
+      };
+      expenseBreakdown.total =
+        Number(expenseBreakdown.housing ?? 0) +
+        Number(expenseBreakdown.food ?? 0) +
+        Number(expenseBreakdown.utilities ?? 0) +
+        Number(expenseBreakdown.phone_internet ?? 0) +
+        Number(expenseBreakdown.transport ?? 0) +
+        Number(expenseBreakdown.debt_payment ?? 0) +
+        Number(expenseBreakdown.insurance ?? 0) +
+        Number(expenseBreakdown.subscription ?? 0) +
+        Number(expenseBreakdown.other ?? 0);
+      return {
+        incomeBreakdown,
+        expenseBreakdown,
+        occupation: (p as any).occupation ?? null,
+        employmentType: (p as any).employment_type ?? null,
+        province: (p as any).province ?? null,
+        riskTolerance: (p as any).risk_tolerance ?? null,
+        investmentExperience: (p as any).investment_experience ?? null,
+        financialGoalSummary: (p as any).financial_goal_summary ?? null,
+      };
+    })(),
   };
 }
 
@@ -326,6 +401,40 @@ export function snapshotToMarkdown(s: AdvisorSnapshot): string {
     lines.push(`- ทุนประกันสุขภาพ: ฿${s.insurance.healthCoverageSum.toLocaleString()}`);
     lines.push(`- ทุนประกันชีวิต: ฿${s.insurance.lifeCoverageSum.toLocaleString()}`);
     lines.push(`- เบี้ยรวมต่อปี: ฿${s.insurance.annualPremiumTotal.toLocaleString()}`);
+  }
+
+  // ── Profile estimates (used as fallback when transaction data is sparse)
+  const pe = s.profileEstimates;
+  const hasAnyProfileEstimate =
+    pe.incomeBreakdown.total > 0 ||
+    pe.expenseBreakdown.total > 0 ||
+    pe.occupation || pe.financialGoalSummary || pe.riskTolerance;
+  if (hasAnyProfileEstimate) {
+    lines.push('\n## ข้อมูลโปรไฟล์ (ผู้ใช้กรอกเอง — ใช้เป็น fallback)');
+    if (pe.occupation) lines.push(`- อาชีพ: ${pe.occupation}${pe.employmentType ? ` (${pe.employmentType})` : ''}`);
+    if (pe.province) lines.push(`- จังหวัด: ${pe.province}`);
+    if (pe.riskTolerance) lines.push(`- ระดับความเสี่ยงรับได้: ${pe.riskTolerance}`);
+    if (pe.investmentExperience) lines.push(`- ประสบการณ์ลงทุน: ${pe.investmentExperience}`);
+    if (pe.financialGoalSummary) lines.push(`- เป้าหมายชีวิต: "${pe.financialGoalSummary}"`);
+    if (pe.incomeBreakdown.total > 0) {
+      lines.push(`### รายได้/เดือน (ประมาณ — รวม ฿${pe.incomeBreakdown.total.toLocaleString()})`);
+      if (pe.incomeBreakdown.salary) lines.push(`- เงินเดือน: ฿${Number(pe.incomeBreakdown.salary).toLocaleString()}`);
+      if (pe.incomeBreakdown.side) lines.push(`- รายได้เสริม: ฿${Number(pe.incomeBreakdown.side).toLocaleString()}`);
+      if (pe.incomeBreakdown.investment) lines.push(`- จากการลงทุน: ฿${Number(pe.incomeBreakdown.investment).toLocaleString()}`);
+      if (pe.incomeBreakdown.other) lines.push(`- อื่นๆ: ฿${Number(pe.incomeBreakdown.other).toLocaleString()}`);
+    }
+    if (pe.expenseBreakdown.total > 0) {
+      lines.push(`### รายจ่าย/เดือน (ประมาณ — รวม ฿${pe.expenseBreakdown.total.toLocaleString()})`);
+      if (pe.expenseBreakdown.housing) lines.push(`- ค่าเช่า/ผ่อนบ้าน: ฿${Number(pe.expenseBreakdown.housing).toLocaleString()}`);
+      if (pe.expenseBreakdown.food) lines.push(`- อาหาร: ฿${Number(pe.expenseBreakdown.food).toLocaleString()}`);
+      if (pe.expenseBreakdown.utilities) lines.push(`- น้ำ+ไฟ: ฿${Number(pe.expenseBreakdown.utilities).toLocaleString()}`);
+      if (pe.expenseBreakdown.phone_internet) lines.push(`- โทรศัพท์+เน็ต: ฿${Number(pe.expenseBreakdown.phone_internet).toLocaleString()}`);
+      if (pe.expenseBreakdown.transport) lines.push(`- เดินทาง: ฿${Number(pe.expenseBreakdown.transport).toLocaleString()}`);
+      if (pe.expenseBreakdown.debt_payment) lines.push(`- หนี้/เดือน: ฿${Number(pe.expenseBreakdown.debt_payment).toLocaleString()}`);
+      if (pe.expenseBreakdown.insurance) lines.push(`- ประกัน: ฿${Number(pe.expenseBreakdown.insurance).toLocaleString()}`);
+      if (pe.expenseBreakdown.subscription) lines.push(`- Subscription: ฿${Number(pe.expenseBreakdown.subscription).toLocaleString()}`);
+      if (pe.expenseBreakdown.other) lines.push(`- อื่นๆ: ฿${Number(pe.expenseBreakdown.other).toLocaleString()}`);
+    }
   }
 
   lines.push('\n## ฟีเจอร์ของ Lumenfi ที่ใช้อยู่');

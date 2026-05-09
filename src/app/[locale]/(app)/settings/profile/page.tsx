@@ -20,7 +20,7 @@ export default async function ProfileSettingsPage({ params }: { params: Promise<
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('email, full_name, default_currency, monthly_income_target, monthly_expense_target, date_of_birth, num_dependents, monthly_income, monthly_expense_estimate')
+    .select('email, full_name, default_currency, monthly_income_target, monthly_expense_target, date_of_birth, num_dependents, monthly_income, monthly_expense_estimate, income_salary_monthly, income_side_monthly, income_investment_monthly, income_other_monthly, expense_food_monthly, expense_utilities_monthly, expense_phone_internet_monthly, expense_transport_monthly, expense_housing_monthly, expense_debt_payment_monthly, expense_insurance_monthly, expense_subscription_monthly, expense_other_monthly, occupation, employment_type, province, risk_tolerance, investment_experience, financial_goal_summary')
     .eq('id', user.id)
     .single();
 
@@ -49,6 +49,25 @@ export default async function ProfileSettingsPage({ params }: { params: Promise<
                 num_dependents: 0,
                 monthly_income: null,
                 monthly_expense_estimate: null,
+                income_salary_monthly: null,
+                income_side_monthly: null,
+                income_investment_monthly: null,
+                income_other_monthly: null,
+                expense_food_monthly: null,
+                expense_utilities_monthly: null,
+                expense_phone_internet_monthly: null,
+                expense_transport_monthly: null,
+                expense_housing_monthly: null,
+                expense_debt_payment_monthly: null,
+                expense_insurance_monthly: null,
+                expense_subscription_monthly: null,
+                expense_other_monthly: null,
+                occupation: null,
+                employment_type: null,
+                province: null,
+                risk_tolerance: null,
+                investment_experience: null,
+                financial_goal_summary: null,
               }
             }
           />
