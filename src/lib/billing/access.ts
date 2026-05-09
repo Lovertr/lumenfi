@@ -12,8 +12,30 @@ import type { AIProvider } from '@/lib/ai/types';
 
 export type AIFeature = 'chat' | 'advisor' | 'secretary' | 'vision';
 
+type Tier = 'free' | 'pro';
+
+function getTierKey(tier: Tier): string {
+  if (tier === 'free') {
+    // Try free-tier specific key first, fall back to main key
+    return process.env.LUMENFI_FREE_AI_KEY || process.env.LUMENFI_AI_KEY || '';
+  }
+  return process.env.LUMENFI_AI_KEY || '';
+}
+
+function getTierProvider(tier: Tier): AIProvider {
+  if (tier === 'free') {
+    return ((process.env.LUMENFI_FREE_AI_PROVIDER || process.env.LUMENFI_AI_PROVIDER) as AIProvider) || 'anthropic';
+  }
+  return (process.env.LUMENFI_AI_PROVIDER as AIProvider) || 'anthropic';
+}
+
+function tierKeyConfigured(tier: Tier): boolean {
+  const key = getTierKey(tier);
+  return !!(key && key.length > 10);
+}
+
 function lumenfiKeyConfigured(): boolean {
-  return !!(process.env.LUMENFI_AI_KEY && process.env.LUMENFI_AI_KEY.length > 10);
+  return tierKeyConfigured('pro') || tierKeyConfigured('free');
 }
 export type BillingVia = 'byo' | 'subscription' | 'credits' | 'free';
 
@@ -132,7 +154,7 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
 
   // ─── Path 1: Active Pro subscription → unlimited Lumenfi AI
   if (isProActive(ctx.subscription)) {
-    if (!lumenfiKeyConfigured()) {
+    if (!tierKeyConfigured('pro')) {
       // Pro user but Lumenfi key not set — fall through to BYO if available
       if (ctx.hasBYOKey && ctx.byoProvider) {
         return { allowed: true, via: 'byo', provider: ctx.byoProvider };
@@ -147,8 +169,8 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
     return {
       allowed: true,
       via: 'subscription',
-      provider: getLumenfiProvider(),
-      apiKey: getLumenfiKey(),
+      provider: getTierProvider('pro'),
+      apiKey: getTierKey('pro'),
     };
   }
 
@@ -158,12 +180,12 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
   }
 
   // ─── Path 3: Pay-as-you-go credits (advisor only)
-  if (feature === 'advisor' && ctx.creditBalance > 0 && lumenfiKeyConfigured()) {
+  if (feature === 'advisor' && ctx.creditBalance > 0 && tierKeyConfigured('pro')) {
     return {
       allowed: true,
       via: 'credits',
-      provider: getLumenfiProvider(),
-      apiKey: getLumenfiKey(),
+      provider: getTierProvider('pro'),
+      apiKey: getTierKey('pro'),
       quota: { used: 0, limit: ctx.creditBalance, remaining: ctx.creditBalance, period: 'month' },
     };
   }
@@ -182,7 +204,7 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
 
   // Chat: 5 per day on Free
   if (feature === 'chat') {
-    if (!lumenfiKeyConfigured()) {
+    if (!tierKeyConfigured('free')) {
       return {
         allowed: false,
         via: null,
@@ -203,8 +225,8 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
     return {
       allowed: true,
       via: 'free',
-      provider: getLumenfiProvider(),
-      apiKey: getLumenfiKey(),
+      provider: getTierProvider('free'),
+      apiKey: getTierKey('free'),
       quota: {
         used: usedToday,
         limit: FREE_QUOTAS.chat_per_day,
@@ -216,7 +238,7 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
 
   // Advisor: 1 per month on Free
   if (feature === 'advisor') {
-    if (!lumenfiKeyConfigured()) {
+    if (!tierKeyConfigured('free')) {
       return {
         allowed: false,
         via: null,
@@ -237,8 +259,8 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
     return {
       allowed: true,
       via: 'free',
-      provider: getLumenfiProvider(),
-      apiKey: getLumenfiKey(),
+      provider: getTierProvider('free'),
+      apiKey: getTierKey('free'),
       quota: {
         used: usedThisMonth,
         limit: FREE_QUOTAS.advisor_per_month,
@@ -250,11 +272,18 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
 
   // Vision (OCR scan) — Free with reasonable limit, BYO unlimited
   if (feature === 'vision') {
+    if (!tierKeyConfigured('free')) {
+      // OCR scan won't work without Lumenfi key
+      if (ctx.hasBYOKey && ctx.byoProvider) {
+        return { allowed: true, via: 'byo', provider: ctx.byoProvider };
+      }
+      return { allowed: false, via: null, reason: 'lumenfi_ai_not_configured', upgradeUrl: '/ai/settings' };
+    }
     return {
       allowed: true,
       via: 'free',
-      provider: getLumenfiProvider(),
-      apiKey: getLumenfiKey(),
+      provider: getTierProvider('free'),
+      apiKey: getTierKey('free'),
     };
   }
 
@@ -264,14 +293,6 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
     reason: 'no_ai_access',
     upgradeUrl: '/pricing',
   };
-}
-
-function getLumenfiKey(): string {
-  return process.env.LUMENFI_AI_KEY ?? '';
-}
-
-function getLumenfiProvider(): AIProvider {
-  return (process.env.LUMENFI_AI_PROVIDER as AIProvider) ?? 'anthropic';
 }
 
 export { FREE_QUOTAS };

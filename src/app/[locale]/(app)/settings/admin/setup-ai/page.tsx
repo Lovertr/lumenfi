@@ -1,7 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, ExternalLink, CheckCircle2, AlertCircle, Sparkles, Key, Server, Zap } from 'lucide-react';
+import { ArrowLeft, ExternalLink, CheckCircle2, AlertCircle, Sparkles, Key, Server, Zap, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
@@ -30,9 +30,11 @@ export default async function SetupAIPage({ params }: { params: Promise<{ locale
     );
   }
 
-  const isConfigured =
-    !!process.env.LUMENFI_AI_KEY && process.env.LUMENFI_AI_KEY.length > 10;
-  const provider = process.env.LUMENFI_AI_PROVIDER ?? 'anthropic';
+  const proConfigured = !!process.env.LUMENFI_AI_KEY && process.env.LUMENFI_AI_KEY.length > 10;
+  const freeConfigured =
+    !!process.env.LUMENFI_FREE_AI_KEY && process.env.LUMENFI_FREE_AI_KEY.length > 10;
+  const proProvider = process.env.LUMENFI_AI_PROVIDER ?? 'anthropic';
+  const freeProvider = process.env.LUMENFI_FREE_AI_PROVIDER ?? proProvider;
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -45,199 +47,239 @@ export default async function SetupAIPage({ params }: { params: Promise<{ locale
         <div>
           <h1 className="flex items-center gap-2 text-xl font-bold">
             <Sparkles className="h-5 w-5 text-primary" />
-            Setup Lumenfi AI Key
+            Setup Lumenfi AI Keys
           </h1>
           <p className="text-xs text-muted-foreground">
-            ตั้งค่าให้ Free quota + Pay-go + Pro users ได้ใช้ AI
+            ใช้ 2 keys: Free tier (ถูก) + Pro tier (คุณภาพ) → ลด cost 10-15×
           </p>
         </div>
       </header>
 
       {/* Status */}
-      <Card className={isConfigured ? 'border-success/30 bg-success/5' : 'border-amber-300 bg-amber-50/50 dark:bg-amber-950/20'}>
-        <CardContent className="p-5">
-          <div className="flex items-start gap-3">
-            {isConfigured ? (
-              <CheckCircle2 className="h-6 w-6 shrink-0 text-success" />
-            ) : (
-              <AlertCircle className="h-6 w-6 shrink-0 text-amber-600" />
-            )}
-            <div>
-              <p className="font-bold">
-                {isConfigured
-                  ? '✅ Lumenfi AI Key พร้อมใช้งานแล้ว'
-                  : '⚠️ ยังไม่ได้ตั้ง LUMENFI_AI_KEY'}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {isConfigured
-                  ? `Provider: ${provider} · Free + Pay-go + Pro users ใช้ AI ของ Lumenfi ได้แล้ว`
-                  : 'Free user, Pay-go credits, และ Pro subscribers จะยังใช้ AI ไม่ได้จนกว่าจะตั้งค่า'}
-              </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Card className={freeConfigured ? 'border-success/30 bg-success/5' : 'border-amber-300 bg-amber-50/50 dark:bg-amber-950/20'}>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-2">
+              {freeConfigured ? (
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+              ) : (
+                <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
+              )}
+              <div>
+                <p className="text-sm font-bold">Free Tier</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {freeConfigured ? `ตั้งแล้ว · ${freeProvider}` : 'ยังไม่ได้ตั้ง'}
+                </p>
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  {freeConfigured
+                    ? 'Free users + Pay-go (chat ฟรี)'
+                    : 'จะ fallback ไปใช้ Pro key'}
+                </p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        <Card className={proConfigured ? 'border-success/30 bg-success/5' : 'border-amber-300 bg-amber-50/50 dark:bg-amber-950/20'}>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-2">
+              {proConfigured ? (
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+              ) : (
+                <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
+              )}
+              <div>
+                <p className="text-sm font-bold">Pro Tier</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {proConfigured ? `ตั้งแล้ว · ${proProvider}` : 'ยังไม่ได้ตั้ง'}
+                </p>
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  Pro subscribers + Credit pack
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Recommendation */}
+      {/* Cost Analysis */}
       <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-purple-500/5">
         <CardContent className="p-5">
-          <p className="text-sm font-semibold flex items-center gap-2">
-            <Zap className="h-4 w-4 text-primary" />
-            แนะนำใช้ Claude Haiku 4.5
+          <p className="text-sm font-bold flex items-center gap-2">
+            <DollarSign className="h-4 w-4 text-primary" />
+            เปรียบเทียบต้นทุน Free Tier (1 user/เดือน)
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            ราคาถูกที่สุด คุณภาพดี — ~฿20-25 ต่อ user/เดือน · Margin ~5x ที่ Pro ฿149
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            สมมติ user ใช้เต็ม quota: 5 chat/วัน × 30 + 1 advisor/เดือน
+            (~600K input + 150K output tokens)
           </p>
-          <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
-            <div className="rounded-md bg-background/60 p-2">
-              <p className="font-semibold">Claude Haiku 4.5</p>
-              <p className="text-muted-foreground">$1/M input · $5/M output</p>
-              <p className="text-success">~฿18-22/user · margin 5×</p>
+
+          <div className="mt-3 space-y-2">
+            <div className="rounded-md border-2 border-emerald-300 bg-emerald-50/50 p-3 text-xs dark:bg-emerald-950/20">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-emerald-700 dark:text-emerald-300">
+                  ⭐⭐ Gemini 1.5 Flash (แนะนำ)
+                </span>
+                <span className="font-bold text-emerald-700 dark:text-emerald-300">฿3.5/user</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                $0.075/M in · $0.30/M out · 1000 users = ฿3,500/เดือน · คุณภาพดี
+              </p>
             </div>
-            <div className="rounded-md bg-background/60 p-2">
-              <p className="font-semibold">Gemini 1.5 Pro (alt)</p>
-              <p className="text-muted-foreground">$1.25/M input · $5/M output</p>
-              <p className="text-success">~฿20-25/user · margin 5×</p>
+
+            <div className="rounded-md border-2 border-emerald-200 bg-emerald-50/30 p-3 text-xs dark:bg-emerald-950/15">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-emerald-700 dark:text-emerald-300">
+                  ⭐ GPT-4o-mini (ทางเลือก)
+                </span>
+                <span className="font-bold text-emerald-700 dark:text-emerald-300">฿6.5/user</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                $0.15/M in · $0.60/M out · 1000 users = ฿6,500/เดือน
+              </p>
+            </div>
+
+            <div className="rounded-md border bg-background p-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">DeepSeek-V3 (via OpenRouter)</span>
+                <span>฿4/user</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                $0.14/M in · $0.28/M out · open-source · ภาษาไทยพอใช้
+              </p>
+            </div>
+
+            <div className="rounded-md border bg-background p-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Claude Haiku 4.5</span>
+                <span>฿49/user</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                ดีสำหรับ Pro tier · 1000 free users = ฿49,000/เดือน ❌
+              </p>
+            </div>
+
+            <div className="rounded-md border border-rose-300 bg-rose-50/50 p-3 text-xs dark:bg-rose-950/20">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Claude Sonnet 4</span>
+                <span>฿140/user</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                คุณภาพสูงสุด · 1000 free users = ฿140,000/เดือน 🚨
+              </p>
             </div>
           </div>
+
+          <p className="mt-3 rounded-md bg-amber-50 p-2 text-[11px] text-amber-800 dark:bg-amber-950/20 dark:text-amber-300">
+            💡 <b>กลยุทธ์ที่แนะนำ:</b> Free → Gemini Flash (ฟรี $300 credit ครั้งแรก!) ·
+            Pro → Claude Haiku (คุ้ม margin)
+          </p>
         </CardContent>
       </Card>
 
-      {/* Step-by-step */}
+      {/* Setup steps */}
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-sm font-bold">📋 ขั้นตอนตั้งค่า (~5 นาที)</h2>
+          <h2 className="text-sm font-bold">📋 ขั้นตอนตั้งค่า (10 นาที)</h2>
 
           <div className="mt-4 space-y-4">
-            {/* Step 1 */}
-            <div className="rounded-lg border bg-background p-4">
-              <div className="flex items-start gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">1</span>
-                <div className="flex-1">
-                  <p className="font-semibold flex items-center gap-1">
-                    <Key className="h-3.5 w-3.5" />
-                    สมัคร Anthropic Console + เติมเครดิต
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    ต้องเติม credit ขั้นต่ำ $5 (~฿180) ใช้ทดสอบได้ ~5,000 advisor reports
-                  </p>
-                  <div className="mt-2 space-y-1">
-                    <a
-                      href="https://console.anthropic.com/settings/keys"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Anthropic Console → API Keys
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="rounded-lg border bg-background p-4">
-              <div className="flex items-start gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">2</span>
-                <div className="flex-1">
-                  <p className="font-semibold">สร้าง API Key</p>
-                  <ul className="mt-1 ml-4 list-disc space-y-0.5 text-xs text-muted-foreground">
-                    <li>กด <b>"Create Key"</b></li>
-                    <li>ตั้งชื่อ: <code className="rounded bg-muted px-1">Lumenfi Production</code></li>
-                    <li>Copy key ที่ขึ้นต้นด้วย <code>sk-ant-...</code> (จะเห็นแค่ครั้งเดียว!)</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="rounded-lg border bg-background p-4">
-              <div className="flex items-start gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">3</span>
-                <div className="flex-1">
-                  <p className="font-semibold flex items-center gap-1">
-                    <Server className="h-3.5 w-3.5" />
-                    เพิ่มใน Vercel Environment Variables
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Vercel Dashboard → Lumenfi project → Settings → Environment Variables
-                  </p>
-                  <div className="mt-2 space-y-1.5 rounded-md bg-muted/40 p-3 text-[11px] font-mono">
-                    <div>
-                      <span className="text-muted-foreground">Name:</span> LUMENFI_AI_KEY
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Value:</span> sk-ant-api03-xxxx...xxxx
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Environments:</span> Production, Preview, Development
-                    </div>
-                    <hr className="border-muted" />
-                    <div>
-                      <span className="text-muted-foreground">Name:</span> LUMENFI_AI_PROVIDER
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Value:</span> anthropic
-                    </div>
-                  </div>
+            {/* Step 1: Free tier — Gemini */}
+            <div className="rounded-lg border-2 border-emerald-200 bg-emerald-50/30 p-4 dark:bg-emerald-950/10">
+              <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                ⭐⭐ FREE TIER — Gemini Flash (แนะนำ)
+              </p>
+              <ol className="mt-2 ml-4 list-decimal space-y-1 text-xs text-muted-foreground">
+                <li>
+                  ไป{' '}
                   <a
-                    href="https://vercel.com/dashboard"
+                    href="https://aistudio.google.com/app/apikey"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                    className="font-medium text-primary underline hover:no-underline"
                   >
-                    <ExternalLink className="h-3 w-3" />
-                    เปิด Vercel Dashboard
+                    Google AI Studio <ExternalLink className="inline h-3 w-3" />
+                  </a>{' '}
+                  · ฟรีไม่ต้องบัตร
+                </li>
+                <li>กด "Create API key" → เลือก "Create API key in new project"</li>
+                <li>
+                  Vercel → Add env: <code className="rounded bg-muted px-1">LUMENFI_FREE_AI_KEY</code> = <code>AIza...</code>
+                </li>
+                <li>
+                  Vercel → Add env: <code className="rounded bg-muted px-1">LUMENFI_FREE_AI_PROVIDER</code> = <code>gemini</code>
+                </li>
+              </ol>
+              <p className="mt-2 rounded bg-background/60 p-2 text-[10px] text-muted-foreground">
+                💰 Free tier บน Google: ฟรี 60 RPM · จ่ายเฉพาะถ้าเกิน · 1000 users ใช้เต็ม quota = ~฿3,500/เดือน
+              </p>
+            </div>
+
+            {/* Step 2: Pro tier — Claude */}
+            <div className="rounded-lg border bg-background p-4">
+              <p className="text-xs font-bold">PRO TIER — Claude Haiku 4.5</p>
+              <ol className="mt-2 ml-4 list-decimal space-y-1 text-xs text-muted-foreground">
+                <li>
+                  ไป{' '}
+                  <a
+                    href="https://console.anthropic.com/settings/keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary underline hover:no-underline"
+                  >
+                    Anthropic Console <ExternalLink className="inline h-3 w-3" />
                   </a>
-                </div>
-              </div>
+                </li>
+                <li>เติม credit ขั้นต่ำ $5 (~฿180)</li>
+                <li>กด "Create Key" → ตั้งชื่อ <code>Lumenfi Pro</code></li>
+                <li>
+                  Vercel → Add env: <code className="rounded bg-muted px-1">LUMENFI_AI_KEY</code> = <code>sk-ant-api03-...</code>
+                </li>
+                <li>
+                  Vercel → Add env: <code className="rounded bg-muted px-1">LUMENFI_AI_PROVIDER</code> = <code>anthropic</code>
+                </li>
+              </ol>
+              <p className="mt-2 rounded bg-muted/30 p-2 text-[10px] text-muted-foreground">
+                Pro user ใช้ ~฿20-25/เดือน · margin ที่ ฿149 = ~฿110 (74%)
+              </p>
             </div>
 
-            {/* Step 4 */}
+            {/* Step 3: Redeploy */}
             <div className="rounded-lg border bg-background p-4">
-              <div className="flex items-start gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">4</span>
-                <div className="flex-1">
-                  <p className="font-semibold">Redeploy Vercel</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    หลังเพิ่ม env เสร็จ → Vercel Dashboard → Deployments → ปุ่ม "..." → Redeploy
-                    <br />
-                    หรือ git push commit ใหม่ก็ deploy อัตโนมัติ
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Step 5 */}
-            <div className="rounded-lg border bg-background p-4">
-              <div className="flex items-start gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">5</span>
-                <div className="flex-1">
-                  <p className="font-semibold">ทดสอบ</p>
-                  <ul className="mt-1 ml-4 list-disc space-y-0.5 text-xs text-muted-foreground">
-                    <li>Refresh หน้านี้ → ควรเห็น "✅ พร้อมใช้งาน"</li>
-                    <li>เปิด <Link href="/advisor" className="text-primary hover:underline">/advisor</Link> ลองกด "วิเคราะห์ทันที"</li>
-                    <li>Free user ใช้ได้ 1 รายงาน/เดือน · Pro ใช้ได้ไม่จำกัด</li>
-                  </ul>
-                </div>
-              </div>
+              <p className="text-xs font-bold">FINAL — Redeploy</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Vercel Dashboard → Deployments → "..." → <b>Redeploy</b>
+                <br />
+                หรือ git push commit ใหม่ก็ deploy อัตโนมัติ
+              </p>
+              <p className="mt-2 rounded bg-background/60 p-2 text-[10px] text-muted-foreground">
+                หลัง redeploy → กลับมาหน้านี้ refresh → ดู status ทั้ง 2 tier เป็น ✅
+              </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Cost monitoring tip */}
+      {/* Safety tips */}
       <Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20">
         <CardContent className="p-4">
           <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">
-            💰 ตรวจสอบค่าใช้จ่าย
+            🛡️ ป้องกัน abuse + cost spike
           </p>
           <ul className="mt-1 ml-4 list-disc space-y-0.5 text-[11px] text-amber-800 dark:text-amber-300">
-            <li><a href="https://console.anthropic.com/settings/usage" target="_blank" rel="noopener noreferrer" className="underline">Anthropic Usage</a> — ดู spending แบบ real-time</li>
-            <li>ตั้ง <b>Spending limit</b> เพื่อกัน abuse</li>
-            <li>Lumenfi tracks ทุก call ใน <code>ai_usage_log</code> table — query ดูได้</li>
-            <li>ปกติ Free user ใช้ ~฿2-3/เดือน · Pro user ~฿20-25/เดือน</li>
+            <li>
+              ตั้ง <b>Spending limit</b> ที่ Anthropic + Google ทั้งคู่
+            </li>
+            <li>
+              ตรวจ <code>ai_usage_log</code> ใน Supabase หาผู้ใช้ที่ใช้ผิดปกติ
+            </li>
+            <li>
+              ลด Free quota ถ้าจำเป็น (แก้ใน <code>FREE_QUOTAS</code> ใน access.ts)
+            </li>
+            <li>
+              พิจารณา rate limiting per IP (เพิ่ม middleware)
+            </li>
+            <li>
+              Reset quota รายเดือน + ตัด accounts ที่ไม่ active 90+ วัน
+            </li>
           </ul>
         </CardContent>
       </Card>

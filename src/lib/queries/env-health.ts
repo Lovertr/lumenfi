@@ -46,23 +46,41 @@ export function checkEnvVars(): EnvCheck[] {
       category: 'core',
     },
 
-    // AI (Lumenfi key for Free + Pro users)
+    // AI for Pro tier (Pay-go + Pro subscription)
     {
       key: 'LUMENFI_AI_KEY',
       required: false,
       set: !!(env.LUMENFI_AI_KEY && env.LUMENFI_AI_KEY.length > 10),
-      description: 'AI key for Free quota + Pay-go + Pro users',
+      description: 'AI key for Pro tier (Pay-go + Pro subscription) — Claude Haiku recommended',
       category: 'ai',
       setupHint:
-        'Required for Free quota (5 chat/วัน + 1 advisor/เดือน), Pay-go credits, and Pro subscription. Without this, only BYO key users can use AI.',
+        'For paying users. Recommended: Claude Haiku 4.5 (good quality, ~฿20/user/month). Falls back to free-tier key if not set.',
     },
     {
       key: 'LUMENFI_AI_PROVIDER',
       required: false,
       set: !!env.LUMENFI_AI_PROVIDER,
-      description: 'AI provider name (anthropic/openai/gemini/openrouter)',
+      description: 'Provider for Pro tier (anthropic/openai/gemini/openrouter)',
       category: 'ai',
-      setupHint: 'Default: anthropic. Match your LUMENFI_AI_KEY provider.',
+      setupHint: 'Default: anthropic',
+    },
+    // AI for FREE tier (cheap model — for non-paying users)
+    {
+      key: 'LUMENFI_FREE_AI_KEY',
+      required: false,
+      set: !!(env.LUMENFI_FREE_AI_KEY && env.LUMENFI_FREE_AI_KEY.length > 10),
+      description: 'Cheap AI key for Free tier (Gemini Flash / GPT-4o-mini)',
+      category: 'ai',
+      setupHint:
+        '⭐ HIGHLY RECOMMENDED: Use cheap model for Free tier — saves 10-15× cost vs Claude. Gemini Flash ~฿3.5/user, GPT-4o-mini ~฿6.5/user. Falls back to LUMENFI_AI_KEY if not set.',
+    },
+    {
+      key: 'LUMENFI_FREE_AI_PROVIDER',
+      required: false,
+      set: !!env.LUMENFI_FREE_AI_PROVIDER,
+      description: 'Provider for Free tier (gemini/openai recommended)',
+      category: 'ai',
+      setupHint: 'Recommended: gemini (Flash 1.5/2.0) or openai (gpt-4o-mini)',
     },
 
     // Payment (Omise)
