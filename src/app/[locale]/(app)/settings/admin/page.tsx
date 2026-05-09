@@ -190,6 +190,16 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
               </div>
             </Link>
             <Link
+              href="/settings/admin/seed-demo"
+              className="flex items-start gap-2 rounded-md border bg-background/50 p-3 text-sm transition-colors hover:bg-muted/40"
+            >
+              <Database className="mt-0.5 h-4 w-4 text-primary" />
+              <div>
+                <p className="font-medium">Seed Demo Accounts</p>
+                <p className="text-[11px] text-muted-foreground">3 personas สำหรับ marketing</p>
+              </div>
+            </Link>
+            <Link
               href="/settings/admin/broadcast"
               className="flex items-start gap-2 rounded-md border bg-background/50 p-3 text-sm transition-colors hover:bg-muted/40"
             >
