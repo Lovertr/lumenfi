@@ -1,13 +1,19 @@
 import { Link } from '@/i18n/routing';
 import { Sparkles, ChevronRight } from 'lucide-react';
 
-export function AdvisorEntry({ summary, lastReport }: { summary?: string | null; lastReport?: { domain: string; created_at: string; title: string } | null }) {
+export function AdvisorEntry({
+  summary,
+  lastReport,
+}: {
+  summary?: string | null;
+  lastReport?: { domain: string; created_at: string; title: string } | null;
+}) {
   const lastTime = lastReport
     ? new Date(lastReport.created_at).toLocaleString('th-TH', { dateStyle: 'medium' })
     : null;
 
   return (
-    <Link href="/advisor">
+    <Link href="/advisor" className="block">
       <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500 via-purple-600 to-fuchsia-600 p-5 text-white shadow-md transition-all hover:shadow-xl">
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
         <div className="relative flex items-start justify-between">
