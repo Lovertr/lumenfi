@@ -1,9 +1,11 @@
 import { setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, CheckCircle2, AlertCircle, Database, Megaphone, Wrench } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle, Database, Megaphone, Wrench, Sparkles } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { checkMigrations } from '@/lib/queries/migration-health';
+import { checkEnvVars, envHealthScore, type EnvCheck } from '@/lib/queries/env-health';
+import { Key } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +14,13 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   setRequestLocale(locale);
 
   const migrations = await checkMigrations();
+  const envChecks = checkEnvVars();
+  const envScore = envHealthScore(envChecks);
+  const envByCategory = envChecks.reduce<Record<string, EnvCheck[]>>((acc, c) => {
+    if (!acc[c.category]) acc[c.category] = [];
+    acc[c.category].push(c);
+    return acc;
+  }, {});
   const allApplied = migrations.every((m) => m.applied);
   const pendingCount = migrations.filter((m) => !m.applied).length;
 
@@ -95,6 +104,73 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
         </CardContent>
       </Card>
 
+      {/* Env Vars Health */}
+      <Card className={envScore >= 90 ? 'border-success/30 bg-success/5' : envScore >= 60 ? 'border-amber-300 bg-amber-50/50 dark:bg-amber-950/20' : 'border-destructive/30 bg-destructive/5'}>
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <Key className={`h-5 w-5 shrink-0 ${envScore >= 90 ? 'text-success' : envScore >= 60 ? 'text-amber-600' : 'text-destructive'}`} />
+            <div className="flex-1">
+              <p className="text-sm font-semibold">
+                Environment Variables — {envScore}/100
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                ตั้งค่าใน Vercel Dashboard → Settings → Environment Variables
+              </p>
+            </div>
+          </div>
+
+          {Object.entries(envByCategory).map(([cat, items]) => {
+            const labels: Record<string, string> = {
+              core: '🔧 Core (Required)',
+              ai: '🤖 AI (Lumenfi Pro/Free)',
+              payment: '💳 Payment (Omise)',
+              push: '🔔 Push Notifications',
+              optional: '✨ Optional',
+            };
+            return (
+              <div key={cat} className="mt-3">
+                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {labels[cat] ?? cat}
+                </p>
+                <div className="space-y-1">
+                  {items.map((c) => (
+                    <div
+                      key={c.key}
+                      className={`rounded-md border p-2.5 text-xs ${
+                        c.set
+                          ? 'bg-background/60'
+                          : c.required
+                          ? 'border-destructive/40 bg-destructive/10'
+                          : 'border-amber-300 bg-amber-100/40 dark:bg-amber-950/30'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        {c.set ? (
+                          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                        ) : c.required ? (
+                          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
+                        ) : (
+                          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-mono text-[11px] font-semibold">{c.key}</p>
+                          <p className="mt-0.5 text-muted-foreground">{c.description}</p>
+                          {!c.set && c.setupHint && (
+                            <p className="mt-1 text-[10px] italic text-muted-foreground">
+                              💡 {c.setupHint}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+
       {/* Tools quick links */}
       <Card>
         <CardContent className="p-4">
@@ -103,6 +179,16 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
             เครื่องมือ Admin
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
+            <Link
+              href="/settings/admin/setup-ai"
+              className="flex items-start gap-2 rounded-md border bg-background/50 p-3 text-sm transition-colors hover:bg-muted/40"
+            >
+              <Sparkles className="mt-0.5 h-4 w-4 text-primary" />
+              <div>
+                <p className="font-medium">Setup Lumenfi AI</p>
+                <p className="text-[11px] text-muted-foreground">ตั้ง LUMENFI_AI_KEY</p>
+              </div>
+            </Link>
             <Link
               href="/settings/admin/broadcast"
               className="flex items-start gap-2 rounded-md border bg-background/50 p-3 text-sm transition-colors hover:bg-muted/40"

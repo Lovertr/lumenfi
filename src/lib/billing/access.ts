@@ -11,6 +11,10 @@ import { createClient } from '@/lib/supabase/server';
 import type { AIProvider } from '@/lib/ai/types';
 
 export type AIFeature = 'chat' | 'advisor' | 'secretary' | 'vision';
+
+function lumenfiKeyConfigured(): boolean {
+  return !!(process.env.LUMENFI_AI_KEY && process.env.LUMENFI_AI_KEY.length > 10);
+}
 export type BillingVia = 'byo' | 'subscription' | 'credits' | 'free';
 
 export interface AIAccess {
@@ -128,6 +132,18 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
 
   // ─── Path 1: Active Pro subscription → unlimited Lumenfi AI
   if (isProActive(ctx.subscription)) {
+    if (!lumenfiKeyConfigured()) {
+      // Pro user but Lumenfi key not set — fall through to BYO if available
+      if (ctx.hasBYOKey && ctx.byoProvider) {
+        return { allowed: true, via: 'byo', provider: ctx.byoProvider };
+      }
+      return {
+        allowed: false,
+        via: null,
+        reason: 'lumenfi_ai_not_configured',
+        upgradeUrl: '/ai/settings',
+      };
+    }
     return {
       allowed: true,
       via: 'subscription',
@@ -142,7 +158,7 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
   }
 
   // ─── Path 3: Pay-as-you-go credits (advisor only)
-  if (feature === 'advisor' && ctx.creditBalance > 0) {
+  if (feature === 'advisor' && ctx.creditBalance > 0 && lumenfiKeyConfigured()) {
     return {
       allowed: true,
       via: 'credits',
@@ -166,6 +182,14 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
 
   // Chat: 5 per day on Free
   if (feature === 'chat') {
+    if (!lumenfiKeyConfigured()) {
+      return {
+        allowed: false,
+        via: null,
+        reason: 'lumenfi_ai_not_configured',
+        upgradeUrl: '/ai/settings',
+      };
+    }
     const usedToday = await countUsage(ctx.userId, 'chat', 'day');
     if (usedToday >= FREE_QUOTAS.chat_per_day) {
       return {
@@ -192,6 +216,14 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
 
   // Advisor: 1 per month on Free
   if (feature === 'advisor') {
+    if (!lumenfiKeyConfigured()) {
+      return {
+        allowed: false,
+        via: null,
+        reason: 'lumenfi_ai_not_configured',
+        upgradeUrl: '/ai/settings',
+      };
+    }
     const usedThisMonth = await countUsage(ctx.userId, 'advisor', 'month');
     if (usedThisMonth >= FREE_QUOTAS.advisor_per_month) {
       return {
