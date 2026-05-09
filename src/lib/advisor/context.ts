@@ -3,6 +3,7 @@
 // Pulls EVERYTHING the AI needs to give holistic advice
 // ─────────────────────────────────────────────────────────
 
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { getDashboardData } from '@/lib/queries/dashboard';
 import { getPortfolioMetrics } from '@/lib/queries/portfolio';
@@ -113,7 +114,7 @@ function safeNum(n: any): number {
   return isFinite(v) ? v : 0;
 }
 
-export async function buildAdvisorSnapshot(): Promise<AdvisorSnapshot | null> {
+async function _buildAdvisorSnapshot(): Promise<AdvisorSnapshot | null> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
@@ -446,3 +447,6 @@ export function snapshotToMarkdown(s: AdvisorSnapshot): string {
 
   return lines.join('\n');
 }
+
+
+export const buildAdvisorSnapshot = cache(_buildAdvisorSnapshot);

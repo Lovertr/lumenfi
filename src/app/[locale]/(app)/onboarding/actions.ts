@@ -24,12 +24,26 @@ export async function completeOnboarding(formData: FormData) {
   const goalName = (formData.get('goal_name') as string)?.trim() || null;
   const goalAmount = numOrNull(formData.get('target_amount'));
 
+  // New: profile context fields
+  const employmentTypeRaw = (formData.get('employment_type') as string)?.trim() || null;
+  const employmentType =
+    employmentTypeRaw && ['employee','freelance','business_owner','student','retired','unemployed','other'].includes(employmentTypeRaw)
+      ? employmentTypeRaw
+      : null;
+  const riskRaw = (formData.get('risk_tolerance') as string)?.trim() || null;
+  const riskTolerance =
+    riskRaw && ['conservative','moderate','aggressive'].includes(riskRaw) ? riskRaw : null;
+  const financialGoalSummary = (formData.get('financial_goal_summary') as string)?.trim() || null;
+
   // Update profile
   await supabase
     .from('profiles')
     .update({
       monthly_income: monthlyIncome,
       monthly_expense_estimate: monthlyExpense,
+      employment_type: employmentType,
+      risk_tolerance: riskTolerance,
+      financial_goal_summary: financialGoalSummary,
       onboarded: true,
     })
     .eq('id', user.id);

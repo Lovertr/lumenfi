@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { computeAccountBalances } from './balances';
 import { calculateHealthScore } from '@/lib/utils';
@@ -31,7 +32,7 @@ export interface DashboardData {
   debtsCount: number;
 }
 
-export async function getDashboardData(): Promise<DashboardData> {
+async function _getDashboardData(): Promise<DashboardData> {
   const empty: DashboardData = {
     netWorth: 0,
     totalAssets: 0,
@@ -211,3 +212,6 @@ export async function getDashboardData(): Promise<DashboardData> {
     return empty;
   }
 }
+
+
+export const getDashboardData = cache(_getDashboardData);

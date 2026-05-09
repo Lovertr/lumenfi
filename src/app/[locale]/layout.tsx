@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { PWAInstaller } from '@/components/layout/pwa-installer';
 import { ThemeScript } from '@/components/layout/theme-toggle';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -70,6 +72,8 @@ export default async function LocaleLayout({
           {children}
           <PWAInstaller />
         </NextIntlClientProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

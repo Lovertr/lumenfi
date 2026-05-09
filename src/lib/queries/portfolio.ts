@@ -2,6 +2,7 @@
 // Portfolio analytics — for /investments dashboard
 // ─────────────────────────────────────────────────────────
 
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { getRatesToTHB } from '@/lib/fx/rates';
 
@@ -43,7 +44,7 @@ export interface PortfolioMetrics {
 
 const THAI_TYPES = new Set(['thai_stock', 'mutual_fund', 'reit', 'gold', 'fixed_deposit', 'lottery_savings']);
 
-export async function getPortfolioMetrics(): Promise<PortfolioMetrics> {
+async function _getPortfolioMetrics(): Promise<PortfolioMetrics> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -149,3 +150,6 @@ export async function getPortfolioMetrics(): Promise<PortfolioMetrics> {
     topLosers,
   };
 }
+
+
+export const getPortfolioMetrics = cache(_getPortfolioMetrics);
