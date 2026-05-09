@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from '@/i18n/routing';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { startCreditCheckout } from '@/app/[locale]/(app)/pricing/actions';
@@ -12,6 +13,7 @@ const PACKS = [
 ];
 
 export function CreditPackButtons() {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [activePack, setActivePack] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export function CreditPackButtons() {
     startTransition(async () => {
       const r = await startCreditCheckout(size);
       if (r.ok && r.checkoutUrl) {
-        window.location.href = r.checkoutUrl;
+        router.push(r.checkoutUrl as any);
       } else {
         setError(r.error ?? 'failed');
         setActivePack(null);

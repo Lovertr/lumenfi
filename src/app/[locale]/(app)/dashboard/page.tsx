@@ -16,6 +16,7 @@ import { AdvisorEntry } from '@/components/dashboard/advisor-entry';
 import { WhatsNewBanner } from '@/components/dashboard/whats-new-banner';
 import { SpotlightCard } from '@/components/dashboard/spotlight-card';
 import { FeatureTour } from '@/components/dashboard/feature-tour';
+import { ProfileCompletenessCard } from '@/components/dashboard/profile-completeness-card';
 import { getUnseenVersion } from '@/lib/queries/versions';
 import { getSpotlight } from '@/lib/queries/feature-spotlight';
 import { createClient } from '@/lib/supabase/server';
@@ -105,6 +106,28 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const unseenVersion = await getUnseenVersion().catch(() => null);
   const spotlight = await getSpotlight().catch(() => null);
 
+  // Compute profile completeness — surface a reminder if low
+  let profilePercent = 100;
+  if (user) {
+    try {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('occupation, employment_type, risk_tolerance, financial_goal_summary, income_salary_monthly, expense_food_monthly, expense_housing_monthly, monthly_income, monthly_expense_estimate')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (prof) {
+        const fields = [
+          prof.occupation, prof.employment_type, prof.risk_tolerance, prof.financial_goal_summary,
+          prof.income_salary_monthly, prof.expense_food_monthly, prof.expense_housing_monthly,
+          prof.monthly_income, prof.monthly_expense_estimate,
+        ];
+        const filled = fields.filter((f) => f !== null && f !== undefined && f !== '').length;
+        profilePercent = Math.round((filled / fields.length) * 100);
+      }
+    } catch {}
+  }
+  const showProfileReminder = profilePercent < 50;
+
   const data = await getDashboardData();
 
   return (
@@ -144,6 +167,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         )}
         <FeatureTour />
       </div>
+
+      {showProfileReminder && (
+        <ProfileCompletenessCard percent={profilePercent} />
+      )}
 
       {unseenVersion && (
         <WhatsNewBanner

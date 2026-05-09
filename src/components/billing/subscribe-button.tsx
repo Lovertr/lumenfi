@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from '@/i18n/routing';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { startSubscriptionCheckout } from '@/app/[locale]/(app)/pricing/actions';
 
 export function SubscribeButton() {
+  const router = useRouter();
   const [cycle, setCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +17,7 @@ export function SubscribeButton() {
     startTransition(async () => {
       const r = await startSubscriptionCheckout(cycle);
       if (r.ok && r.checkoutUrl) {
-        window.location.href = r.checkoutUrl;
+        router.push(r.checkoutUrl as any);
       } else {
         setError(r.error ?? 'failed');
       }
