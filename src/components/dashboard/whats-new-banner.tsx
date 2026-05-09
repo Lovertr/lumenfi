@@ -13,7 +13,7 @@ export function WhatsNewBanner({
   highlightCount: number;
 }) {
   return (
-    <Link href="/whats-new">
+    <Link href="/whats-new" className="block">
       <div className="group flex items-center gap-3 rounded-xl border-2 border-dashed border-primary/40 bg-gradient-to-r from-primary/5 to-purple-500/5 p-3 transition-all hover:border-primary/60 hover:from-primary/10 hover:to-purple-500/10">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-600 text-white">
           {isMajor ? <Star className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}

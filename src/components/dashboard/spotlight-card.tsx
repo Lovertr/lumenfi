@@ -28,7 +28,7 @@ export function SpotlightCard({ id, icon, title, description, url, cta }: Props)
   };
 
   return (
-    <Link href={url}>
+    <Link href={url} className="block">
       <div className="group relative overflow-hidden rounded-xl border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 transition-all hover:border-amber-300 hover:shadow-md dark:from-amber-950/30 dark:to-orange-950/30">
         <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-amber-300/20 blur-2xl" />
         <button

@@ -4,7 +4,7 @@ import { ChevronRight, Sparkles } from 'lucide-react';
 export function ProfileCompletenessCard({ percent }: { percent: number }) {
   const remaining = Math.max(0, 100 - percent);
   return (
-    <Link href="/settings/profile">
+    <Link href="/settings/profile" className="block">
       <div className="group flex items-center gap-3 rounded-xl border-2 border-dashed border-purple-300/60 bg-gradient-to-r from-purple-50 to-indigo-50 p-3 transition-all hover:border-purple-400 dark:from-purple-950/20 dark:to-indigo-950/20">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
           <Sparkles className="h-4 w-4" />
