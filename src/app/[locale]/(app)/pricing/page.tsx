@@ -147,7 +147,13 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             <p className="mt-2 text-3xl font-bold">
               ฿149 <span className="text-base font-normal text-muted-foreground">/ เดือน</span>
             </p>
-            <p className="text-xs text-muted-foreground">หรือ ฿1,490/ปี (ประหยัด 17%)</p>
+            <div className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <span>💰</span>
+              <span>รายปี ฿1,490 — ประหยัด ฿298/ปี</span>
+            </div>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              เริ่มทดลอง 14 วัน — ไม่ต้องใส่บัตรเครดิต
+            </p>
 
             <ul className="mt-5 space-y-2 text-sm">
               <li className="flex items-start gap-2">
