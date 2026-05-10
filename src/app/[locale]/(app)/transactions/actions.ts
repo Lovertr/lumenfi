@@ -17,6 +17,57 @@ const createSchema = z.object({
   note: z.string().max(500).nullable().optional(),
 });
 
+async function createInstallmentDebt(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  args: {
+    amount: number;
+    months: number;
+    rate: number;
+    accountId: string;
+    note: string | null;
+    txId?: string | null;
+    date: string;
+  }
+): Promise<string | null> {
+  const { months, rate, amount, accountId, note, txId, date } = args;
+  if (!Number.isFinite(months) || months < 2 || months > 60) return null;
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+
+  // Monthly payment with interest amortization (or even split if rate is 0)
+  let monthlyPayment: number;
+  if (rate <= 0) {
+    monthlyPayment = amount / months;
+  } else {
+    const r = rate / 100 / 12;
+    monthlyPayment = (amount * r) / (1 - Math.pow(1 + r, -months));
+  }
+
+  const debtType = rate <= 0 ? 'installment_zero' : 'credit_card';
+
+  const { data: created } = await supabase
+    .from('debts')
+    .insert({
+      user_id: userId,
+      name: note ? note.slice(0, 80) + ' (ผ่อน ' + months + ' เดือน)' : 'ผ่อน ' + months + ' เดือน',
+      type: debtType,
+      original_principal: amount,
+      current_balance: amount,
+      interest_rate: rate,
+      monthly_payment: Math.round(monthlyPayment * 100) / 100,
+      total_term: months,
+      remaining_term: months,
+      start_date: date,
+      status: 'active',
+      linked_account_id: accountId,
+      installment_origin_tx_id: txId ?? null,
+    })
+    .select('id')
+    .single();
+
+  return created?.id ?? null;
+}
+
 /**
  * Split a debt payment into principal and interest portions based on
  * the debt's current balance and annual interest rate.
@@ -185,6 +236,26 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
 
   if (goal_id) {
     await applyGoalContribution(supabase, user.id, goal_id, amount);
+  }
+
+  // Credit card installment: convert this expense to a long-term debt
+  const installmentMonths = parseInt((formData.get('installment_months') as string) ?? '0', 10) || 0;
+  const installmentRate = parseFloat((formData.get('installment_rate') as string) ?? '0') || 0;
+  if (
+    type === 'expense' &&
+    !parsed.data.debt_id &&
+    installmentMonths >= 2 &&
+    installmentMonths <= 60
+  ) {
+    await createInstallmentDebt(supabase, user.id, {
+      amount,
+      months: installmentMonths,
+      rate: installmentRate,
+      accountId: account_id,
+      note,
+      date,
+    });
+    revalidatePath('/debts');
   }
 
   if (isRecurring && !isNaN(dayOfMonth) && dayOfMonth >= 1 && dayOfMonth <= 31) {

@@ -10,7 +10,7 @@ import { createTransaction, updateTransaction } from '@/app/[locale]/(app)/trans
 import { scanReceipt, type ScanResult } from '@/app/[locale]/(app)/transactions/scan/actions';
 import { cn } from '@/lib/utils';
 import {
-  TrendingDown, TrendingUp, ArrowLeftRight, Repeat, Target, ArrowDown, Bell, Camera, Upload, Loader2, Trash2, CreditCard,
+  TrendingDown, TrendingUp, ArrowLeftRight, Repeat, Target, ArrowDown, Bell, Camera, Upload, Loader2, Trash2, CreditCard, Layers,
 } from 'lucide-react';
 
 interface Account {
@@ -191,6 +191,9 @@ export function TransactionForm({
   const [dayOfMonth, setDayOfMonth] = useState(1);
   const [goalId, setGoalId] = useState(defaults?.goal_id ?? '');
   const [debtId, setDebtId] = useState(defaults?.debt_id ?? '');
+  const [installmentEnabled, setInstallmentEnabled] = useState(false);
+  const [installmentMonths, setInstallmentMonths] = useState(6);
+  const [installmentRate, setInstallmentRate] = useState(0);
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [notifyDays, setNotifyDays] = useState(1);
 
@@ -263,6 +266,32 @@ export function TransactionForm({
     (selectedCat.name.includes('ชำระหนี้') ||
       selectedCat.name.toLowerCase().includes('debt'));
   const showDebtPicker = type === 'expense' && isDebtPaymentCat && debts.length > 0;
+
+  // Credit card installment toggle — only when paying via credit card account
+  // and not already a debt payment
+  const selectedAccount = accounts.find((a) => a.id === accountId);
+  const isCreditCard = selectedAccount?.type === 'credit_card';
+  const showInstallmentToggle =
+    type === 'expense' && isCreditCard && !isDebtPaymentCat;
+
+  // Calculate installment preview — read amount via DOM (ref is declared later)
+  function getCurrentAmount(): number {
+    const el = typeof document !== 'undefined'
+      ? (document.getElementById('amount') as HTMLInputElement | null)
+      : null;
+    const v = el?.value ?? '';
+    const n = parseFloat(v.replace(/,/g, ''));
+    return isNaN(n) ? 0 : n;
+  }
+  function calcMonthlyPayment(): number {
+    const amt = getCurrentAmount();
+    const m = installmentMonths;
+    const r = installmentRate;
+    if (amt <= 0 || m < 2) return 0;
+    if (r <= 0) return amt / m;
+    const mr = r / 100 / 12;
+    return (amt * mr) / (1 - Math.pow(1 + mr, -m));
+  }
   const selectedDebt = debts.find((d) => d.id === debtId);
   const amountInputRef = useRef<HTMLInputElement>(null);
   const [paymentPreview, setPaymentPreview] = useState<{ principal: number; interest: number } | null>(null);
@@ -606,6 +635,75 @@ export function TransactionForm({
                 คงเหลือหลังชำระ: ฿{Math.max(0, Number(selectedDebt.current_balance) - paymentPreview.principal).toLocaleString()}
               </p>
             </div>
+          )}
+        </div>
+      )}
+
+      {showInstallmentToggle && (
+        <div className="space-y-3 rounded-lg border-2 border-blue-200 bg-blue-50/40 p-3 dark:border-blue-800/40 dark:bg-blue-950/20">
+          <label className="flex items-center justify-between gap-2 text-sm font-medium text-blue-900 dark:text-blue-200">
+            <span className="flex items-center gap-1.5">
+              <Layers className="h-4 w-4" />
+              แบ่งผ่อนชำระบัตรเครดิต
+            </span>
+            <input
+              type="checkbox"
+              checked={installmentEnabled}
+              onChange={(e) => setInstallmentEnabled(e.target.checked)}
+              className="h-4 w-4 rounded"
+            />
+          </label>
+          {installmentEnabled && (
+            <>
+              <input type="hidden" name="installment_months" value={installmentMonths} />
+              <input type="hidden" name="installment_rate" value={installmentRate} />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">จำนวนงวด</Label>
+                  <select
+                    value={installmentMonths}
+                    onChange={(e) => setInstallmentMonths(parseInt(e.target.value, 10))}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    {[3, 4, 6, 9, 10, 12, 18, 24, 36, 48].map((m) => (
+                      <option key={m} value={m}>{m} เดือน</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">อัตราดอกเบี้ย (% ต่อปี)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="30"
+                    value={installmentRate}
+                    onChange={(e) => setInstallmentRate(parseFloat(e.target.value) || 0)}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              {getCurrentAmount() > 0 && (
+                <div className="rounded-md bg-background/60 p-3 text-xs">
+                  <p className="font-semibold text-blue-900 dark:text-blue-200">
+                    💳 จะสร้างหนี้ผ่อนชำระอัตโนมัติ
+                  </p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">ค่างวด/เดือน</p>
+                      <p className="font-bold">฿{Math.round(calcMonthlyPayment()).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">ยอดรวม {installmentMonths} งวด</p>
+                      <p className="font-bold">฿{Math.round(calcMonthlyPayment() * installmentMonths).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[10px] text-muted-foreground">
+                    หลังบันทึก ระบบจะสร้างหนี้ใน /debts ผูกกับบัตรนี้ — แต่ละเดือนเลือก category &quot;ชำระหนี้&quot; เพื่อบันทึกการจ่ายงวด
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
