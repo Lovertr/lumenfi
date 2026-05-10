@@ -122,24 +122,16 @@ async function applyDebtPayment(
     const interest = Math.round(manualOverride.interest * 100) / 100;
     split = { principal, interest };
   } else {
-    // Smart default per debt type
-    const type = String(debt.type ?? '');
-    const isRevolving = type === 'credit_card' || type === 'informal' || type === 'other';
-    if (isRevolving) {
-      // Revolving credit: interest is billed at cycle close, not accrued daily.
-      // Until user enters statement detail, treat the whole payment as principal.
-      split = {
-        principal: Math.min(Number(debt.current_balance ?? 0), paymentAmount),
-        interest: 0,
-      };
-    } else {
-      // Fixed-term loan (auto, mortgage, personal_loan, installment_zero, student_loan)
-      split = calculateDebtPaymentSplit(
-        Number(debt.current_balance ?? 0),
-        Number(debt.interest_rate ?? 0),
-        paymentAmount
-      );
-    }
+    // Auto default: 30-day amortization interest. This is correct for fixed-term
+    // loans (auto/mortgage/personal_loan/installment_zero/student_loan).
+    // For revolving credit (credit_card/informal/other) the actual interest is
+    // bank-billed per cycle and depends on days elapsed — the form defaults to
+    // manual mode for those, so the user enters the statement value directly.
+    split = calculateDebtPaymentSplit(
+      Number(debt.current_balance ?? 0),
+      Number(debt.interest_rate ?? 0),
+      paymentAmount
+    );
   }
 
   const newBalance = Math.max(0, Number(debt.current_balance ?? 0) - split.principal);

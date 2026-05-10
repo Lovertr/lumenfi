@@ -111,19 +111,14 @@ function DebtSplitEditor({
   const isRevolving =
     debt.type === 'credit_card' || debt.type === 'informal' || debt.type === 'other';
 
-  // For revolving credit, default to 100% principal until user enters statement
-  const defaultPrincipal = isRevolving
-    ? autoSplit
-      ? autoSplit.principal + autoSplit.interest // full payment to principal
-      : 0
-    : autoSplit?.principal ?? 0;
-  const defaultInterest = isRevolving ? 0 : autoSplit?.interest ?? 0;
+  // Revolving credit: default to manual mode because Lumenfi can't know
+  // how many days have elapsed since the last bill — daily interest is
+  // unknown until the bank reports it. User should enter from statement.
+  const [manual, setManual] = useState(isRevolving);
+  const [principal, setPrincipal] = useState(autoSplit?.principal ?? 0);
+  const [interest, setInterest] = useState(autoSplit?.interest ?? 0);
 
-  const [manual, setManual] = useState(false);
-  const [principal, setPrincipal] = useState(defaultPrincipal);
-  const [interest, setInterest] = useState(defaultInterest);
-
-  // Re-sync when autoSplit recalculates (amount changed)
+  // Re-sync when autoSplit recalculates (amount changed) — only in auto mode
   const lastAuto = useRef<{ p: number; i: number }>({ p: 0, i: 0 });
   if (
     !manual &&
@@ -132,13 +127,8 @@ function DebtSplitEditor({
       autoSplit.interest !== lastAuto.current.i)
   ) {
     lastAuto.current = { p: autoSplit.principal, i: autoSplit.interest };
-    if (isRevolving) {
-      setPrincipal(autoSplit.principal + autoSplit.interest);
-      setInterest(0);
-    } else {
-      setPrincipal(autoSplit.principal);
-      setInterest(autoSplit.interest);
-    }
+    setPrincipal(autoSplit.principal);
+    setInterest(autoSplit.interest);
   }
 
   return (
@@ -149,10 +139,14 @@ function DebtSplitEditor({
 
       <div className="flex items-center justify-between gap-2">
         <p className="font-semibold text-rose-900 dark:text-rose-200">
-          {manual ? '✏️ ระบุเอง' : '💡 แยกชำระอัตโนมัติ'}{' '}
+          {manual
+            ? isRevolving
+              ? '✏️ ใส่จาก statement'
+              : '✏️ ระบุเอง'
+            : '💡 แยกชำระอัตโนมัติ'}{' '}
           {!manual && (
             <span className="font-normal text-muted-foreground">
-              ({isRevolving ? 'หมุนเวียน — ลดต้น 100%' : `${debt.interest_rate}%/ปี`})
+              ({debt.interest_rate}%/ปี · 30 วัน)
             </span>
           )}
         </p>
@@ -161,7 +155,7 @@ function DebtSplitEditor({
           onClick={() => setManual(!manual)}
           className="text-[11px] font-medium text-primary underline-offset-2 hover:underline"
         >
-          {manual ? 'ใช้อัตโนมัติ' : 'ระบุเอง'}
+          {manual ? 'ใช้อัตโนมัติ' : 'ใส่จาก statement'}
         </button>
       </div>
 
@@ -205,9 +199,14 @@ function DebtSplitEditor({
         คงเหลือหลังชำระ: ฿
         {Math.max(0, Number(debt.current_balance) - Number(principal)).toLocaleString()}
       </p>
+      {isRevolving && manual && (
+        <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-300">
+          💡 ดูใบเสร็จ/statement จาก Finix/บัตรเครดิต/แอพธนาคาร แล้วกรอก "เงินต้นที่ชำระ" และ "ดอกเบี้ยที่ชำระ" จากเอกสารจริง
+        </p>
+      )}
       {isRevolving && !manual && (
         <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-300">
-          💡 สินเชื่อหมุนเวียนคิดดอกตามรอบบิล — ถ้ามี statement จริง กด "ระบุเอง" เพื่อใส่ตัวเลขจาก statement
+          ⚠️ สินเชื่อหมุนเวียนคิดดอกตามวันจริง — ตัวเลขนี้คำนวณจากรอบบิล 30 วันเต็ม (อาจสูงกว่าจริง) แนะนำใส่จาก statement
         </p>
       )}
     </div>
@@ -876,21 +875,4 @@ export function TransactionForm({
                 </div>
               )}
               {notifyEnabled && (
-                <p className="text-[11px] text-muted-foreground">{tForm('notifyHint')}</p>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-      )}
-
-      {state?.error && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {tErr(state.error)}
-        </div>
-      )}
-
-      <SubmitBtn />
-    </form>
-  );
-}
+                <p className="text-[11px] text-muted-foreground">{tFo
