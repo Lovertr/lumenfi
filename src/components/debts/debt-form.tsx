@@ -192,6 +192,43 @@ export function DebtForm({ defaults, mode }: { defaults?: DebtDefaults; mode: 'c
         </p>
       </div>
 
+      <div className="space-y-3 rounded-lg border bg-muted/20 p-3">
+        <div>
+          <p className="text-sm font-semibold">📅 รอบบิล (ถ้ามี)</p>
+          <p className="text-[11px] text-muted-foreground">
+            ใช้คำนวณดอกเบี้ยรายวันแม่นยำขึ้น และเตือนก่อนถึงกำหนด — ใส่ได้ทุกประเภทหนี้
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="statement_day">วันสรุปยอด</Label>
+            <Input
+              id="statement_day"
+              name="statement_day"
+              type="number"
+              min={1}
+              max={31}
+              placeholder="25"
+              defaultValue={defaults?.statement_day != null ? String(defaults.statement_day) : ''}
+            />
+            <p className="text-[10px] text-muted-foreground">วันที่ออกบิล (1-31)</p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="due_day">วันครบกำหนดชำระ</Label>
+            <Input
+              id="due_day"
+              name="due_day"
+              type="number"
+              min={1}
+              max={31}
+              placeholder="10"
+              defaultValue={defaults?.due_day != null ? String(defaults.due_day) : ''}
+            />
+            <p className="text-[10px] text-muted-foreground">วันสุดท้ายที่จ่ายได้</p>
+          </div>
+        </div>
+      </div>
+
       {state?.error && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {state.error}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,9 @@ interface Debt {
   interest_rate: number;
   monthly_payment: number | null;
   type: string;
+  start_date?: string | null;
+  statement_day?: number | null;
+  due_day?: number | null;
 }
 
 type Type = 'expense' | 'income' | 'transfer';
@@ -119,18 +122,13 @@ function DebtSplitEditor({
   const [principal, setPrincipal] = useState(autoSplit?.principal ?? 0);
   const [interest, setInterest] = useState(autoSplit?.interest ?? 0);
 
-  // Re-sync when autoSplit recalculates (amount changed) — only in auto mode
-  const lastAuto = useRef<{ p: number; i: number }>({ p: 0, i: 0 });
-  if (
-    !manual &&
-    autoSplit &&
-    (autoSplit.principal !== lastAuto.current.p ||
-      autoSplit.interest !== lastAuto.current.i)
-  ) {
-    lastAuto.current = { p: autoSplit.principal, i: autoSplit.interest };
-    setPrincipal(autoSplit.principal);
-    setInterest(autoSplit.interest);
-  }
+  // Re-sync when autoSplit changes — only in auto mode
+  useEffect(() => {
+    if (!manual && autoSplit) {
+      setPrincipal(autoSplit.principal);
+      setInterest(autoSplit.interest);
+    }
+  }, [manual, autoSplit?.principal, autoSplit?.interest]);
 
   return (
     <div className="mt-2 rounded-md bg-background/60 p-3 text-xs">
@@ -409,7 +407,7 @@ export function TransactionForm({
   const amountInputRef = useRef<HTMLInputElement>(null);
   const [paymentPreview, setPaymentPreview] = useState<{ principal: number; interest: number } | null>(null);
 
-  function recalcPreview(amountStr: string) {
+  function recalcPreview(amountStr: string, dateStr?: string) {
     if (!selectedDebt) {
       setPaymentPreview(null);
       return;
@@ -419,11 +417,43 @@ export function TransactionForm({
       setPaymentPreview(null);
       return;
     }
-    const monthlyRate = (Number(selectedDebt.interest_rate) || 0) / 100 / 12;
-    const interest = Math.min(
-      amt,
-      Math.max(0, Number(selectedDebt.current_balance) || 0) * monthlyRate
-    );
+    const dtype = String(selectedDebt.type ?? '');
+    const isRev = dtype === 'credit_card' || dtype === 'informal' || dtype === 'other';
+    const balance = Math.max(0, Number(selectedDebt.current_balance) || 0);
+    const annualRate = (Number(selectedDebt.interest_rate) || 0) / 100;
+
+    let interest: number;
+    if (isRev) {
+      // Mirror server's daily-rate logic. Baseline = statement_day this/last month
+      // if set, else start_date, else today. Server is authoritative — this is a preview.
+      const payDate = dateStr || (typeof document !== 'undefined'
+        ? (document.getElementById('date') as HTMLInputElement | null)?.value
+        : '') || new Date().toISOString().slice(0, 10);
+
+      let baselineIso = selectedDebt.start_date || payDate;
+      const stmtDay = Number(selectedDebt.statement_day) || 0;
+      if (stmtDay >= 1 && stmtDay <= 31) {
+        const pay = new Date(payDate);
+        const cand = new Date(pay.getFullYear(), pay.getMonth(), stmtDay);
+        if (cand.getTime() > pay.getTime()) cand.setMonth(cand.getMonth() - 1);
+        const stmtIso = cand.toISOString().slice(0, 10);
+        if (!selectedDebt.start_date || stmtIso > selectedDebt.start_date) {
+          baselineIso = stmtIso;
+        }
+      }
+
+      const dayMs = 86400000;
+      let days = Math.floor(
+        (new Date(payDate).getTime() - new Date(baselineIso).getTime()) / dayMs
+      );
+      if (!Number.isFinite(days) || days < 1) days = 1;
+      if (days > 31) days = 31;
+      interest = Math.min(amt, balance * annualRate * (days / 365));
+    } else {
+      // Fixed-term: 30-day amortization
+      const monthlyRate = annualRate / 12;
+      interest = Math.min(amt, balance * monthlyRate);
+    }
     const principal = Math.max(0, amt - interest);
     setPaymentPreview({
       principal: Math.round(principal * 100) / 100,
@@ -640,7 +670,14 @@ export function TransactionForm({
 
       <div className="space-y-2">
         <Label htmlFor="date">{tForm('date')}</Label>
-        <Input id="date" name="date" type="date" defaultValue={defaults?.date ?? today} required />
+        <Input
+          id="date"
+          name="date"
+          type="date"
+          defaultValue={defaults?.date ?? today}
+          required
+          onChange={(e) => recalcPreview(amountInputRef.current?.value ?? '', e.target.value)}
+        />
       </div>
 
       {goals.length > 0 && (

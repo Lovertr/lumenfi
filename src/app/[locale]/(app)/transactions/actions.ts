@@ -99,7 +99,7 @@ async function applyDebtPayment(
 ): Promise<{ principal: number; interest: number; newBalance: number } | null> {
   const { data: debt } = await supabase
     .from('debts')
-    .select('id, current_balance, interest_rate, type, start_date')
+    .select('id, current_balance, interest_rate, type, start_date, statement_day')
     .eq('id', debtId)
     .eq('user_id', userId)
     .maybeSingle();
@@ -127,7 +127,11 @@ async function applyDebtPayment(
     const isRevolving = type === 'credit_card' || type === 'informal' || type === 'other';
 
     if (isRevolving) {
-      // Daily interest accrual: find days since last payment (or start_date)
+      // Daily interest accrual baseline:
+      //   1) statement_day this/last month (if set)
+      //   2) last payment date
+      //   3) debt start_date
+      //   4) paymentDate (no accrual)
       const { data: lastTx } = await supabase
         .from('transactions')
         .select('date')
@@ -136,16 +140,27 @@ async function applyDebtPayment(
         .order('date', { ascending: false })
         .limit(1)
         .maybeSingle();
-      const baseline = lastTx?.date ?? debt.start_date ?? paymentDate;
+
+      let baseline = lastTx?.date ?? debt.start_date ?? paymentDate;
+      const stmtDay = Number((debt as any).statement_day) || 0;
+      if (stmtDay >= 1 && stmtDay <= 31) {
+        const pay = new Date(paymentDate);
+        const candidate = new Date(pay.getFullYear(), pay.getMonth(), stmtDay);
+        if (candidate.getTime() > pay.getTime()) {
+          candidate.setMonth(candidate.getMonth() - 1);
+        }
+        const stmtIso = candidate.toISOString().slice(0, 10);
+        const cands = [stmtIso, lastTx?.date, debt.start_date].filter(Boolean) as string[];
+        baseline = cands.sort().reverse()[0] ?? paymentDate;
+      }
+
       const dayMs = 86400000;
       let days = Math.max(
         0,
         Math.floor((new Date(paymentDate).getTime() - new Date(baseline).getTime()) / dayMs)
       );
-      // Cap at 30 days to prevent runaway accrual if user forgot to log
-      // (but allow 1+ days so first-time payment doesn't go all-principal)
       if (days < 1) days = 1;
-      if (days > 30) days = 30;
+      if (days > 31) days = 31;
 
       const balance = Math.max(0, Number(debt.current_balance ?? 0));
       const annualRate = (Number(debt.interest_rate) || 0) / 100;
@@ -429,6 +444,7 @@ export async function deleteTransaction(formData: FormData) {
   revalidatePath('/dashboard');
   revalidatePath('/goals');
   if (tx?.debt_id) revalidatePath('/debts');
+  redirect('/transactions');
 }
 
 

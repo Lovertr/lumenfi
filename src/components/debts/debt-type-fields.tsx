@@ -207,23 +207,13 @@ export function DebtTypeFields({
         </div>
       )}
 
-      {/* Credit card extras */}
+      {/* Credit limit only — statement/due day moved to main form */}
       {showCreditFields && (
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="space-y-2 sm:col-span-1">
-            <Label htmlFor="credit_limit">{isTh ? 'วงเงินบัตร' : 'Credit limit'}</Label>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">฿</span>
-              <Input id="credit_limit" name="credit_limit" type="text" inputMode="decimal" placeholder="100000" className="pl-6" />
-            </div>
-          </div>
-          <div className="space-y-2 sm:col-span-1">
-            <Label htmlFor="statement_day">{isTh ? 'วันสรุปยอด' : 'Statement day'}</Label>
-            <Input id="statement_day" name="statement_day" type="number" min={1} max={31} placeholder="25" />
-          </div>
-          <div className="space-y-2 sm:col-span-1">
-            <Label htmlFor="due_day">{isTh ? 'วันครบกำหนด' : 'Due day'}</Label>
-            <Input id="due_day" name="due_day" type="number" min={1} max={31} placeholder="10" />
+        <div className="space-y-2">
+          <Label htmlFor="credit_limit">{isTh ? 'วงเงินบัตร' : 'Credit limit'}</Label>
+          <div className="relative">
+            <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">฿</span>
+            <Input id="credit_limit" name="credit_limit" type="text" inputMode="decimal" placeholder="100000" className="pl-6" />
           </div>
         </div>
       )}
