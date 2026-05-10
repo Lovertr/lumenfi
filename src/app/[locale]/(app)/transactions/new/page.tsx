@@ -29,15 +29,27 @@ async function getGoals() {
   return data ?? [];
 }
 
+async function getDebts() {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('debts')
+    .select('id, name, current_balance, interest_rate, monthly_payment, type')
+    .eq('status', 'active')
+    .gt('current_balance', 0)
+    .order('current_balance', { ascending: false });
+  return data ?? [];
+}
+
 export default async function NewTransactionPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('Transactions');
 
-  const [accounts, categories, goals] = await Promise.all([
+  const [accounts, categories, goals, debts] = await Promise.all([
     getAccounts(),
     getCategories(),
     getGoals(),
+    getDebts(),
   ]);
 
   return (
@@ -60,6 +72,7 @@ export default async function NewTransactionPage({ params }: { params: Promise<{
             accounts={accounts as any}
             categories={categories as any}
             goals={goals as any}
+            debts={debts as any}
           />
         </CardContent>
       </Card>

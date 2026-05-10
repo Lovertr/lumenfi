@@ -10,7 +10,7 @@ import { createTransaction, updateTransaction } from '@/app/[locale]/(app)/trans
 import { scanReceipt, type ScanResult } from '@/app/[locale]/(app)/transactions/scan/actions';
 import { cn } from '@/lib/utils';
 import {
-  TrendingDown, TrendingUp, ArrowLeftRight, Repeat, Target, ArrowDown, Bell, Camera, Upload, Loader2, Trash2,
+  TrendingDown, TrendingUp, ArrowLeftRight, Repeat, Target, ArrowDown, Bell, Camera, Upload, Loader2, Trash2, CreditCard,
 } from 'lucide-react';
 
 interface Account {
@@ -31,6 +31,14 @@ interface Goal {
   id: string;
   name: string;
   icon: string | null;
+}
+interface Debt {
+  id: string;
+  name: string;
+  current_balance: number;
+  interest_rate: number;
+  monthly_payment: number | null;
+  type: string;
 }
 
 type Type = 'expense' | 'income' | 'transfer';
@@ -101,6 +109,7 @@ interface TransactionDefaults {
   to_account_id?: string | null;
   category_id?: string | null;
   goal_id?: string | null;
+  debt_id?: string | null;
   date?: string;
   note?: string | null;
 }
@@ -157,12 +166,14 @@ export function TransactionForm({
   accounts,
   categories,
   goals = [],
+  debts = [],
   mode = 'create',
   defaults,
 }: {
   accounts: Account[];
   categories: Category[];
   goals?: Goal[];
+  debts?: Debt[];
   mode?: 'create' | 'edit';
   defaults?: TransactionDefaults;
 }) {
@@ -179,6 +190,7 @@ export function TransactionForm({
   const [isRecurring, setIsRecurring] = useState(false);
   const [dayOfMonth, setDayOfMonth] = useState(1);
   const [goalId, setGoalId] = useState(defaults?.goal_id ?? '');
+  const [debtId, setDebtId] = useState(defaults?.debt_id ?? '');
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [notifyDays, setNotifyDays] = useState(1);
 
@@ -244,6 +256,38 @@ export function TransactionForm({
     (c) => c.type === type || c.type === 'both'
   );
   const isTransfer = type === 'transfer';
+
+  const selectedCat = categories.find((c) => c.id === categoryId);
+  const isDebtPaymentCat =
+    !!selectedCat &&
+    (selectedCat.name.includes('ชำระหนี้') ||
+      selectedCat.name.toLowerCase().includes('debt'));
+  const showDebtPicker = type === 'expense' && isDebtPaymentCat && debts.length > 0;
+  const selectedDebt = debts.find((d) => d.id === debtId);
+  const amountInputRef = useRef<HTMLInputElement>(null);
+  const [paymentPreview, setPaymentPreview] = useState<{ principal: number; interest: number } | null>(null);
+
+  function recalcPreview(amountStr: string) {
+    if (!selectedDebt) {
+      setPaymentPreview(null);
+      return;
+    }
+    const amt = parseFloat((amountStr || '0').replace(/,/g, ''));
+    if (isNaN(amt) || amt <= 0) {
+      setPaymentPreview(null);
+      return;
+    }
+    const monthlyRate = (Number(selectedDebt.interest_rate) || 0) / 100 / 12;
+    const interest = Math.min(
+      amt,
+      Math.max(0, Number(selectedDebt.current_balance) || 0) * monthlyRate
+    );
+    const principal = Math.max(0, amt - interest);
+    setPaymentPreview({
+      principal: Math.round(principal * 100) / 100,
+      interest: Math.round(interest * 100) / 100,
+    });
+  }
 
   if (isTransfer && toAccountId === accountId) {
     const alt = accounts.find((a) => a.id !== accountId);
@@ -367,6 +411,8 @@ export function TransactionForm({
             defaultValue={defaults?.amount != null ? String(defaults.amount) : ''}
             placeholder="0.00"
             className="pl-8 text-xl font-bold"
+            onChange={(e) => recalcPreview(e.target.value)}
+            ref={amountInputRef}
           />
         </div>
       </div>
@@ -488,6 +534,79 @@ export function TransactionForm({
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {showDebtPicker && (
+        <div className="space-y-2 rounded-lg border-2 border-rose-200 bg-rose-50/40 p-3 dark:border-rose-800/40 dark:bg-rose-950/20">
+          <Label className="flex items-center gap-1.5 text-rose-900 dark:text-rose-200">
+            <CreditCard className="h-4 w-4" />
+            ชำระหนี้รายการไหน?
+          </Label>
+          <input type="hidden" name="debt_id" value={debtId} />
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setDebtId('');
+                setPaymentPreview(null);
+              }}
+              className={cn(
+                'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                !debtId
+                  ? 'border-rose-500 bg-rose-100 text-rose-900 dark:bg-rose-900/30 dark:text-rose-100'
+                  : 'border-border bg-background hover:bg-muted/40'
+              )}
+            >
+              ไม่ผูกหนี้
+            </button>
+            {debts.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                onClick={() => {
+                  setDebtId(d.id);
+                  recalcPreview(amountInputRef.current?.value ?? '');
+                }}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                  debtId === d.id
+                    ? 'border-rose-500 bg-rose-100 text-rose-900 dark:bg-rose-900/30 dark:text-rose-100'
+                    : 'border-border bg-background hover:bg-muted/40'
+                )}
+              >
+                <CreditCard className="h-3 w-3" />
+                {d.name}
+                <span className="ml-1 text-[10px] text-muted-foreground">
+                  ฿{Number(d.current_balance).toLocaleString()}
+                </span>
+              </button>
+            ))}
+          </div>
+          {selectedDebt && paymentPreview && (
+            <div className="mt-2 rounded-md bg-background/60 p-3 text-xs">
+              <p className="font-semibold text-rose-900 dark:text-rose-200">
+                💡 แยกชำระอัตโนมัติ ({selectedDebt.interest_rate}% ต่อปี)
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <div className="rounded bg-emerald-50 p-2 dark:bg-emerald-950/30">
+                  <p className="text-[10px] text-muted-foreground">ลดต้น</p>
+                  <p className="font-bold text-emerald-700 dark:text-emerald-300">
+                    ฿{paymentPreview.principal.toLocaleString()}
+                  </p>
+                </div>
+                <div className="rounded bg-amber-50 p-2 dark:bg-amber-950/30">
+                  <p className="text-[10px] text-muted-foreground">ดอกเบี้ย</p>
+                  <p className="font-bold text-amber-700 dark:text-amber-300">
+                    ฿{paymentPreview.interest.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                คงเหลือหลังชำระ: ฿{Math.max(0, Number(selectedDebt.current_balance) - paymentPreview.principal).toLocaleString()}
+              </p>
+            </div>
+          )}
         </div>
       )}
 

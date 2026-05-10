@@ -148,3 +148,64 @@ export async function deleteDebt(formData: FormData) {
   revalidatePath('/dashboard');
   redirect('/debts');
 }
+
+// ─────────────────────────────────────────────────────────
+// Manual balance adjustment — when actual balance differs from app's
+// ─────────────────────────────────────────────────────────
+
+export async function adjustDebtBalance(
+  _prev: unknown,
+  formData: FormData
+): Promise<{ ok?: boolean; error?: string }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'unauthorized' };
+
+  const id = formData.get('debt_id') as string;
+  if (!id) return { error: 'debt_required' };
+
+  const newBalanceStr = (formData.get('new_balance') as string)?.replace(/,/g, '') ?? '0';
+  const newBalance = parseFloat(newBalanceStr);
+  if (isNaN(newBalance) || newBalance < 0) {
+    return { error: 'invalid_balance' };
+  }
+
+  const reason = (formData.get('reason') as string) || null;
+
+  const { data: debt } = await supabase
+    .from('debts')
+    .select('current_balance')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (!debt) return { error: 'debt_not_found' };
+
+  const previousBalance = Number(debt.current_balance ?? 0);
+  const delta = newBalance - previousBalance;
+
+  // Record audit
+  await supabase.from('debt_balance_adjustments').insert({
+    user_id: user.id,
+    debt_id: id,
+    new_balance: newBalance,
+    previous_balance: previousBalance,
+    delta,
+    reason,
+  });
+
+  // Update the debt
+  const { error: updErr } = await supabase
+    .from('debts')
+    .update({ current_balance: newBalance })
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (updErr) {
+    console.error('adjustDebtBalance:', updErr);
+    return { error: 'generic' };
+  }
+
+  revalidatePath('/debts');
+  revalidatePath('/dashboard');
+  return { ok: true };
+}

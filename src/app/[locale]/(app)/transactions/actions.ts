@@ -12,9 +12,79 @@ const createSchema = z.object({
   to_account_id: z.string().uuid().nullable().optional(),
   category_id: z.string().uuid().nullable().optional(),
   goal_id: z.string().uuid().nullable().optional(),
+  debt_id: z.string().uuid().nullable().optional(),
   date: z.string(),
   note: z.string().max(500).nullable().optional(),
 });
+
+/**
+ * Split a debt payment into principal and interest portions based on
+ * the debt's current balance and annual interest rate.
+ */
+export function calculateDebtPaymentSplit(
+  currentBalance: number,
+  annualRatePercent: number,
+  paymentAmount: number
+): { principal: number; interest: number } {
+  const monthlyRate = (Number(annualRatePercent) || 0) / 100 / 12;
+  const interest = Math.min(
+    paymentAmount,
+    Math.max(0, Number(currentBalance) || 0) * monthlyRate
+  );
+  const principal = Math.max(0, paymentAmount - interest);
+  return {
+    principal: Math.round(principal * 100) / 100,
+    interest: Math.round(interest * 100) / 100,
+  };
+}
+
+async function applyDebtPayment(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  debtId: string,
+  paymentAmount: number
+): Promise<{ principal: number; interest: number; newBalance: number } | null> {
+  const { data: debt } = await supabase
+    .from('debts')
+    .select('id, current_balance, interest_rate')
+    .eq('id', debtId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (!debt) return null;
+  const split = calculateDebtPaymentSplit(
+    Number(debt.current_balance ?? 0),
+    Number(debt.interest_rate ?? 0),
+    paymentAmount
+  );
+  const newBalance = Math.max(0, Number(debt.current_balance ?? 0) - split.principal);
+  await supabase
+    .from('debts')
+    .update({ current_balance: newBalance })
+    .eq('id', debtId)
+    .eq('user_id', userId);
+  return { ...split, newBalance };
+}
+
+async function reverseDebtPayment(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  debtId: string,
+  principalAmount: number
+) {
+  const { data: debt } = await supabase
+    .from('debts')
+    .select('current_balance')
+    .eq('id', debtId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (!debt) return;
+  const restored = Number(debt.current_balance ?? 0) + Math.max(0, Number(principalAmount) || 0);
+  await supabase
+    .from('debts')
+    .update({ current_balance: restored })
+    .eq('id', debtId)
+    .eq('user_id', userId);
+}
 
 async function applyGoalContribution(
   supabase: ReturnType<typeof createClient>,
@@ -67,6 +137,7 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
   }
 
   const goal_id = (formData.get('goal_id') as string) || null;
+  const debt_id = (formData.get('debt_id') as string) || null;
   const date = (formData.get('date') as string) || new Date().toISOString();
   const note = (formData.get('note') as string) || null;
   const isRecurring = formData.get('is_recurring') === 'on';
@@ -82,6 +153,7 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
     to_account_id: type === 'transfer' ? to_account_id : null,
     category_id,
     goal_id,
+    debt_id: type === 'expense' ? debt_id : null,
     date,
     note,
   });
@@ -89,13 +161,25 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
     return { error: 'generic' as const };
   }
 
+  // Apply debt payment first (so we can store the split on the transaction row)
+  let debtSplit: { principal: number; interest: number } | null = null;
+  if (parsed.data.debt_id) {
+    const r = await applyDebtPayment(supabase, user.id, parsed.data.debt_id, amount);
+    if (r) debtSplit = { principal: r.principal, interest: r.interest };
+  }
+
   const { error } = await supabase.from('transactions').insert({
     ...parsed.data,
     user_id: user.id,
+    debt_principal_amount: debtSplit?.principal ?? null,
+    debt_interest_amount: debtSplit?.interest ?? null,
   });
 
   if (error) {
     console.error('createTransaction:', error);
+    if (parsed.data.debt_id && debtSplit) {
+      await reverseDebtPayment(supabase, user.id, parsed.data.debt_id, debtSplit.principal);
+    }
     return { error: 'generic' as const };
   }
 
@@ -130,6 +214,7 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
   revalidatePath('/dashboard');
   revalidatePath('/recurring');
   revalidatePath('/goals');
+  if (parsed.data.debt_id) revalidatePath('/debts');
   redirect('/transactions');
 }
 
@@ -147,10 +232,15 @@ export async function deleteTransaction(formData: FormData) {
 
   const { data: tx } = await supabase
     .from('transactions')
-    .select('goal_id, amount')
+    .select('goal_id, amount, debt_id, debt_principal_amount')
     .eq('id', id)
     .eq('user_id', user.id)
     .maybeSingle();
+
+  // Reverse debt balance if this was a debt payment
+  if (tx?.debt_id && tx?.debt_principal_amount) {
+    await reverseDebtPayment(supabase, user.id, tx.debt_id, Number(tx.debt_principal_amount));
+  }
 
   if (tx?.goal_id) {
     const { data: goal } = await supabase
@@ -173,6 +263,7 @@ export async function deleteTransaction(formData: FormData) {
   revalidatePath('/transactions');
   revalidatePath('/dashboard');
   revalidatePath('/goals');
+  if (tx?.debt_id) revalidatePath('/debts');
 }
 
 

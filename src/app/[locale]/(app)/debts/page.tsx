@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Plus, CreditCard, ArrowLeft, Pencil, Target as TargetIcon, Mountain, Snowflake } from 'lucide-react';
 import { Link as IntlLink } from '@/i18n/routing';
 import { debtTypeConfig, type DebtType } from '@/components/debts/debt-type-config';
+import { AdjustBalanceDialog } from '@/components/debts/adjust-balance-dialog';
 
 export const dynamic = 'force-dynamic';
 
@@ -197,6 +198,13 @@ export default async function DebtsPage({ params }: { params: Promise<{ locale: 
                           {formatTHB(Number(debt.monthly_payment))}/mo
                         </p>
                       )}
+                      <div className="mt-1.5 flex justify-end">
+                        <AdjustBalanceDialog
+                          debtId={debt.id}
+                          debtName={debt.name}
+                          currentBalance={Number(debt.current_balance)}
+                        />
+                      </div>
                     </div>
                     <Pencil className="h-4 w-4 shrink-0 text-muted-foreground" />
                   </CardContent>
