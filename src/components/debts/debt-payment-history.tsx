@@ -31,36 +31,64 @@ async function loadHistory(debtId: string): Promise<Event[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const [txRes, adjRes] = await Promise.all([
-    supabase
+  // Fetch transactions linked to this debt — defensive
+  let txs: any[] = [];
+  try {
+    const r = await supabase
       .from('transactions')
       .select(
-        'id, amount, date, note, debt_principal_amount, debt_interest_amount, account:accounts ( name, color )'
+        'id, amount, date, note, account_id, debt_principal_amount, debt_interest_amount'
       )
       .eq('debt_id', debtId)
       .eq('user_id', user.id)
       .order('date', { ascending: false })
-      .limit(50),
-    supabase
+      .limit(100);
+    if (!r.error) txs = r.data ?? [];
+  } catch {}
+
+  // Fetch balance adjustments
+  let adjs: any[] = [];
+  try {
+    const r = await supabase
       .from('debt_balance_adjustments')
       .select('id, new_balance, previous_balance, delta, reason, created_at')
       .eq('debt_id', debtId)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .limit(50),
-  ]);
+      .limit(100);
+    if (!r.error) adjs = r.data ?? [];
+  } catch {}
 
-  const txs = (txRes.data ?? []).map((t: any) => ({
-    kind: 'payment' as const,
-    ...t,
-    account: Array.isArray(t.account) ? t.account[0] ?? null : t.account,
-  }));
-  const adjs = (adjRes.data ?? []).map((a: any) => ({
-    kind: 'adjustment' as const,
-    ...a,
-  }));
+  // In-memory account lookup
+  const accountIds = Array.from(
+    new Set(txs.map((t) => t.account_id).filter(Boolean) as string[])
+  );
+  const accountMap: Record<string, { name: string; color: string }> = {};
+  if (accountIds.length > 0) {
+    try {
+      const { data } = await supabase
+        .from('accounts')
+        .select('id, name, color')
+        .in('id', accountIds);
+      for (const a of (data ?? []) as any[]) {
+        accountMap[a.id] = { name: a.name, color: a.color };
+      }
+    } catch {}
+  }
 
-  const events: Event[] = [...txs, ...adjs];
+  const events: Event[] = [
+    ...txs.map((t: any) => ({
+      kind: 'payment' as const,
+      id: t.id,
+      amount: t.amount,
+      date: t.date,
+      note: t.note,
+      debt_principal_amount: t.debt_principal_amount,
+      debt_interest_amount: t.debt_interest_amount,
+      account: t.account_id ? accountMap[t.account_id] ?? null : null,
+    })),
+    ...adjs.map((a: any) => ({ kind: 'adjustment' as const, ...a })),
+  ];
   events.sort((a, b) => {
     const ad = a.kind === 'payment' ? a.date : a.created_at.slice(0, 10);
     const bd = b.kind === 'payment' ? b.date : b.created_at.slice(0, 10);

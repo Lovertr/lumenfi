@@ -301,16 +301,35 @@ export async function deleteTransaction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { data: tx } = await supabase
-    .from('transactions')
-    .select('goal_id, amount, debt_id, debt_principal_amount')
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .maybeSingle();
+  // Try the new query (with debt fields). If migration 21 hasn't run, fall back.
+  let tx: any = null;
+  {
+    const r = await supabase
+      .from('transactions')
+      .select('goal_id, amount, debt_id, debt_principal_amount')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (r.error) {
+      const fallback = await supabase
+        .from('transactions')
+        .select('goal_id, amount')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      tx = fallback.data;
+    } else {
+      tx = r.data;
+    }
+  }
 
   // Reverse debt balance if this was a debt payment
   if (tx?.debt_id && tx?.debt_principal_amount) {
-    await reverseDebtPayment(supabase, user.id, tx.debt_id, Number(tx.debt_principal_amount));
+    try {
+      await reverseDebtPayment(supabase, user.id, tx.debt_id, Number(tx.debt_principal_amount));
+    } catch (e) {
+      console.error('reverseDebtPayment failed:', e);
+    }
   }
 
   if (tx?.goal_id) {
