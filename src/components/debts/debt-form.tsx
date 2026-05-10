@@ -179,7 +179,7 @@ export function DebtForm({ defaults, mode }: { defaults?: DebtDefaults; mode: 'c
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="start_date">{t('startDate')}</Label>
+        <Label htmlFor="start_date">วันที่เริ่มสัญญา (วันกู้/รับสินเชื่อ)</Label>
         <Input
           id="start_date"
           name="start_date"
@@ -187,6 +187,9 @@ export function DebtForm({ defaults, mode }: { defaults?: DebtDefaults; mode: 'c
           defaultValue={defaults?.start_date ?? today}
           required
         />
+        <p className="text-[11px] text-muted-foreground">
+          💡 ใช้เป็นจุดอ้างอิงสำหรับคำนวณดอกเบี้ยตามวันจริง — ถ้าจำไม่ได้แน่นอนใส่ใกล้เคียงก็ได้
+        </p>
       </div>
 
       {state?.error && (
