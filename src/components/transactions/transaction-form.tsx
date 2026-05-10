@@ -112,8 +112,8 @@ function DebtSplitEditor({
     debt.type === 'credit_card' || debt.type === 'informal' || debt.type === 'other';
 
   // Revolving credit: default to manual mode because Lumenfi can't know
-  // how many days have elapsed since the last bill — daily interest is
-  // unknown until the bank reports it. User should enter from statement.
+  // how many days have elapsed since the last bill. User should enter
+  // numbers from the statement directly.
   const [manual, setManual] = useState(isRevolving);
   const [principal, setPrincipal] = useState(autoSplit?.principal ?? 0);
   const [interest, setInterest] = useState(autoSplit?.interest ?? 0);
@@ -875,4 +875,21 @@ export function TransactionForm({
                 </div>
               )}
               {notifyEnabled && (
-                <p className="text-[11px] text-muted-foreground">{tFo
+                <p className="text-[11px] text-muted-foreground">{tForm('notifyHint')}</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      )}
+
+      {state?.error && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {tErr(state.error)}
+        </div>
+      )}
+
+      <SubmitBtn />
+    </form>
+  );
+}
