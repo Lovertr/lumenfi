@@ -444,8 +444,10 @@ export function TransactionForm({
 
     let interest: number;
     if (isRev) {
-      // Mirror server's daily-rate logic. Baseline = statement_day this/last month
-      // if set, else start_date, else today. Server is authoritative — this is a preview.
+      // Client preview — uses statement_day or start_date as baseline.
+      // Server is authoritative and uses last_payment date when available
+      // (more accurate for repeat payments). This client estimate is for
+      // first-time payments; second-time may differ from final value.
       const payDate = dateStr || (typeof document !== 'undefined'
         ? (document.getElementById('date') as HTMLInputElement | null)?.value
         : '') || new Date().toISOString().slice(0, 10);

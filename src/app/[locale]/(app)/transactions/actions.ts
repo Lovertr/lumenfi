@@ -144,17 +144,29 @@ async function applyDebtPayment(
         .limit(1)
         .maybeSingle();
 
-      let baseline = lastTx?.date ?? debt.start_date ?? paymentDate;
-      const stmtDay = Number((debt as any).statement_day) || 0;
-      if (stmtDay >= 1 && stmtDay <= 31) {
-        const pay = new Date(paymentDate);
-        const candidate = new Date(pay.getFullYear(), pay.getMonth(), stmtDay);
-        if (candidate.getTime() > pay.getTime()) {
-          candidate.setMonth(candidate.getMonth() - 1);
+      // Priority: last payment > statement_day-recent > start_date > paymentDate.
+      // After a payment, interest accrues from that payment forward — using
+      // statement_day in between would under-estimate.
+      let baseline: string;
+      if (lastTx?.date) {
+        baseline = lastTx.date;
+      } else {
+        const stmtDay = Number((debt as any).statement_day) || 0;
+        if (stmtDay >= 1 && stmtDay <= 31) {
+          const pay = new Date(paymentDate);
+          const candidate = new Date(pay.getFullYear(), pay.getMonth(), stmtDay);
+          if (candidate.getTime() > pay.getTime()) {
+            candidate.setMonth(candidate.getMonth() - 1);
+          }
+          const stmtIso = candidate.toISOString().slice(0, 10);
+          // Use whichever is later: stmt-recent or start_date (don't go before
+          // contract start)
+          baseline = debt.start_date && debt.start_date > stmtIso
+            ? debt.start_date
+            : stmtIso;
+        } else {
+          baseline = debt.start_date ?? paymentDate;
         }
-        const stmtIso = candidate.toISOString().slice(0, 10);
-        const cands = [stmtIso, lastTx?.date, debt.start_date].filter(Boolean) as string[];
-        baseline = cands.sort().reverse()[0] ?? paymentDate;
       }
 
       const dayMs = 86400000;
