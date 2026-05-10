@@ -304,6 +304,12 @@ export function TransactionForm({
   const [dayOfMonth, setDayOfMonth] = useState(1);
   const [goalId, setGoalId] = useState(defaults?.goal_id ?? '');
   const [debtId, setDebtId] = useState(defaults?.debt_id ?? '');
+  const [amountValue, setAmountValue] = useState<string>(
+    defaults?.amount != null ? String(defaults.amount) : ''
+  );
+  const [dateValue, setDateValue] = useState<string>(
+    defaults?.date ?? new Date().toISOString().slice(0, 10)
+  );
   const [installmentEnabled, setInstallmentEnabled] = useState(false);
   const [installmentMonths, setInstallmentMonths] = useState(6);
   const [installmentRate, setInstallmentRate] = useState(0);
@@ -408,6 +414,13 @@ export function TransactionForm({
   const selectedDebt = debts.find((d) => d.id === debtId);
   const amountInputRef = useRef<HTMLInputElement>(null);
   const [paymentPreview, setPaymentPreview] = useState<{ principal: number; interest: number } | null>(null);
+
+  // Auto-recalc preview when debt/amount/date changes — using state values
+  // (not refs) avoids stale-closure issues when setDebtId fires alongside.
+  useEffect(() => {
+    recalcPreview(amountValue, dateValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debtId, amountValue, dateValue]);
 
   function recalcPreview(amountStr: string, dateStr?: string) {
     if (!selectedDebt) {
@@ -588,7 +601,10 @@ export function TransactionForm({
             defaultValue={defaults?.amount != null ? String(defaults.amount) : ''}
             placeholder="0.00"
             className="pl-8 text-xl font-bold"
-            onChange={(e) => recalcPreview(e.target.value)}
+            onChange={(e) => {
+              setAmountValue(e.target.value);
+              recalcPreview(e.target.value);
+            }}
             ref={amountInputRef}
           />
         </div>
@@ -681,7 +697,10 @@ export function TransactionForm({
           type="date"
           defaultValue={defaults?.date ?? today}
           required
-          onChange={(e) => recalcPreview(amountInputRef.current?.value ?? '', e.target.value)}
+          onChange={(e) => {
+            setDateValue(e.target.value);
+            recalcPreview(amountInputRef.current?.value ?? '', e.target.value);
+          }}
         />
       </div>
 
