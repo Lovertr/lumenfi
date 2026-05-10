@@ -21,7 +21,7 @@ const createSchema = z.object({
  * Split a debt payment into principal and interest portions based on
  * the debt's current balance and annual interest rate.
  */
-export function calculateDebtPaymentSplit(
+function calculateDebtPaymentSplit(
   currentBalance: number,
   annualRatePercent: number,
   paymentAmount: number
