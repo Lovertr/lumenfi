@@ -339,10 +339,12 @@ export function TransactionForm({
       if (r.total != null) {
         const input = document.getElementById('amount') as HTMLInputElement | null;
         if (input) input.value = String(r.total);
+        setAmountValue(String(r.total));
       }
       if (r.date) {
         const input = document.getElementById('date') as HTMLInputElement | null;
         if (input) input.value = r.date;
+        setDateValue(r.date);
       }
       if (r.category) {
         const lower = r.category.toLowerCase();
