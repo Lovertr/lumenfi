@@ -100,7 +100,17 @@ export function DebtForm({ defaults, mode }: { defaults?: DebtDefaults; mode: 'c
         <Input id="lender" name="lender" defaultValue={defaults?.lender ?? ''} placeholder="KTC, SCB, ..." />
       </div>
 
-      <DebtTypeFields type={type} isTh={locale === 'th'} />
+      <DebtTypeFields
+        type={type}
+        isTh={locale === 'th'}
+        defaults={{
+          rate_type: defaults?.rate_type,
+          lock_in_months: defaults?.lock_in_months,
+          promo_end_date: defaults?.promo_end_date,
+          post_promo_rate: defaults?.post_promo_rate,
+          credit_limit: defaults?.credit_limit,
+        }}
+      />
 
       <div className="space-y-2">
         <Label htmlFor="current_balance">{t('currentBalance')}</Label>
@@ -116,6 +126,24 @@ export function DebtForm({ defaults, mode }: { defaults?: DebtDefaults; mode: 'c
             className="pl-8"
           />
         </div>
+        <p className="text-[11px] text-muted-foreground">
+          💡 ยอดที่ยังต้องชำระ ณ ตอนนี้ — สำหรับบัตรเครดิต/สินเชื่อหมุนเวียนคือ <strong>ยอดค้างในใบแจ้งหนี้ล่าสุด</strong>
+        </p>
+        {(() => {
+          const cb = parseFloat(String(defaults?.current_balance ?? '0').replace(/,/g, '')) || 0;
+          const cl = Number(defaults?.credit_limit ?? 0);
+          if (cl > 0 && cb >= 0) {
+            const available = Math.max(0, cl - cb);
+            return (
+              <div className="rounded-md bg-emerald-50 px-3 py-2 text-xs dark:bg-emerald-950/30">
+                <span className="text-emerald-700 dark:text-emerald-300">
+                  วงเงินคงเหลือ: <strong>฿{available.toLocaleString()}</strong> / ฿{cl.toLocaleString()}
+                </span>
+              </div>
+            );
+          }
+          return null;
+        })()}
       </div>
 
       <div className="space-y-2">
@@ -132,6 +160,9 @@ export function DebtForm({ defaults, mode }: { defaults?: DebtDefaults; mode: 'c
             className="pl-8"
           />
         </div>
+        <p className="text-[11px] text-muted-foreground">
+          💡 ยอดที่ <strong>กู้/รับสินเชื่อ</strong> ตอนเริ่ม — ใช้คำนวณว่าใช้ไปกี่ % แล้ว (ไม่เปลี่ยนแม้จ่ายแล้ว)
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">

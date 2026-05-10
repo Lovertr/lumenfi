@@ -43,14 +43,25 @@ export const RATE_TYPE_HINT: Record<string, { label_th: string; label_en: string
 
 interface RateStep { from_month: number; to_month: number | null; rate: string; }
 
+interface DebtFieldDefaults {
+  rate_type?: string | null;
+  lock_in_months?: number | null;
+  promo_end_date?: string | null;
+  post_promo_rate?: number | null;
+  credit_limit?: number | null;
+  rate_schedule?: any;
+}
+
 export function DebtTypeFields({
   type,
   isTh,
+  defaults,
 }: {
   type: DebtType;
   isTh: boolean;
+  defaults?: DebtFieldDefaults;
 }) {
-  // Default rate_type per debt type
+  // Default rate_type per debt type (used only when no saved value)
   const defaultRateType =
     type === 'mortgage' ? 'stepped' :
     type === 'auto_loan' ? 'flat' :
@@ -59,7 +70,7 @@ export function DebtTypeFields({
     type === 'student_loan' ? 'reducing' :
     'reducing';
 
-  const [rateType, setRateType] = useState<string>(defaultRateType);
+  const [rateType, setRateType] = useState<string>(defaults?.rate_type ?? defaultRateType);
 
   // Stepped schedule for mortgage
   const [steps, setSteps] = useState<RateStep[]>(
@@ -184,7 +195,7 @@ export function DebtTypeFields({
           <Label htmlFor="lock_in_months">
             {isTh ? 'Lock-in period (เดือน)' : 'Lock-in period (months)'}
           </Label>
-          <Input id="lock_in_months" name="lock_in_months" type="number" min={0} max={120} defaultValue="36" />
+          <Input id="lock_in_months" name="lock_in_months" type="number" min={0} max={120} defaultValue={defaults?.lock_in_months != null ? String(defaults.lock_in_months) : "36"} />
           <p className="text-[11px] text-muted-foreground">
             {isTh
               ? 'ช่วงห้ามรีไฟแนนซ์ (มาตรฐาน 36 เดือน) — ถ้าปิดก่อนโดนค่าปรับ 1-3%'
@@ -198,11 +209,11 @@ export function DebtTypeFields({
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="promo_end_date">{isTh ? 'วันสิ้นสุดโปรโมชัน' : 'Promo end date'}</Label>
-            <Input id="promo_end_date" name="promo_end_date" type="date" />
+            <Input id="promo_end_date" name="promo_end_date" type="date" defaultValue={defaults?.promo_end_date ?? ""} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="post_promo_rate">{isTh ? 'ดอกหลังหมดโปร %/ปี' : 'Post-promo rate %/yr'}</Label>
-            <Input id="post_promo_rate" name="post_promo_rate" type="text" inputMode="decimal" defaultValue="18" placeholder="18" />
+            <Input id="post_promo_rate" name="post_promo_rate" type="text" inputMode="decimal" defaultValue={defaults?.post_promo_rate != null ? String(defaults.post_promo_rate) : "18"} placeholder="18" />
           </div>
         </div>
       )}
@@ -213,7 +224,7 @@ export function DebtTypeFields({
           <Label htmlFor="credit_limit">{isTh ? 'วงเงินบัตร' : 'Credit limit'}</Label>
           <div className="relative">
             <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">฿</span>
-            <Input id="credit_limit" name="credit_limit" type="text" inputMode="decimal" placeholder="100000" className="pl-6" />
+            <Input id="credit_limit" name="credit_limit" type="text" inputMode="decimal" placeholder="100000" className="pl-6" defaultValue={defaults?.credit_limit != null ? String(defaults.credit_limit) : ""} />
           </div>
         </div>
       )}
