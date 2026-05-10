@@ -42,15 +42,15 @@ drop policy if exists "dba_delete_own" on debt_balance_adjustments;
 create policy "dba_delete_own" on debt_balance_adjustments
   for delete using (auth.uid() = user_id);
 
--- Add "ชำระหนี้" / "Debt Payment" category for existing users who don't have it.
--- New users will get it via seed_default_categories (we update that function below).
+-- Add "ชำระหนี้" / "Debt Payment" category for every existing user who
+-- doesn't have it. New users get it via the auto-seed helper in
+-- src/lib/categories.ts.
 do $$
 declare
   v_user record;
 begin
   for v_user in select distinct user_id from categories where user_id is not null
   loop
-    -- Skip if user already has the debt-payment category
     if not exists (
       select 1 from categories
       where user_id = v_user.user_id
@@ -61,12 +61,3 @@ begin
     end if;
   end loop;
 end $$;
-
--- Also insert into the global default-category template (user_id = null)
--- so future seedings include it.
-insert into categories (user_id, name, type, icon, color, archived)
-select null, 'ชำระหนี้', 'expense', '💳', '#dc2626', false
-where not exists (
-  select 1 from categories
-  where user_id is null and name = 'ชำระหนี้'
-);

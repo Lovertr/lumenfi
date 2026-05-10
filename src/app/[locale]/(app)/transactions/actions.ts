@@ -93,20 +93,55 @@ async function applyDebtPayment(
   supabase: ReturnType<typeof createClient>,
   userId: string,
   debtId: string,
-  paymentAmount: number
+  paymentAmount: number,
+  manualOverride?: { principal?: number | null; interest?: number | null } | null
 ): Promise<{ principal: number; interest: number; newBalance: number } | null> {
   const { data: debt } = await supabase
     .from('debts')
-    .select('id, current_balance, interest_rate')
+    .select('id, current_balance, interest_rate, type')
     .eq('id', debtId)
     .eq('user_id', userId)
     .maybeSingle();
   if (!debt) return null;
-  const split = calculateDebtPaymentSplit(
-    Number(debt.current_balance ?? 0),
-    Number(debt.interest_rate ?? 0),
-    paymentAmount
-  );
+
+  let split: { principal: number; interest: number };
+  if (
+    manualOverride &&
+    typeof manualOverride.principal === 'number' &&
+    typeof manualOverride.interest === 'number' &&
+    Number.isFinite(manualOverride.principal) &&
+    Number.isFinite(manualOverride.interest) &&
+    manualOverride.principal >= 0 &&
+    manualOverride.interest >= 0
+  ) {
+    // Use user-provided split (clamp principal to current balance)
+    const principal = Math.min(
+      Number(debt.current_balance ?? 0),
+      Math.round(manualOverride.principal * 100) / 100
+    );
+    const interest = Math.round(manualOverride.interest * 100) / 100;
+    split = { principal, interest };
+  } else {
+    // Smart default per debt type
+    const type = String(debt.type ?? '');
+    const isRevolving = type === 'credit_card' || type === 'informal' || type === 'other';
+    if (isRevolving) {
+      // Revolving credit: interest is billed at cycle close, not accrued daily.
+      // Until user enters statement detail, treat the whole payment as principal.
+      split = {
+        principal: Math.min(Number(debt.current_balance ?? 0), paymentAmount),
+        interest: 0,
+      };
+    } else {
+      // Fixed-term loan (auto, mortgage, personal_loan, installment_zero, student_loan)
+      split = calculateDebtPaymentSplit(
+        Number(debt.current_balance ?? 0),
+        Number(debt.interest_rate ?? 0),
+        paymentAmount
+      );
+    }
+  }
+
   const newBalance = Math.max(0, Number(debt.current_balance ?? 0) - split.principal);
   await supabase
     .from('debts')
@@ -212,10 +247,26 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
     return { error: 'generic' as const };
   }
 
-  // Apply debt payment first (so we can store the split on the transaction row)
+  // Apply debt payment first (so we can store the split on the transaction row).
+  // Accept optional manual split from the form to override the type-aware default.
   let debtSplit: { principal: number; interest: number } | null = null;
   if (parsed.data.debt_id) {
-    const r = await applyDebtPayment(supabase, user.id, parsed.data.debt_id, amount);
+    const manualPrincipalRaw = (formData.get('debt_principal_amount') as string) ?? '';
+    const manualInterestRaw = (formData.get('debt_interest_amount') as string) ?? '';
+    const useManual = (formData.get('debt_split_manual') as string) === 'on';
+    const manualOverride = useManual
+      ? {
+          principal: parseFloat(manualPrincipalRaw.replace(/,/g, '')) || 0,
+          interest: parseFloat(manualInterestRaw.replace(/,/g, '')) || 0,
+        }
+      : null;
+    const r = await applyDebtPayment(
+      supabase,
+      user.id,
+      parsed.data.debt_id,
+      amount,
+      manualOverride
+    );
     if (r) debtSplit = { principal: r.principal, interest: r.interest };
   }
 

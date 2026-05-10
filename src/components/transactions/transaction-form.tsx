@@ -101,6 +101,119 @@ function AccountPicker({
   );
 }
 
+function DebtSplitEditor({
+  debt,
+  autoSplit,
+}: {
+  debt: Debt;
+  autoSplit: { principal: number; interest: number } | null;
+}) {
+  const isRevolving =
+    debt.type === 'credit_card' || debt.type === 'informal' || debt.type === 'other';
+
+  // For revolving credit, default to 100% principal until user enters statement
+  const defaultPrincipal = isRevolving
+    ? autoSplit
+      ? autoSplit.principal + autoSplit.interest // full payment to principal
+      : 0
+    : autoSplit?.principal ?? 0;
+  const defaultInterest = isRevolving ? 0 : autoSplit?.interest ?? 0;
+
+  const [manual, setManual] = useState(false);
+  const [principal, setPrincipal] = useState(defaultPrincipal);
+  const [interest, setInterest] = useState(defaultInterest);
+
+  // Re-sync when autoSplit recalculates (amount changed)
+  const lastAuto = useRef<{ p: number; i: number }>({ p: 0, i: 0 });
+  if (
+    !manual &&
+    autoSplit &&
+    (autoSplit.principal !== lastAuto.current.p ||
+      autoSplit.interest !== lastAuto.current.i)
+  ) {
+    lastAuto.current = { p: autoSplit.principal, i: autoSplit.interest };
+    if (isRevolving) {
+      setPrincipal(autoSplit.principal + autoSplit.interest);
+      setInterest(0);
+    } else {
+      setPrincipal(autoSplit.principal);
+      setInterest(autoSplit.interest);
+    }
+  }
+
+  return (
+    <div className="mt-2 rounded-md bg-background/60 p-3 text-xs">
+      <input type="hidden" name="debt_split_manual" value={manual ? 'on' : 'off'} />
+      <input type="hidden" name="debt_principal_amount" value={principal} />
+      <input type="hidden" name="debt_interest_amount" value={interest} />
+
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-semibold text-rose-900 dark:text-rose-200">
+          {manual ? '✏️ ระบุเอง' : '💡 แยกชำระอัตโนมัติ'}{' '}
+          {!manual && (
+            <span className="font-normal text-muted-foreground">
+              ({isRevolving ? 'หมุนเวียน — ลดต้น 100%' : `${debt.interest_rate}%/ปี`})
+            </span>
+          )}
+        </p>
+        <button
+          type="button"
+          onClick={() => setManual(!manual)}
+          className="text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+        >
+          {manual ? 'ใช้อัตโนมัติ' : 'ระบุเอง'}
+        </button>
+      </div>
+
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="rounded bg-emerald-50 p-2 dark:bg-emerald-950/30">
+          <p className="text-[10px] text-muted-foreground">ลดต้น</p>
+          {manual ? (
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={principal}
+              onChange={(e) => setPrincipal(parseFloat(e.target.value) || 0)}
+              className="mt-0.5 w-full bg-transparent text-base font-bold text-emerald-700 outline-none dark:text-emerald-300"
+            />
+          ) : (
+            <p className="font-bold text-emerald-700 dark:text-emerald-300">
+              ฿{Number(principal).toLocaleString()}
+            </p>
+          )}
+        </div>
+        <div className="rounded bg-amber-50 p-2 dark:bg-amber-950/30">
+          <p className="text-[10px] text-muted-foreground">ดอกเบี้ย</p>
+          {manual ? (
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={interest}
+              onChange={(e) => setInterest(parseFloat(e.target.value) || 0)}
+              className="mt-0.5 w-full bg-transparent text-base font-bold text-amber-700 outline-none dark:text-amber-300"
+            />
+          ) : (
+            <p className="font-bold text-amber-700 dark:text-amber-300">
+              ฿{Number(interest).toLocaleString()}
+            </p>
+          )}
+        </div>
+      </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        คงเหลือหลังชำระ: ฿
+        {Math.max(0, Number(debt.current_balance) - Number(principal)).toLocaleString()}
+      </p>
+      {isRevolving && !manual && (
+        <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-300">
+          💡 สินเชื่อหมุนเวียนคิดดอกตามรอบบิล — ถ้ามี statement จริง กด "ระบุเอง" เพื่อใส่ตัวเลขจาก statement
+        </p>
+      )}
+    </div>
+  );
+}
+
 interface TransactionDefaults {
   id?: string;
   type?: Type;
@@ -612,29 +725,11 @@ export function TransactionForm({
               </button>
             ))}
           </div>
-          {selectedDebt && paymentPreview && (
-            <div className="mt-2 rounded-md bg-background/60 p-3 text-xs">
-              <p className="font-semibold text-rose-900 dark:text-rose-200">
-                💡 แยกชำระอัตโนมัติ ({selectedDebt.interest_rate}% ต่อปี)
-              </p>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <div className="rounded bg-emerald-50 p-2 dark:bg-emerald-950/30">
-                  <p className="text-[10px] text-muted-foreground">ลดต้น</p>
-                  <p className="font-bold text-emerald-700 dark:text-emerald-300">
-                    ฿{paymentPreview.principal.toLocaleString()}
-                  </p>
-                </div>
-                <div className="rounded bg-amber-50 p-2 dark:bg-amber-950/30">
-                  <p className="text-[10px] text-muted-foreground">ดอกเบี้ย</p>
-                  <p className="font-bold text-amber-700 dark:text-amber-300">
-                    ฿{paymentPreview.interest.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-              <p className="mt-2 text-[11px] text-muted-foreground">
-                คงเหลือหลังชำระ: ฿{Math.max(0, Number(selectedDebt.current_balance) - paymentPreview.principal).toLocaleString()}
-              </p>
-            </div>
+          {selectedDebt && (
+            <DebtSplitEditor
+              debt={selectedDebt}
+              autoSplit={paymentPreview}
+            />
           )}
         </div>
       )}
