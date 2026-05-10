@@ -42,6 +42,7 @@ interface Debt {
   start_date?: string | null;
   statement_day?: number | null;
   due_day?: number | null;
+  rate_type?: string | null;
 }
 
 type Type = 'expense' | 'income' | 'transfer';
@@ -112,7 +113,8 @@ function DebtSplitEditor({
   autoSplit: { principal: number; interest: number } | null;
 }) {
   const isRevolving =
-    debt.type === 'credit_card' || debt.type === 'informal' || debt.type === 'other';
+    debt.type === 'credit_card' || debt.type === 'informal' || debt.type === 'other' ||
+    debt.rate_type === 'daily_revolving';
 
   // Auto mode is the default. For revolving credit, the server now uses
   // daily-rate accrual based on the last payment date / start_date — that's
@@ -418,7 +420,10 @@ export function TransactionForm({
       return;
     }
     const dtype = String(selectedDebt.type ?? '');
-    const isRev = dtype === 'credit_card' || dtype === 'informal' || dtype === 'other';
+    const rtype = String(selectedDebt.rate_type ?? '');
+    const isRev =
+      dtype === 'credit_card' || dtype === 'informal' || dtype === 'other' ||
+      rtype === 'daily_revolving';
     const balance = Math.max(0, Number(selectedDebt.current_balance) || 0);
     const annualRate = (Number(selectedDebt.interest_rate) || 0) / 100;
 

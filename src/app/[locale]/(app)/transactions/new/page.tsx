@@ -33,7 +33,7 @@ async function getDebts() {
   const supabase = createClient();
   const { data } = await supabase
     .from('debts')
-    .select('id, name, current_balance, interest_rate, monthly_payment, type, start_date, statement_day, due_day')
+    .select('id, name, current_balance, interest_rate, monthly_payment, type, start_date, statement_day, due_day, rate_type')
     .eq('status', 'active')
     .gt('current_balance', 0)
     .order('current_balance', { ascending: false });

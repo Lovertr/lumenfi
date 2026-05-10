@@ -99,7 +99,7 @@ async function applyDebtPayment(
 ): Promise<{ principal: number; interest: number; newBalance: number } | null> {
   const { data: debt } = await supabase
     .from('debts')
-    .select('id, current_balance, interest_rate, type, start_date, statement_day')
+    .select('id, current_balance, interest_rate, type, start_date, statement_day, rate_type')
     .eq('id', debtId)
     .eq('user_id', userId)
     .maybeSingle();
@@ -124,7 +124,10 @@ async function applyDebtPayment(
     split = { principal, interest };
   } else {
     const type = String(debt.type ?? '');
-    const isRevolving = type === 'credit_card' || type === 'informal' || type === 'other';
+    const rateType = String((debt as any).rate_type ?? '');
+    const isRevolving =
+      type === 'credit_card' || type === 'informal' || type === 'other' ||
+      rateType === 'daily_revolving';
 
     if (isRevolving) {
       // Daily interest accrual baseline:
