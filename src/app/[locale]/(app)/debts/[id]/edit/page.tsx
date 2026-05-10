@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DebtForm } from '@/components/debts/debt-form';
+import { DebtPaymentHistory } from '@/components/debts/debt-payment-history';
 import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -68,6 +69,13 @@ export default async function EditDebtPage({
           />
         </CardContent>
       </Card>
+
+      <section className="space-y-2">
+        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+          ประวัติการชำระ
+        </h2>
+        <DebtPaymentHistory debtId={debt.id} />
+      </section>
     </div>
   );
 }
