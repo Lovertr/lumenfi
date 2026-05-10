@@ -111,10 +111,11 @@ function DebtSplitEditor({
   const isRevolving =
     debt.type === 'credit_card' || debt.type === 'informal' || debt.type === 'other';
 
-  // Revolving credit: default to manual mode because Lumenfi can't know
-  // how many days have elapsed since the last bill. User should enter
-  // numbers from the statement directly.
-  const [manual, setManual] = useState(isRevolving);
+  // Auto mode is the default. For revolving credit, the server now uses
+  // daily-rate accrual based on the last payment date / start_date — that's
+  // a much closer approximation than 30-day flat. User can still flip to
+  // 'ระบุเอง' if they have an exact statement.
+  const [manual, setManual] = useState(false);
   const [principal, setPrincipal] = useState(autoSplit?.principal ?? 0);
   const [interest, setInterest] = useState(autoSplit?.interest ?? 0);
 
@@ -146,7 +147,7 @@ function DebtSplitEditor({
             : '💡 แยกชำระอัตโนมัติ'}{' '}
           {!manual && (
             <span className="font-normal text-muted-foreground">
-              ({debt.interest_rate}%/ปี · 30 วัน)
+              ({debt.interest_rate}%/ปี · {isRevolving ? 'คิดตามวันจริง' : '30 วัน'})
             </span>
           )}
         </p>
@@ -205,8 +206,8 @@ function DebtSplitEditor({
         </p>
       )}
       {isRevolving && !manual && (
-        <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-300">
-          ⚠️ สินเชื่อหมุนเวียนคิดดอกตามวันจริง — ตัวเลขนี้คำนวณจากรอบบิล 30 วันเต็ม (อาจสูงกว่าจริง) แนะนำใส่จาก statement
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          💡 คิดดอกตามจำนวนวันตั้งแต่ชำระครั้งก่อน — ถ้าเช็ค statement แล้วไม่ตรง กด "ระบุเอง" เพื่อแก้
         </p>
       )}
     </div>

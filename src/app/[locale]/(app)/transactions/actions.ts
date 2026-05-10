@@ -94,11 +94,12 @@ async function applyDebtPayment(
   userId: string,
   debtId: string,
   paymentAmount: number,
+  paymentDate: string,
   manualOverride?: { principal?: number | null; interest?: number | null } | null
 ): Promise<{ principal: number; interest: number; newBalance: number } | null> {
   const { data: debt } = await supabase
     .from('debts')
-    .select('id, current_balance, interest_rate, type')
+    .select('id, current_balance, interest_rate, type, start_date')
     .eq('id', debtId)
     .eq('user_id', userId)
     .maybeSingle();
@@ -122,16 +123,46 @@ async function applyDebtPayment(
     const interest = Math.round(manualOverride.interest * 100) / 100;
     split = { principal, interest };
   } else {
-    // Auto default: 30-day amortization interest. This is correct for fixed-term
-    // loans (auto/mortgage/personal_loan/installment_zero/student_loan).
-    // For revolving credit (credit_card/informal/other) the actual interest is
-    // bank-billed per cycle and depends on days elapsed — the form defaults to
-    // manual mode for those, so the user enters the statement value directly.
-    split = calculateDebtPaymentSplit(
-      Number(debt.current_balance ?? 0),
-      Number(debt.interest_rate ?? 0),
-      paymentAmount
-    );
+    const type = String(debt.type ?? '');
+    const isRevolving = type === 'credit_card' || type === 'informal' || type === 'other';
+
+    if (isRevolving) {
+      // Daily interest accrual: find days since last payment (or start_date)
+      const { data: lastTx } = await supabase
+        .from('transactions')
+        .select('date')
+        .eq('debt_id', debtId)
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const baseline = lastTx?.date ?? debt.start_date ?? paymentDate;
+      const dayMs = 86400000;
+      let days = Math.max(
+        0,
+        Math.floor((new Date(paymentDate).getTime() - new Date(baseline).getTime()) / dayMs)
+      );
+      // Cap at 30 days to prevent runaway accrual if user forgot to log
+      // (but allow 1+ days so first-time payment doesn't go all-principal)
+      if (days < 1) days = 1;
+      if (days > 30) days = 30;
+
+      const balance = Math.max(0, Number(debt.current_balance ?? 0));
+      const annualRate = (Number(debt.interest_rate) || 0) / 100;
+      const interest = Math.min(paymentAmount, balance * annualRate * (days / 365));
+      const principal = Math.max(0, paymentAmount - interest);
+      split = {
+        principal: Math.round(principal * 100) / 100,
+        interest: Math.round(interest * 100) / 100,
+      };
+    } else {
+      // Fixed-term loan: standard 30-day amortization
+      split = calculateDebtPaymentSplit(
+        Number(debt.current_balance ?? 0),
+        Number(debt.interest_rate ?? 0),
+        paymentAmount
+      );
+    }
   }
 
   const newBalance = Math.max(0, Number(debt.current_balance ?? 0) - split.principal);
@@ -257,6 +288,7 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
       user.id,
       parsed.data.debt_id,
       amount,
+      date,
       manualOverride
     );
     if (r) debtSplit = { principal: r.principal, interest: r.interest };
