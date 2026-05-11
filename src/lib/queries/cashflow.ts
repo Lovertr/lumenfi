@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { computeAccountBalances } from './balances';
+import { getCurrentCycle, type CycleRange } from '@/lib/pay-cycle';
 
 export interface CashFlowDataPoint {
   date: string;
@@ -35,7 +36,9 @@ export interface CashFlowAnalysis {
   status: 'healthy' | 'tight' | 'critical';
   statusReason: string;
 
-  // Time series for chart (last 30 days)
+  // Cycle window (pay cycle or calendar month)
+  cycle: CycleRange;
+  // Time series for chart — one point per day across the cycle window
   daily: CashFlowDataPoint[];
 
   // Audit/transparency
@@ -88,6 +91,7 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
     projectedNet30: 0,
     status: 'healthy',
     statusReason: '',
+    cycle: getCurrentCycle(null),
     daily: [],
   };
 
@@ -95,6 +99,18 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return empty;
+
+    // Pay cycle for this user
+    let payCycleDay: number | null = null;
+    try {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('pay_cycle_day')
+        .eq('id', user.id)
+        .maybeSingle();
+      payCycleDay = (prof as any)?.pay_cycle_day ?? null;
+    } catch {}
+    const cycle = getCurrentCycle(payCycleDay);
 
     const start90 = daysAgo(90);
 
@@ -251,16 +267,22 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
       statusReason = 'Cash flow แข็งแรง รักษาระดับนี้ไว้';
     }
 
-    // Daily series for chart (last 30 days)
+    // Daily series for chart — every day in the current cycle window
+    // (zero-fill missing days so the chart shows the full range)
     const daily: CashFlowDataPoint[] = [];
-    let cumulative = 0;
-    let idx = 0;
-    for (const [date, v] of dayMap) {
-      idx++;
-      if (idx <= 60) continue; // skip first 60 days
-      const net = v.income - v.expense;
-      cumulative += net;
-      daily.push({ date, income: v.income, expense: v.expense, net, cumulative });
+    {
+      const cycleStart = new Date(cycle.startDate);
+      const cycleEnd = new Date(cycle.endDate);
+      let cumulative = 0;
+      const cur = new Date(cycleStart);
+      while (cur.getTime() <= cycleEnd.getTime()) {
+        const key = cur.toISOString().slice(0, 10);
+        const bucket = dayMap.get(key) ?? { income: 0, expense: 0 };
+        const net = bucket.income - bucket.expense;
+        cumulative += net;
+        daily.push({ date: key, income: bucket.income, expense: bucket.expense, net, cumulative });
+        cur.setDate(cur.getDate() + 1);
+      }
     }
 
     return {
@@ -279,6 +301,7 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
       projectedNet30,
       status,
       statusReason,
+      cycle,
       daily,
       activeMonths: monthDivisor,
       debtMonthlyTotal,

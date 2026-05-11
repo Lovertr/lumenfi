@@ -95,7 +95,10 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
             </h2>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </div>
-          <CashFlowChart data={cf.daily} />
+          <p className="mb-2 text-[11px] text-muted-foreground">
+              📊 {cf.cycle.label} · {cf.cycle.rangeLabel}
+            </p>
+            <CashFlowChart data={cf.daily} />
         </CardContent>
       </Card>
 
