@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { AgentForm } from '@/components/agents/agent-form';
 import { LeadRow } from '@/components/agents/lead-row';
+import { CopyInviteLink } from '@/components/agents/copy-invite-link';
 
 export const dynamic = 'force-dynamic';
 
@@ -210,16 +211,8 @@ export default async function AgentDashboardPage({
             แชร์ลิงก์นี้ผ่าน LINE, Facebook, นามบัตร — ผู้สนใจคลิกเข้ามาสมัคร
             จะกลายเป็นลูกค้าคุณอัตโนมัติ
           </p>
-          <div className="mt-3 flex items-center gap-2 rounded-md border bg-muted/30 p-2.5 font-mono text-sm">
-            <span className="flex-1 truncate text-primary">{inviteUrl}</span>
-            <a
-              href={inviteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-md bg-background px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
-            >
-              เปิด
-            </a>
+          <div className="mt-3">
+            <CopyInviteLink url={inviteUrl} />
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
             รหัสตัวแทน: <span className="font-mono font-semibold">{(agent as any).invite_code}</span>{' '}

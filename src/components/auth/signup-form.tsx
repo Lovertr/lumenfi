@@ -22,7 +22,7 @@ function SubmitButton() {
   );
 }
 
-export function SignupForm() {
+export function SignupForm({ inviteCode }: { inviteCode?: string }) {
   const t = useTranslations('Auth');
   const [state, formAction] = useFormState<State, FormData>(signUpWithEmail, null);
 
@@ -52,6 +52,7 @@ export function SignupForm() {
       </div>
 
       <form action={formAction} className="space-y-4">
+        {inviteCode ? <input type="hidden" name="invite" value={inviteCode} /> : null}
         <div className="space-y-2">
           <Label htmlFor="fullName">{t('fullName')}</Label>
           <div className="relative">

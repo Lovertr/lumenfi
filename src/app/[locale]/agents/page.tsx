@@ -153,8 +153,8 @@ export default async function AgentLandingPage({
             {[
               {
                 icon: Target,
-                title: 'Qualified Lead Routing',
-                desc: 'ผู้ใช้เห็น Gap ประกันของตัวเอง แล้วขอที่ปรึกษา — ระบบ match ตัวแทนที่ใกล้และตรงผลิตภัณฑ์ ไม่ใช่ cold call สุ่ม',
+                title: 'Lead Routing 3 ชั้น',
+                desc: 'ผู้ใช้ที่มาผ่านลิงก์เชิญของคุณ → เข้าหาคุณตรงๆ · ถ้าไม่มีลิงก์เชิญ → match จากพื้นที่+ผลิตภัณฑ์ · ถ้ายังไม่ลงตัว → admin จัดสรรให้ ไม่ใช่ cold call สุ่ม',
               },
               {
                 icon: Brain,

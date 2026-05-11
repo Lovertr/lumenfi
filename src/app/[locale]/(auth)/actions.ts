@@ -86,6 +86,29 @@ export async function signUpWithEmail(_prev: unknown, formData: FormData) {
     return { success: 'check_email' as const };
   }
 
+  // If signed up via an agent invite link, bind the user to that agent.
+  // Uses the same lookup as the /i/[code] page so it stays in sync.
+  const inviteCode = (formData.get('invite') as string | null)?.trim();
+  if (data.user && inviteCode) {
+    try {
+      const { data: agent } = await supabase
+        .from('agents')
+        .select('id, status')
+        .eq('invite_code', inviteCode)
+        .eq('status', 'active')
+        .maybeSingle();
+      if (agent && (agent as any).id) {
+        await supabase
+          .from('profiles')
+          .update({ assigned_agent_id: (agent as any).id })
+          .eq('id', data.user.id);
+      }
+    } catch (e: any) {
+      // Don't block signup if the invite assignment fails — admin can fix manually.
+      console.warn('[signUp] invite bind failed:', e?.message ?? e);
+    }
+  }
+
   revalidatePath('/', 'layout');
   redirect('/dashboard');
 }
