@@ -29,6 +29,7 @@ interface AgentDefaults {
   license_valid_until?: string;
   bio?: string | null;
   products?: string[];
+  booking_url?: string | null;
 }
 
 const PRODUCT_OPTIONS = [
@@ -196,6 +197,20 @@ export function AgentForm({
         />
         <p className="text-[11px] text-muted-foreground">
           แสดงในการ์ดที่ปรึกษาประกันของลูกค้า — ใช้เป็น hook สั้นๆ
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="booking_url">ลิงก์นัดหมาย (Cal.com / Calendly)</Label>
+        <Input
+          id="booking_url"
+          name="booking_url"
+          type="url"
+          placeholder="https://cal.com/your-name"
+          defaultValue={defaults?.booking_url ?? ''}
+        />
+        <p className="text-[11px] text-muted-foreground">
+          ใส่ลิงก์ Cal.com/Calendly ของคุณ — ลูกค้าจะกด "นัดเวลาคุย" ได้จากแอพ
         </p>
       </div>
 

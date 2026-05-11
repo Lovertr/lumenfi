@@ -148,6 +148,34 @@ export default async function AgentDashboardPage({
         </Card>
       </div>
 
+      {/* Quick actions */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link
+          href="/agents/messages"
+          className="flex items-center gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/30"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+            💬
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">ข้อความถึงลูกค้า</p>
+            <p className="text-[11px] text-muted-foreground">broadcast card</p>
+          </div>
+        </Link>
+        <Link
+          href="/agents/billing"
+          className="flex items-center gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/30"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+            💳
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">แพ็คเกจของฉัน</p>
+            <p className="text-[11px] text-muted-foreground">อัพเกรด · ดูบิล</p>
+          </div>
+        </Link>
+      </div>
+
       {/* Invite link */}
       <Card className="border-primary/30">
         <CardContent className="p-5">
@@ -218,6 +246,7 @@ export default async function AgentDashboardPage({
               license_valid_until: (agent as any).license_valid_until,
               bio: (agent as any).bio,
               products: (agent as any).products ?? [],
+              booking_url: (agent as any).booking_url,
             }}
           />
         </CardContent>

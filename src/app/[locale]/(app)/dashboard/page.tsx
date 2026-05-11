@@ -9,6 +9,7 @@ import { formatTHB } from '@/lib/utils';
 import { getDashboardData, getDashboardDataForCycle } from '@/lib/queries/dashboard';
 import { getCurrentCycle } from '@/lib/pay-cycle';
 import { ExpensePieChart } from '@/components/dashboard/expense-pie-chart';
+import { AgentMessageCard } from '@/components/agents/agent-message-card';
 import { CycleToggle } from '@/components/dashboard/cycle-toggle';
 import { materializeDueRecurring } from '@/lib/recurring';
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
@@ -208,6 +209,8 @@ export default async function DashboardPage({ params, searchParams }: { params: 
           highlightCount={unseenVersion.highlights?.length ?? 0}
         />
       )}
+
+      <AgentMessageCard />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="overflow-hidden bg-gradient-to-br from-[#0A0F1F] to-[#1E293B] text-white lg:col-span-2">

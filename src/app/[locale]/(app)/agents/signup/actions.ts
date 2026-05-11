@@ -40,6 +40,7 @@ export async function createAgent(_prev: unknown, formData: FormData) {
   const license_valid_from = txt(formData.get('license_valid_from'));
   const license_valid_until = txt(formData.get('license_valid_until'));
   const bio = txt(formData.get('bio'));
+  const booking_url = txt(formData.get('booking_url'));
 
   // Products: checkboxes return 'on' for each checked. We read by name.
   const products: string[] = [];
@@ -76,6 +77,7 @@ export async function createAgent(_prev: unknown, formData: FormData) {
     license_valid_until,
     products,
     bio,
+    booking_url,
     invite_code,
     status: 'pending', // admin must approve
   });
@@ -162,6 +164,7 @@ export async function updateAgent(_prev: unknown, formData: FormData) {
     license_valid_from: txt(formData.get('license_valid_from')),
     license_valid_until: txt(formData.get('license_valid_until')),
     bio: txt(formData.get('bio')),
+    booking_url: txt(formData.get('booking_url')),
   };
   const products: string[] = [];
   for (const p of ['life', 'health', 'ci', 'retirement', 'savings', 'accident']) {

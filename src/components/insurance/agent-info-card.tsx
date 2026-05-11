@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MessageSquare, Shield } from 'lucide-react';
+import { Mail, Phone, MessageSquare, Shield, Calendar } from 'lucide-react';
 import { getAgentForUser, type AgentDisplay } from '@/lib/agents/queries';
 import { createClient } from '@/lib/supabase/server';
 
@@ -94,6 +94,17 @@ export async function AgentInfoCard() {
             >
               <MessageSquare className="h-3.5 w-3.5" />
               {agent.line_id}
+            </a>
+          )}
+          {agent.booking_url && (
+            <a
+              href={agent.booking_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 font-medium text-primary-foreground hover:opacity-90"
+            >
+              <Calendar className="h-3.5 w-3.5" />
+              นัดเวลาคุย
             </a>
           )}
         </div>
