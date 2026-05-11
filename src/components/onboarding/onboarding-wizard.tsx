@@ -202,6 +202,22 @@ export function OnboardingWizard() {
                   />
                 </div>
               </div>
+              <div className="space-y-2 rounded-lg border bg-emerald-50/50 p-3 dark:bg-emerald-950/20">
+                <div>
+                  <Label htmlFor="pay_cycle_day">เงินเดือนออกวันที่ไหน?</Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Lumenfi จะใช้เป็นรอบเดือนของคุณ — เช่น 25 → งวด พ.ค. = 25 เม.ย. - 24 พ.ค.
+                  </p>
+                </div>
+                <Input
+                  id="pay_cycle_day"
+                  name="pay_cycle_day"
+                  type="number"
+                  min={1}
+                  max={31}
+                  placeholder="25 (ใส่เลขวัน 1-31 — ปล่อยว่างถ้าไม่มีเงินเดือนประจำ)"
+                />
+              </div>
               <p className="rounded-md bg-primary/5 p-2 text-[11px] text-muted-foreground">
                 💡 อยากให้ AI วิเคราะห์ละเอียดขึ้น สามารถกรอกแยกหมวด (อาหาร เช่า ฯลฯ) ที่ /settings/profile หลังลงทะเบียนเสร็จ
               </p>

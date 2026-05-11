@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { formatTHB } from '@/lib/utils';
 import { BudgetRow } from '@/components/budgets/budget-row';
+import { getCurrentCycle, type CycleRange } from '@/lib/pay-cycle';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,19 +16,25 @@ interface Category { id: string; name: string; icon: string; color: string; type
 async function getBudgetsAndSpending() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { budgets: [] as Budget[], categories: [] as Category[], spendingByCat: {} as Record<string, number> };
+  if (!user) return { budgets: [] as Budget[], categories: [] as Category[], spendingByCat: {} as Record<string, number>, cycle: getCurrentCycle(null) };
 
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  // Fetch pay_cycle_day to honor user's payday — fallback to calendar month
+  const { data: prof } = await supabase
+    .from('profiles')
+    .select('pay_cycle_day')
+    .eq('id', user.id)
+    .maybeSingle();
+  const cycle = getCurrentCycle((prof as any)?.pay_cycle_day ?? null);
 
   const [bdg, cats, txs] = await Promise.all([
     supabase.from('budgets').select('id, category_id, amount').eq('user_id', user.id),
     supabase.from('categories').select('id, name, icon, color, type').eq('archived', false).order('name'),
     supabase.from('transactions')
-      .select('category_id, amount, type')
+      .select('category_id, amount, type, date')
       .eq('user_id', user.id)
       .eq('type', 'expense')
-      .gte('date', startOfMonth),
+      .gte('date', cycle.startDate)
+      .lte('date', cycle.endDate),
   ]);
 
   const spendingByCat: Record<string, number> = {};
@@ -40,6 +47,7 @@ async function getBudgetsAndSpending() {
     budgets: (bdg.data ?? []) as Budget[],
     categories: (cats.data ?? []) as Category[],
     spendingByCat,
+    cycle,
   };
 }
 
@@ -49,7 +57,7 @@ export default async function BudgetsPage({ params }: { params: Promise<{ locale
   const t = await getTranslations('Budgets');
   const tType = await getTranslations('Categories');
 
-  const { budgets, categories, spendingByCat } = await getBudgetsAndSpending();
+  const { budgets, categories, spendingByCat, cycle } = await getBudgetsAndSpending();
   const expenseCats = categories.filter((c) => c.type === 'expense' || c.type === 'both');
 
   const budgetMap = new Map(budgets.map((b) => [b.category_id, b]));
@@ -74,6 +82,9 @@ export default async function BudgetsPage({ params }: { params: Promise<{ locale
               {t('title')}
             </h1>
             <p className="text-xs text-muted-foreground">{t('subtitle')}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              📊 {cycle.label} · {cycle.rangeLabel}
+            </p>
           </div>
         </div>
       </header>

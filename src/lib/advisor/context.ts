@@ -5,7 +5,8 @@
 
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
-import { getDashboardData } from '@/lib/queries/dashboard';
+import { getCurrentCycle } from '@/lib/pay-cycle';
+import { getDashboardData, getDashboardDataForCycle } from '@/lib/queries/dashboard';
 import { getPortfolioMetrics } from '@/lib/queries/portfolio';
 import { getTaxFundSummary } from '@/lib/queries/tax-saving';
 

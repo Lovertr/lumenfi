@@ -44,6 +44,10 @@ export async function completeOnboarding(formData: FormData) {
       employment_type: employmentType,
       risk_tolerance: riskTolerance,
       financial_goal_summary: financialGoalSummary,
+      pay_cycle_day: (() => {
+        const v = parseInt((formData.get('pay_cycle_day') as string) || '', 10);
+        return Number.isFinite(v) && v >= 1 && v <= 31 ? v : null;
+      })(),
       onboarded: true,
     })
     .eq('id', user.id);
