@@ -189,10 +189,11 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
         <CardContent className="space-y-2 p-4 text-xs">
           <p className="font-semibold">💡 ข้อมูล</p>
           <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
-            <li>ระบบเช็คทุกชั่วโมง → ส่งแจ้งเตือนแค่ใน "ชั่วโมงที่ตั้งไว้" เท่านั้น (1 ครั้ง/วัน)</li>
-            <li>"ข้ามถ้าวันนี้บันทึกแล้ว" — ระบบจะเช็คก่อนส่ง ไม่กวนถ้าคุณบันทึกไปแล้ว</li>
+            <li>เลือกเวลาใดก็ได้ (0-23) — ระบบเตือนวันละ 1 ครั้งตามที่ตั้ง</li>
+            <li>"ข้ามถ้าวันนี้บันทึกแล้ว" — ไม่กวนถ้าคุณบันทึกไปแล้ว</li>
             <li>ใช้ได้บน mobile PWA + browser ที่อนุญาต push (Chrome, Edge, Safari iOS 16.4+)</li>
             <li>iOS Safari: ต้อง "Add to Home Screen" ก่อนถึงรับ push ได้</li>
+            <li>⚙️ Admin only: ต้องตั้ง Supabase pg_cron เพื่อให้เช็คทุกชั่วโมง — ดู supabase/one-time/setup-hourly-notify.sql</li>
           </ul>
         </CardContent>
       </Card>
