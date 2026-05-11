@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { getRouteForUser } from '@/lib/agents/queries';
 import { createServiceClient } from '@/lib/supabase/admin';
+import { sendLineNotify } from '@/lib/line/notify';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FALLBACK_NOTIFY = process.env.AGENT_NOTIFY_EMAIL ?? 'tintanee.t@gmail.com';
@@ -129,10 +130,33 @@ export async function submitInsuranceLead(_prev: unknown, formData: FormData) {
     userEmail: user.email ?? null,
   });
 
-  // If this agent is on trial, increment leads used
+  // If this agent is on trial, increment leads used + send LINE Notify if configured
   if (route.agent_id) {
     try {
       const svc = createServiceClient();
+      const { data: agentRow } = await svc
+        .from('agents')
+        .select('id, line_notify_token, line_notify_enabled, agent_name')
+        .eq('id', route.agent_id)
+        .maybeSingle();
+
+      // LINE Notify
+      const ag = agentRow as any;
+      if (ag?.line_notify_enabled && ag?.line_notify_token) {
+        const msgLines = [
+          '🔔 ลีดประกันใหม่!',
+          `\nลูกค้า: ${name}`,
+          `เบอร์: ${phone}`,
+          email ? `Email: ${email}` : '',
+          `ประเภท: ${type}`,
+          preferredCarrier ? `บ.ที่สนใจ: ${preferredCarrier}` : '',
+          estimatedSumInsured ? `ทุน: ฿${estimatedSumInsured.toLocaleString('th-TH')}` : '',
+          message ? `ข้อความ: ${message}` : '',
+        ].filter(Boolean).join('\n');
+        sendLineNotify({ token: ag.line_notify_token, message: msgLines }).catch(() => {});
+      }
+
+      // Trial counter
       const { data: sub } = await svc
         .from('agent_subscriptions')
         .select('id, plan, trial_leads_used')
@@ -147,8 +171,14 @@ export async function submitInsuranceLead(_prev: unknown, formData: FormData) {
           .update({ trial_leads_used: ((sub as any).trial_leads_used ?? 0) + 1 })
           .eq('id', (sub as any).id);
       }
+
+      // Last lead received timestamp
+      await svc
+        .from('agents')
+        .update({ last_lead_received_at: new Date().toISOString() })
+        .eq('id', route.agent_id);
     } catch (e) {
-      console.warn('[quote] trial cap update failed:', e);
+      console.warn('[quote] agent post-route update failed:', e);
     }
   }
 

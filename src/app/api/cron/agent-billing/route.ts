@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { logNotification } from '@/lib/notifications';
+import { sendLineNotify } from '@/lib/line/notify';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -62,6 +63,18 @@ export async function GET(req: Request) {
           icon: '⚠️',
           tag: 'agent-sub-expired',
         });
+        // LINE Notify
+        const { data: ag2 } = await svc
+          .from('agents')
+          .select('line_notify_token, line_notify_enabled')
+          .eq('id', sub.agent_id)
+          .maybeSingle();
+        if ((ag2 as any)?.line_notify_enabled && (ag2 as any)?.line_notify_token) {
+          sendLineNotify({
+            token: (ag2 as any).line_notify_token,
+            message: `\n⏰ Lumenfi — แพ็คเกจ ${sub.plan} ของคุณหมดอายุแล้ว\nกรุณาอัพเกรดเพื่อรับ leads ต่อ`,
+          }).catch(() => {});
+        }
       }
     }
   } catch (e) {
@@ -111,6 +124,18 @@ export async function GET(req: Request) {
         icon: '⏰',
         tag: 'agent-sub-ending',
       });
+      // LINE Notify
+      const { data: ag3 } = await svc
+        .from('agents')
+        .select('line_notify_token, line_notify_enabled')
+        .eq('id', sub.agent_id)
+        .maybeSingle();
+      if ((ag3 as any)?.line_notify_enabled && (ag3 as any)?.line_notify_token) {
+        sendLineNotify({
+          token: (ag3 as any).line_notify_token,
+          message: `\n⏰ Lumenfi — แพ็คเกจของคุณจะหมดอายุใน ${daysLeft} วัน\nต่ออายุก่อนเพื่อไม่ขาดช่วงรับ leads`,
+        }).catch(() => {});
+      }
       warned++;
     }
   } catch (e) {
