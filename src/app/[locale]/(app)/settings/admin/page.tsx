@@ -1,6 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, Briefcase, CheckCircle2, AlertCircle, Database, Megaphone, Wrench, Sparkles } from "lucide-react";
+import { ArrowLeft, Briefcase, Activity, CheckCircle2, AlertCircle, Database, Megaphone, Wrench, Sparkles } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { checkMigrations } from '@/lib/queries/migration-health';
@@ -197,6 +197,16 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
               <div>
                 <p className="font-medium">Seed Demo Accounts</p>
                 <p className="text-[11px] text-muted-foreground">3 personas สำหรับ marketing</p>
+              </div>
+            </Link>
+            <Link
+              href="/settings/admin/ai-diagnostic"
+              className="flex items-start gap-2 rounded-md border bg-background/50 p-3 text-sm transition-colors hover:bg-muted/40"
+            >
+              <Activity className="mt-0.5 h-4 w-4 text-primary" />
+              <div>
+                <p className="font-medium">AI Diagnostic</p>
+                <p className="text-[11px] text-muted-foreground">เช็ค env config + live test</p>
               </div>
             </Link>
             <Link
