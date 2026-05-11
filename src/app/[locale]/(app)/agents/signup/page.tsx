@@ -29,13 +29,15 @@ export default async function AgentSignupPage({ params }: { params: Promise<{ lo
     <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6 lg:pt-10">
       <header className="flex items-center gap-2">
         <Button asChild size="icon" variant="ghost" className="h-9 w-9 -ml-2">
-          <Link href="/dashboard">
+          <Link href="/settings">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
         <div>
-          <h1 className="text-xl font-bold">สมัครเป็นตัวแทนประกัน</h1>
-          <p className="text-xs text-muted-foreground">เปลี่ยน Lumenfi ให้เป็นเครื่องมือหา lead ของคุณ</p>
+          <h1 className="text-xl font-bold">เปิดใช้งานโหมดตัวแทน</h1>
+          <p className="text-xs text-muted-foreground">
+            เพิ่มความสามารถตัวแทนประกันให้กับบัญชี Lumenfi เดิม — ไม่ต้องสมัครใหม่
+          </p>
         </div>
       </header>
 
