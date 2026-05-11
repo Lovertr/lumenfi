@@ -74,6 +74,37 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/login?error=exchange_failed&reason=${reason}`);
     }
 
+    // If user signed in via invite link, the /i/[code] page set this cookie.
+    // Assign them to that agent (only if not already assigned).
+    try {
+      const inviteAgentId = request.cookies.get('lumenfi_invite_agent')?.value;
+      if (inviteAgentId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('assigned_agent_id')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (!(prof as any)?.assigned_agent_id) {
+            await supabase
+              .from('profiles')
+              .update({ assigned_agent_id: inviteAgentId })
+              .eq('id', user.id);
+          }
+        }
+        // Clear the cookie now that it's been consumed
+        response.cookies.set({
+          name: 'lumenfi_invite_agent',
+          value: '',
+          path: '/',
+          maxAge: 0,
+        });
+      }
+    } catch (e) {
+      console.warn('[auth/callback] invite-agent assign failed:', e);
+    }
+
     return response;
   } catch (e: any) {
     console.error('[auth/callback] FATAL:', e?.message ?? e);

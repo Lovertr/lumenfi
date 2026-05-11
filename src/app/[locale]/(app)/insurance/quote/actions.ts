@@ -3,29 +3,35 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { getRouteForUser } from '@/lib/agents/queries';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const NOTIFY_EMAIL = process.env.AGENT_NOTIFY_EMAIL ?? 'tintanee.t@gmail.com';
+const FALLBACK_NOTIFY = process.env.AGENT_NOTIFY_EMAIL ?? 'tintanee.t@gmail.com';
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'Lumenfi <onboarding@resend.dev>';
 
-async function sendLeadEmail(lead: {
-  name: string;
-  phone: string;
-  email: string | null;
-  type: string;
-  preferredCarrier: string | null;
-  estimatedSumInsured: number | null;
-  message: string | null;
-  userEmail: string | null;
-}) {
+async function sendLeadEmail(
+  to: string,
+  agentDisplayName: string,
+  lead: {
+    name: string;
+    phone: string;
+    email: string | null;
+    type: string;
+    preferredCarrier: string | null;
+    estimatedSumInsured: number | null;
+    message: string | null;
+    userEmail: string | null;
+  }
+) {
   if (!RESEND_API_KEY) {
-    console.log('[Lead] No RESEND_API_KEY — would have sent to', NOTIFY_EMAIL, lead);
+    console.log('[Lead] No RESEND_API_KEY — would have sent to', to, lead);
     return { ok: false, reason: 'no_email_provider' };
   }
 
   const subject = `🔔 ลีดประกันใหม่: ${lead.name} (${lead.type})`;
   const html = `
     <h2>มีลูกค้าขอใบเสนอประกัน</h2>
+    <p style="color: #555;">ตัวแทน: <strong>${escape(agentDisplayName)}</strong></p>
     <table style="border-collapse: collapse; font-family: system-ui, sans-serif;">
       <tr><td style="padding: 6px 12px; font-weight: bold;">ชื่อ:</td><td style="padding: 6px 12px;">${escape(lead.name)}</td></tr>
       <tr><td style="padding: 6px 12px; font-weight: bold;">โทร:</td><td style="padding: 6px 12px;"><a href="tel:${escape(lead.phone)}">${escape(lead.phone)}</a></td></tr>
@@ -37,7 +43,7 @@ async function sendLeadEmail(lead: {
       <tr><td style="padding: 6px 12px; font-weight: bold;">User:</td><td style="padding: 6px 12px;">${escape(lead.userEmail ?? '—')}</td></tr>
     </table>
     <p style="margin-top: 16px; color: #666; font-size: 12px;">
-      Sent from Lumenfi insurance lead system
+      ส่งจากระบบ Lumenfi · ติดต่อกลับลูกค้าภายใน 24 ชั่วโมง
     </p>
   `;
 
@@ -49,7 +55,7 @@ async function sendLeadEmail(lead: {
     },
     body: JSON.stringify({
       from: FROM_EMAIL,
-      to: [NOTIFY_EMAIL],
+      to: [to],
       subject,
       html,
     }),
@@ -86,9 +92,13 @@ export async function submitInsuranceLead(_prev: unknown, formData: FormData) {
     return { error: 'missing_required' as const };
   }
 
-  // Insert lead row
+  // Resolve which agent should receive this lead
+  const route = await getRouteForUser(user.id);
+
+  // Insert lead row (with agent_id for audit)
   const { error } = await supabase.from('insurance_leads').insert({
     user_id: user.id,
+    agent_id: route.agent_id,           // null if legacy fallback
     type,
     name,
     phone,
@@ -105,8 +115,9 @@ export async function submitInsuranceLead(_prev: unknown, formData: FormData) {
     return { error: 'db_failed' as const };
   }
 
-  // Send email notification (non-blocking — if fails, lead is still in DB)
-  await sendLeadEmail({
+  // Route email to assigned agent (fallback to env if route email is empty)
+  const toEmail = route.email || FALLBACK_NOTIFY;
+  await sendLeadEmail(toEmail, route.display_name, {
     name,
     phone,
     email,
