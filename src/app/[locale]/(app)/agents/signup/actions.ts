@@ -86,16 +86,46 @@ export async function createAgent(_prev: unknown, formData: FormData) {
   }
 
   // Notify admin in-app that a new agent applied
+  // Try multiple ways to find admin: by email, by is_admin flag, by auth.users
   try {
     const svc = createServiceClient();
-    const { data: adminUser } = await svc
-      .from('profiles')
-      .select('id')
-      .eq('email', ADMIN_EMAIL)
-      .maybeSingle();
-    if (adminUser?.id) {
+    let adminUserId: string | null = null;
+
+    // 1) profiles where email matches ADMIN_EMAIL
+    try {
+      const r = await svc
+        .from('profiles')
+        .select('id')
+        .eq('email', ADMIN_EMAIL)
+        .maybeSingle();
+      if ((r.data as any)?.id) adminUserId = (r.data as any).id;
+    } catch {}
+
+    // 2) profiles where is_admin = true
+    if (!adminUserId) {
+      try {
+        const r = await svc
+          .from('profiles')
+          .select('id')
+          .eq('is_admin', true)
+          .limit(1)
+          .maybeSingle();
+        if ((r.data as any)?.id) adminUserId = (r.data as any).id;
+      } catch {}
+    }
+
+    // 3) auth.users via admin API
+    if (!adminUserId) {
+      try {
+        const { data } = await svc.auth.admin.listUsers({ page: 1, perPage: 200 });
+        const u = (data?.users ?? []).find((u: any) => u.email === ADMIN_EMAIL);
+        if (u?.id) adminUserId = u.id;
+      } catch {}
+    }
+
+    if (adminUserId) {
       await logNotification({
-        userId: adminUser.id,
+        userId: adminUserId,
         type: 'system',
         severity: 'info',
         title: '🔔 มีตัวแทนสมัครใหม่',
@@ -104,9 +134,12 @@ export async function createAgent(_prev: unknown, formData: FormData) {
         icon: '💼',
         tag: 'agent-pending',
       });
+      console.log('[createAgent] admin notified:', adminUserId);
+    } else {
+      console.error('[createAgent] could not find admin user with email', ADMIN_EMAIL);
     }
   } catch (e) {
-    console.warn('[createAgent] admin notify failed:', e);
+    console.error('[createAgent] admin notify failed:', e);
   }
 
   revalidatePath('/agents/dashboard');
