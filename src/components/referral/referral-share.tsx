@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 
 export function ReferralShare({ code }: { code: string }) {
   const [copied, setCopied] = useState<'code' | 'link' | null>(null);
+  // Use canonical /signup?invite= URL — /register?ref= still works (it redirects)
+  // but the canonical link is shorter and self-explanatory.
   const link =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/register?ref=${code}`
-      : `https://lumenfi.app/register?ref=${code}`;
+      ? `${window.location.origin}/signup?invite=${code}`
+      : `https://lumenfi.projectostech.com/signup?invite=${code}`;
 
   const shareText = `มาลองใช้ Lumenfi กัน — แอพการเงินส่วนตัว + AI ที่ปรึกษาทางการเงิน
 

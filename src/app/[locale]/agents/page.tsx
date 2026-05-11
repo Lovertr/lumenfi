@@ -125,15 +125,15 @@ export default async function AgentLandingPage({
                 <div className="absolute -inset-3 -z-10 rounded-3xl bg-gradient-to-br from-[#C9A45A]/30 via-transparent to-[#C9A45A]/10 blur-xl" />
                 <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-2xl ring-1 ring-white/10">
                   <Image
-                    src="/marketing/advisor-home.png"
-                    alt="AI Advisor scoring insurance gap"
+                    src="/marketing/insurance-gap.png"
+                    alt="Insurance gap analysis with request-quote buttons"
                     width={1120}
                     height={1024}
                     className="h-auto w-full"
                   />
                 </div>
                 <div className="mt-3 text-center text-xs text-white/55">
-                  AI Advisor วิเคราะห์ Gap ประกันที่ผู้ใช้เห็น
+                  หน้าวิเคราะห์ Gap ประกันที่ผู้ใช้เห็น — มีปุ่ม "ขอใบเสนอประกัน" ที่ส่ง lead เข้าระบบคุณตรงๆ
                 </div>
               </div>
             </div>

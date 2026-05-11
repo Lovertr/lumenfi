@@ -20,19 +20,42 @@ async function getReferralStats(userId: string) {
 
   const { data: myProfile } = await supabase
     .from('profiles')
-    .select('referred_by')
+    .select('referred_by, assigned_agent_id')
     .eq('id', userId)
     .maybeSingle();
 
+  let boundAgentCode: string | null = null;
+  let boundAgentName: string | null = null;
+  const assignedAgentId = (myProfile as any)?.assigned_agent_id ?? null;
+  if (assignedAgentId) {
+    const { data: agent } = await supabase
+      .from('agents')
+      .select('invite_code, agent_name')
+      .eq('id', assignedAgentId)
+      .maybeSingle();
+    boundAgentCode = (agent as any)?.invite_code ?? null;
+    boundAgentName = (agent as any)?.agent_name ?? null;
+  }
+
   return {
     invitedCount: invitedCount ?? 0,
-    alreadyClaimed: !!myProfile?.referred_by,
+    alreadyClaimed: !!(myProfile as any)?.referred_by,
+    boundAgentCode,
+    boundAgentName,
   };
 }
 
-export default async function ReferralPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ReferralPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams?: Promise<Record<string, string | undefined>>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const sp = searchParams ? await searchParams : {};
+  const presetFromUrl = typeof sp.invite === 'string' ? sp.invite.trim() : '';
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -98,21 +121,45 @@ export default async function ReferralPage({ params }: { params: Promise<{ local
       )}
 
       {/* Claim section */}
-      {!stats.alreadyClaimed && (
+      {stats.boundAgentCode ? (
+        <Card className="border-emerald-200 bg-emerald-50/40 dark:border-emerald-800/40 dark:bg-emerald-950/20">
+          <CardContent className="p-5">
+            <p className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
+              🛡️ คุณผูกกับตัวแทนแล้ว
+            </p>
+            <p className="mt-1 text-xs text-emerald-800 dark:text-emerald-300">
+              ตัวแทน: <b>{stats.boundAgentName ?? '—'}</b> · ขอที่ปรึกษาประกันจากหน้าวิเคราะห์ Gap ได้
+            </p>
+            <div className="mt-3">
+              <ClaimReferralForm
+                presetCode={stats.boundAgentCode}
+                locked
+                lockedLabel="ผูกกับตัวแทนแล้ว — เปลี่ยนได้ผ่าน admin เท่านั้น"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      ) : !stats.alreadyClaimed ? (
         <Card className="border-amber-200 bg-amber-50/40 dark:border-amber-800/40 dark:bg-amber-950/20">
           <CardContent className="p-5">
             <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
               💌 มีคนชวนคุณมา? ใส่โค้ดที่นี่
             </p>
             <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
-              ใส่โค้ดเพื่อนแล้วทั้งคู่ได้ Pro 30 วัน (ใส่ได้แค่ครั้งเดียว)
+              {presetFromUrl
+                ? 'ระบบใส่โค้ดที่คุณตามมาให้แล้ว — กดยืนยันเพื่อใช้ได้เลย'
+                : 'ใส่โค้ดเพื่อน → ทั้งคู่ได้ Pro 30 วัน · ใส่โค้ดตัวแทน → ผูกกับตัวแทน'}
             </p>
             <div className="mt-3">
-              <ClaimReferralForm />
+              <ClaimReferralForm
+                presetCode={presetFromUrl || undefined}
+                locked={!!presetFromUrl}
+                lockedLabel={presetFromUrl ? 'โค้ดจากลิงก์ที่คุณเปิด — เปลี่ยนไม่ได้' : undefined}
+              />
             </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       {/* How it works */}
       <Card className="border-dashed">

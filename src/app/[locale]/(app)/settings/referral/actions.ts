@@ -56,9 +56,48 @@ export async function claimReferralCode(
 
   const codeRaw = (formData.get('code') as string) ?? '';
   const code = codeRaw.trim().toUpperCase();
-  if (!code || code.length !== 6) return { error: 'invalid_code' };
+  if (!code || code.length < 4 || code.length > 12) return { error: 'invalid_code' };
 
-  // Find referrer
+  // ───────────────────────────────────────────────────────────────────
+  // Smart code detection:
+  //   1) Try matching an active agent invite_code first
+  //      → bind profile.assigned_agent_id (no Pro reward)
+  //   2) Otherwise try matching a user referral_code (6 chars)
+  //      → grant Pro 30d to both parties (existing flow)
+  // ───────────────────────────────────────────────────────────────────
+  const { data: agentRow } = await supabase
+    .from('agents')
+    .select('id, status, agent_name')
+    .eq('invite_code', code)
+    .eq('status', 'active')
+    .maybeSingle();
+  if (agentRow) {
+    // Agent code path — bind, no Pro reward
+    const agentId = (agentRow as any).id as string;
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('assigned_agent_id')
+      .eq('id', user.id)
+      .maybeSingle();
+    if ((prof as any)?.assigned_agent_id) {
+      return { error: 'already_bound_to_agent' };
+    }
+    const { error: updErr } = await supabase
+      .from('profiles')
+      .update({ assigned_agent_id: agentId })
+      .eq('id', user.id);
+    if (updErr) return { error: 'bind_failed' };
+    revalidatePath('/settings/referral');
+    revalidatePath('/settings');
+    return {
+      ok: true,
+      reward: `ผูกกับตัวแทน ${(agentRow as any).agent_name ?? ''} เรียบร้อย — เริ่มขอที่ปรึกษาประกันได้`,
+    };
+  }
+
+  // User-referral path
+  if (code.length !== 6) return { error: 'code_not_found' };
+
   const { data: referrer } = await supabase
     .from('profiles')
     .select('id')

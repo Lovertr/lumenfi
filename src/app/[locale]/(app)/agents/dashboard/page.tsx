@@ -164,6 +164,21 @@ export default async function AgentDashboardPage({
           </div>
         </Link>
         <Link
+          href="/agents/coach"
+          className="relative flex items-center gap-3 rounded-lg border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 p-4 transition-all hover:shadow-md"
+        >
+          <span className="absolute -top-2 right-2 rounded-full bg-amber-600 px-1.5 py-0.5 text-[9px] font-bold text-white">
+            NEW
+          </span>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 text-lg">
+            🎓
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">Sales Coach AI</p>
+            <p className="text-[11px] text-muted-foreground">เทคนิคขาย · objection · pitch</p>
+          </div>
+        </Link>
+        <Link
           href="/agents/line"
           className="flex items-center gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/30"
         >
