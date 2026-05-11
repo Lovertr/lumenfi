@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { AgentForm } from '@/components/agents/agent-form';
+import { LeadRow } from '@/components/agents/lead-row';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,7 +60,7 @@ export default async function AgentDashboardPage({
   // Leads (most recent 50)
   const { data: leads } = await supabase
     .from('insurance_leads')
-    .select('id, name, phone, email, type, status, message, source_event, created_at, preferred_carrier, estimated_sum_insured')
+    .select('id, name, phone, email, type, status, message, agent_notes, source_event, created_at, preferred_carrier, estimated_sum_insured')
     .eq('agent_id', (agent as any).id)
     .order('created_at', { ascending: false })
     .limit(50);
@@ -188,47 +189,9 @@ export default async function AgentDashboardPage({
               </p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div>
               {(leads as any[]).map((lead) => (
-                <div key={lead.id} className="py-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">{lead.name}</p>
-                        <span className="text-[10px] text-muted-foreground">
-                          {LEAD_STATUS[lead.status] ?? lead.status}
-                        </span>
-                      </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                        {lead.phone && (
-                          <a href={`tel:${lead.phone}`} className="inline-flex items-center gap-1 hover:text-primary">
-                            <Phone className="h-3 w-3" /> {lead.phone}
-                          </a>
-                        )}
-                        {lead.email && (
-                          <a href={`mailto:${lead.email}`} className="inline-flex items-center gap-1 hover:text-primary">
-                            <Mail className="h-3 w-3" /> {lead.email}
-                          </a>
-                        )}
-                      </div>
-                      <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                        <span>ประเภท: <strong>{lead.type}</strong></span>
-                        {lead.preferred_carrier && <span>· บ.: {lead.preferred_carrier}</span>}
-                        {lead.estimated_sum_insured && (
-                          <span>· ทุน: ฿{Number(lead.estimated_sum_insured).toLocaleString('th-TH')}</span>
-                        )}
-                      </div>
-                      {lead.message && (
-                        <p className="mt-1 text-[11px] italic text-muted-foreground">"{lead.message}"</p>
-                      )}
-                    </div>
-                    <p className="shrink-0 whitespace-nowrap text-[11px] text-muted-foreground">
-                      {new Date(lead.created_at).toLocaleDateString('th-TH', {
-                        day: 'numeric', month: 'short',
-                      })}
-                    </p>
-                  </div>
-                </div>
+                <LeadRow key={lead.id} lead={lead} />
               ))}
             </div>
           )}

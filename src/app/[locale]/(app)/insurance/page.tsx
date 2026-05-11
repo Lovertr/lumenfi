@@ -101,6 +101,26 @@ export default async function InsurancePage({ params }: { params: Promise<{ loca
             </div>
           )}
 
+          {/* INA Report CTA */}
+          <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-background">
+            <CardContent className="p-5">
+              <div className="flex items-start gap-3">
+                <FileText className="h-6 w-6 shrink-0 text-primary" />
+                <div className="flex-1">
+                  <p className="font-semibold">📋 รายงานวิเคราะห์ประกัน (INA)</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    รายงาน 1 หน้า · ดูช่องว่างความคุ้มครองทั้งหมด · บันทึกเป็น PDF ได้ · พร้อมรายละเอียดที่ปรึกษา
+                  </p>
+                  <Button asChild size="sm" className="mt-3">
+                    <Link href="/insurance/ina-report">
+                      ดู / ดาวน์โหลด PDF →
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Agent info */}
           <AgentInfoCard />
 
