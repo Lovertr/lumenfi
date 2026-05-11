@@ -24,3 +24,8 @@ comment on column agents.line_notify_token is
   'Personal access token from notify-bot.line.me — used to push lead alerts to agent personal/group LINE.';
 comment on column agent_subscriptions.auto_renew is
   'If true, cron attempts to charge stored card 3 days before period_end.';
+
+-- D2: AI sales pitch cache on lead
+alter table insurance_leads
+  add column if not exists ai_pitch text,
+  add column if not exists ai_pitch_generated_at timestamptz;

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Phone, Mail, MessageSquare, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from '@/i18n/routing';
 import { updateLeadStatus, updateLeadNotes } from '@/app/[locale]/(app)/agents/dashboard/actions';
 
 interface Lead {
@@ -37,7 +38,9 @@ export function LeadRow({ lead }: { lead: Lead }) {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="font-semibold">{lead.name}</p>
+            <Link href={`/agents/leads/${lead.id}`} className="font-semibold hover:underline">
+              {lead.name}
+            </Link>
             <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${current.cls}`}>
               {current.label}
             </span>
