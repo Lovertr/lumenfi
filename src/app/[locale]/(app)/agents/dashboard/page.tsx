@@ -149,7 +149,19 @@ export default async function AgentDashboardPage({
       </div>
 
       {/* Quick actions */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Link
+          href="/agents/analytics"
+          className="flex items-center gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/30"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+            📈
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">Analytics</p>
+            <p className="text-[11px] text-muted-foreground">conversion · trend</p>
+          </div>
+        </Link>
         <Link
           href="/agents/line"
           className="flex items-center gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/30"
