@@ -157,6 +157,28 @@ export default async function AgentBillingPage({
         </CardContent>
       </Card>
 
+      {/* Auto-renew toggle */}
+      {sub && (sub as any).plan !== 'trial' && (
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-sm font-semibold">🔄 ต่ออายุอัตโนมัติ</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {(sub as any).auto_renew
+                ? 'ระบบจะตัดบัตรอัตโนมัติ 1-3 วันก่อนหมดอายุ — เพื่อไม่ขาดช่วงรับ leads'
+                : 'ปิดอยู่ — คุณต้องอัพเกรดเองก่อนแพ็คเกจหมดอายุ'}
+            </p>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              สถานะ: <strong>{(sub as any).auto_renew ? 'เปิด' : 'ปิด'}</strong>
+              {(sub as any).charge_retry_count > 0 && (
+                <span className="ml-2 text-amber-700">
+                  · ลองตัดบัตรไม่สำเร็จ {(sub as any).charge_retry_count}/3 ครั้ง
+                </span>
+              )}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Compare features link */}
       <Card>
         <CardContent className="p-5">

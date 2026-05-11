@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { logNotification } from '@/lib/notifications';
 import { sendLineNotify } from '@/lib/line/notify';
+import { createCharge, isOmiseConfigured } from '@/lib/billing/omise';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -142,5 +143,149 @@ export async function GET(req: Request) {
     console.error('[cron/agent-billing] warn failed:', e);
   }
 
-  return NextResponse.json({ ok: true, expired, warned });
+  // 3) Auto-renew — find subs ending in 1-3 days with auto_renew=true, attempt charge
+  let renewed = 0;
+  let renewFailed = 0;
+  if (isOmiseConfigured()) {
+    const in1Day = new Date(now.getTime() + 1 * 86400000);
+    const in3Days = new Date(now.getTime() + 3 * 86400000);
+    try {
+      const { data: toRenew } = await svc
+        .from('agent_subscriptions')
+        .select('id, agent_id, plan, billing_cycle, monthly_amount, omise_customer_id, charge_retry_count')
+        .eq('status', 'active')
+        .eq('auto_renew', true)
+        .gte('current_period_end', in1Day.toISOString())
+        .lt('current_period_end', in3Days.toISOString())
+        .not('omise_customer_id', 'is', null);
+
+      for (const sub of (toRenew ?? []) as any[]) {
+        if ((sub.charge_retry_count ?? 0) >= 3) continue; // hard stop after 3 retries
+
+        const monthlyAmt = Number(sub.monthly_amount ?? 0);
+        const amountThb = sub.billing_cycle === 'annual' ? monthlyAmt * 12 : monthlyAmt;
+        if (amountThb <= 0) continue;
+
+        const periodDays = sub.billing_cycle === 'annual' ? 365 : 30;
+        const newPeriodEnd = new Date(now.getTime() + periodDays * 86400000);
+
+        try {
+          const charge = await createCharge({
+            amount: amountThb * 100,
+            currency: 'thb',
+            description: `Lumenfi Agent ${sub.plan} renewal (${sub.billing_cycle})`,
+            customer: sub.omise_customer_id,
+            metadata: {
+              tx_type: 'agent_renewal',
+              agent_id: sub.agent_id,
+              sub_id: sub.id,
+              plan_code: sub.plan,
+            },
+          });
+
+          if (charge.status === 'successful') {
+            // Extend period, reset retry counter
+            await svc
+              .from('agent_subscriptions')
+              .update({
+                current_period_start: now.toISOString(),
+                current_period_end: newPeriodEnd.toISOString(),
+                charge_retry_count: 0,
+                last_charge_failure_at: null,
+                omise_subscription_id: charge.id,
+              })
+              .eq('id', sub.id);
+
+            await svc.from('payment_transactions').insert({
+              user_id: null,
+              type: 'agent_subscription',
+              amount_thb: amountThb,
+              plan_code: sub.plan,
+              billing_cycle: sub.billing_cycle,
+              payment_provider: 'omise',
+              provider_charge_id: charge.id,
+              provider_customer_id: sub.omise_customer_id,
+              status: 'succeeded',
+              metadata: { agent_id: sub.agent_id, renewal: true },
+            });
+
+            // Notify agent
+            const { data: agent } = await svc
+              .from('agents')
+              .select('user_id, line_notify_token, line_notify_enabled')
+              .eq('id', sub.agent_id)
+              .maybeSingle();
+            if ((agent as any)?.user_id) {
+              await logNotification({
+                userId: (agent as any).user_id,
+                type: 'system',
+                severity: 'success',
+                title: '✓ ต่ออายุแพ็คเกจสำเร็จ',
+                body: `แพ็คเกจ ${sub.plan} ของคุณได้รับการต่ออายุอัตโนมัติ ฿${amountThb.toLocaleString('th-TH')} — ใช้งานได้ต่อ ${periodDays} วัน`,
+                url: '/agents/billing',
+                icon: '✅',
+                tag: 'agent-renewed',
+              });
+              if ((agent as any).line_notify_enabled && (agent as any).line_notify_token) {
+                sendLineNotify({
+                  token: (agent as any).line_notify_token,
+                  message: `\n✅ Lumenfi — ต่ออายุ ${sub.plan} สำเร็จ ฿${amountThb.toLocaleString('th-TH')}\nใช้งานได้ต่ออีก ${periodDays} วัน`,
+                }).catch(() => {});
+              }
+            }
+            renewed++;
+          } else {
+            // charge not successful (3DS expired, declined, etc.)
+            await svc
+              .from('agent_subscriptions')
+              .update({
+                charge_retry_count: (sub.charge_retry_count ?? 0) + 1,
+                last_charge_failure_at: now.toISOString(),
+              })
+              .eq('id', sub.id);
+            renewFailed++;
+          }
+        } catch (e: any) {
+          console.warn('[cron/agent-billing] renew charge failed', sub.id, e?.message);
+          await svc
+            .from('agent_subscriptions')
+            .update({
+              charge_retry_count: (sub.charge_retry_count ?? 0) + 1,
+              last_charge_failure_at: now.toISOString(),
+            })
+            .eq('id', sub.id);
+
+          // Notify agent of failure
+          const { data: agent } = await svc
+            .from('agents')
+            .select('user_id, line_notify_token, line_notify_enabled')
+            .eq('id', sub.agent_id)
+            .maybeSingle();
+          if ((agent as any)?.user_id) {
+            await logNotification({
+              userId: (agent as any).user_id,
+              type: 'system',
+              severity: 'warn',
+              title: '⚠️ ตัดบัตรไม่สำเร็จ',
+              body: `ระบบไม่สามารถต่ออายุแพ็คเกจ ${sub.plan} ได้ — กรุณาตรวจสอบบัตรหรือเปลี่ยนบัตรใหม่`,
+              url: '/agents/billing',
+              icon: '⚠️',
+              tag: 'agent-renew-failed',
+            });
+            if ((agent as any).line_notify_enabled && (agent as any).line_notify_token) {
+              sendLineNotify({
+                token: (agent as any).line_notify_token,
+                message: `\n⚠️ Lumenfi — ตัดบัตรไม่สำเร็จ\nแพ็คเกจ ${sub.plan} ใกล้หมดอายุ กรุณาเปลี่ยนบัตรในแอพ`,
+              }).catch(() => {});
+            }
+          }
+          renewFailed++;
+        }
+      }
+    } catch (e) {
+      console.error('[cron/agent-billing] renew failed:', e);
+    }
+  }
+
+  return NextResponse.json({ ok: true, expired, warned, renewed, renewFailed });
 }

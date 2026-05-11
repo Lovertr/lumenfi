@@ -114,7 +114,7 @@ async function handleChargeComplete(supabase: any, charge: any) {
     const agentId = (charge.metadata?.agent_id as string) ?? null;
     const planCode = (charge.metadata?.plan_code as string) ?? tx?.plan_code ?? 'starter';
     const cycle = (charge.metadata?.billing_cycle as string) ?? tx?.billing_cycle ?? 'monthly';
-    if (agentId) await activateAgentSub(supabase, agentId, planCode, cycle, (charge.amount ?? 0) / 100, charge.id);
+    if (agentId) await activateAgentSub(supabase, agentId, planCode, cycle, (charge.amount ?? 0) / 100, charge.id, charge.customer ?? null);
   }
 }
 
@@ -125,6 +125,7 @@ async function activateAgentSub(
   cycle: string,
   amountThb: number,
   chargeId: string,
+  customerId?: string | null,
 ) {
   const periodDays = cycle === 'annual' ? 365 : 30;
   const periodEnd = new Date(Date.now() + periodDays * 86400000);
@@ -146,6 +147,9 @@ async function activateAgentSub(
     monthly_amount: cycle === 'annual' ? Math.round(amountThb / 12) : amountThb,
     billing_cycle: cycle,
     omise_subscription_id: chargeId,
+    omise_customer_id: customerId ?? null,
+    auto_renew: true,
+    charge_retry_count: 0,
     trial_leads_used: 0,
     trial_leads_cap: 0,
   });

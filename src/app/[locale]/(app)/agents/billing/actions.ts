@@ -130,7 +130,8 @@ export async function checkoutAgentPlan(opts: CheckoutOpts): Promise<CheckoutRes
         opts.cycle,
         amountThb,
         periodEnd,
-        charge.id
+        charge.id,
+        customerId
       );
       revalidatePath('/agents/billing');
       revalidatePath('/agents/dashboard');
@@ -151,7 +152,8 @@ export async function activateAgentPlan(
   cycle: BillingCycle,
   monthlyAmount: number,
   periodEnd: Date,
-  omiseChargeId?: string
+  omiseChargeId?: string,
+  omiseCustomerId?: string
 ) {
   const admin = createServiceClient();
   // Close any active subscription (mark expired)
@@ -172,6 +174,9 @@ export async function activateAgentPlan(
     monthly_amount: cycle === 'annual' ? Math.round(monthlyAmount / 12) : monthlyAmount,
     billing_cycle: cycle,
     omise_subscription_id: omiseChargeId ?? null,
+    omise_customer_id: omiseCustomerId ?? null,
+    auto_renew: true,
+    charge_retry_count: 0,
     // Trial fields stay null/0 since they don't apply
     trial_leads_used: 0,
     trial_leads_cap: 0,
