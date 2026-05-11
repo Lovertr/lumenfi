@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cancelSubscription } from '@/app/[locale]/(app)/pricing/actions';
+import { cancelSubscription } from '@/app/[locale]/pricing/actions';
 
 export function CancelSubscriptionButton() {
   const [pending, startTransition] = useTransition();

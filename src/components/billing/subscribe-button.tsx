@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { startSubscriptionCheckout } from '@/app/[locale]/(app)/pricing/actions';
+import { startSubscriptionCheckout } from '@/app/[locale]/pricing/actions';
 
 export function SubscribeButton() {
   const router = useRouter();

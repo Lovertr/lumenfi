@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { startCreditCheckout } from '@/app/[locale]/(app)/pricing/actions';
+import { startCreditCheckout } from '@/app/[locale]/pricing/actions';
 
 const PACKS = [
   { size: 10, price: 79, label: '10 reports', save: '~12% off' },

@@ -6,7 +6,7 @@ import { Loader2, CreditCard, AlertCircle, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { processCheckout } from '@/app/[locale]/(app)/pricing/checkout/actions';
+import { processCheckout } from '@/app/[locale]/pricing/checkout/actions';
 
 declare global {
   interface Window {
