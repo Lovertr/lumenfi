@@ -4,6 +4,10 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { generateInviteCode } from '@/lib/agents/queries';
+import { createServiceClient } from '@/lib/supabase/admin';
+import { logNotification } from '@/lib/notifications';
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'tintanee.t@gmail.com';
 
 function txt(v: FormDataEntryValue | null): string | null {
   if (!v) return null;
@@ -79,6 +83,30 @@ export async function createAgent(_prev: unknown, formData: FormData) {
   if (error) {
     console.error('[createAgent]', error);
     return { error: 'db_failed' as const };
+  }
+
+  // Notify admin in-app that a new agent applied
+  try {
+    const svc = createServiceClient();
+    const { data: adminUser } = await svc
+      .from('profiles')
+      .select('id')
+      .eq('email', ADMIN_EMAIL)
+      .maybeSingle();
+    if (adminUser?.id) {
+      await logNotification({
+        userId: adminUser.id,
+        type: 'system',
+        severity: 'info',
+        title: '🔔 มีตัวแทนสมัครใหม่',
+        body: `${agent_name} (${display_name}) — กรุณาตรวจสอบใบอนุญาตและอนุมัติ`,
+        url: '/admin/agents',
+        icon: '💼',
+        tag: 'agent-pending',
+      });
+    }
+  } catch (e) {
+    console.warn('[createAgent] admin notify failed:', e);
   }
 
   revalidatePath('/agents/dashboard');
