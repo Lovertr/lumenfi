@@ -22,11 +22,45 @@ function getTierKey(tier: Tier): string {
   return process.env.LUMENFI_AI_KEY || '';
 }
 
+const KNOWN_PROVIDERS = new Set(['anthropic', 'openai', 'openrouter', 'gemini']);
+
+function inferProviderFromKey(key: string | undefined): AIProvider | null {
+  if (!key) return null;
+  // Gemini keys: AIzaSy...
+  if (/^AIza[\w-]{30,}/.test(key)) return 'gemini';
+  // Anthropic keys: sk-ant-...
+  if (key.startsWith('sk-ant-')) return 'anthropic';
+  // OpenRouter keys: sk-or-...
+  if (key.startsWith('sk-or-')) return 'openrouter';
+  // OpenAI keys: sk-... (must be checked AFTER more specific patterns)
+  if (key.startsWith('sk-')) return 'openai';
+  return null;
+}
+
 function getTierProvider(tier: Tier): AIProvider {
-  if (tier === 'free') {
-    return ((process.env.LUMENFI_FREE_AI_PROVIDER || process.env.LUMENFI_AI_PROVIDER) as AIProvider) || 'anthropic';
+  const envVar = tier === 'free'
+    ? (process.env.LUMENFI_FREE_AI_PROVIDER || process.env.LUMENFI_AI_PROVIDER)
+    : process.env.LUMENFI_AI_PROVIDER;
+
+  // If env value is a known provider name, use it
+  if (envVar && KNOWN_PROVIDERS.has(envVar)) {
+    return envVar as AIProvider;
   }
-  return (process.env.LUMENFI_AI_PROVIDER as AIProvider) || 'anthropic';
+
+  // Otherwise try to infer from the key shape (defensive — covers misconfigured envs)
+  const inferred = inferProviderFromKey(getTierKey(tier));
+  if (inferred) {
+    if (envVar && envVar !== inferred) {
+      console.warn(
+        `[access] LUMENFI_AI_PROVIDER='${envVar.slice(0, 8)}...' is invalid; using inferred '${inferred}' from key shape`
+      );
+    }
+    return inferred;
+  }
+
+  // Final fallback
+  console.warn('[access] No valid provider configured — defaulting to anthropic');
+  return 'anthropic';
 }
 
 function tierKeyConfigured(tier: Tier): boolean {

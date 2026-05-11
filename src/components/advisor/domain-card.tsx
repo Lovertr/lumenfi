@@ -21,7 +21,7 @@ export function DomainCard({ domain, title, description, icon, color, hero = fal
   const [error, setError] = useState<string | null>(null);
 
   const errorText: Record<string, string> = {
-    no_ai_key: 'ยังไม่ได้ตั้งค่า AI key — ไปที่ /ai/settings',
+    no_ai_key: 'ยังไม่ได้ตั้ง AI key — Admin ไปที่ /settings/admin/setup-ai',
     no_byo_key: 'ยังไม่ได้ตั้งค่า AI key — ไปที่ /ai/settings',
     no_advisor_quota: 'หมดโควต้าแล้ว — ดูแพลนได้ที่ /pricing',
     no_ai_access: 'ต้องสมัคร subscription หรือใช้ AI key ของตัวเอง',
@@ -29,9 +29,10 @@ export function DomainCard({ domain, title, description, icon, color, hero = fal
     daily_limit_exceeded: 'ใช้ครบ quota วันนี้แล้ว — รอพรุ่งนี้หรืออัพเกรด',
     decryption_failed: 'ถอดรหัส API key ไม่สำเร็จ',
     no_snapshot: 'ดึงข้อมูลไม่ได้',
-    invalid_api_key: 'API key ไม่ถูกต้อง',
-    rate_limited: 'ใช้บ่อยเกิน รอสักครู่',
-    ai_error: 'AI ตอบไม่ได้',
+    invalid_api_key: 'API key ไม่ถูกต้อง — เช็คว่า key ตรงกับ provider',
+    rate_limited: 'ใช้บ่อยเกิน / quota หมด — รอสักครู่ หรืออัพเกรด tier',
+    provider_misconfigured: '⚠️ ตั้งค่า provider ผิด — ใส่ LUMENFI_AI_PROVIDER=gemini ใน Vercel (ดูคู่มือ /settings/admin/setup-ai)',
+    ai_error: 'AI ตอบไม่ได้ — เช็ค Vercel logs',
     save_failed: 'บันทึกไม่ได้ — ตรวจสอบ migration 14',
   };
 

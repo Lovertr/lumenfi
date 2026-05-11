@@ -44,8 +44,10 @@ export async function generateAndSaveReport(
     }
     const msg = e?.message ?? '';
     console.error('generateAndSaveReport:', msg);
+    if (msg.includes('Unknown provider')) return { ok: false, error: 'provider_misconfigured' };
     if (msg.includes('401') || msg.includes('403')) return { ok: false, error: 'invalid_api_key' };
-    if (msg.includes('429')) return { ok: false, error: 'rate_limited' };
+    if (msg.includes('429') || msg.toLowerCase().includes('quota')) return { ok: false, error: 'rate_limited' };
+    if (msg.includes('LUMENFI_AI_KEY')) return { ok: false, error: 'no_ai_key' };
     return { ok: false, error: 'ai_error' };
   }
 
