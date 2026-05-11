@@ -1,12 +1,12 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, Bell } from 'lucide-react';
+import { ArrowLeft, Bell, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/server';
 import { saveReminderSettings } from './actions';
+import { TestReminderButton } from '@/components/settings/test-reminder-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +22,32 @@ async function getReminderProfile() {
   return data;
 }
 
+async function getPushCount(): Promise<number> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return 0;
+  const { count } = await supabase
+    .from('push_subscriptions')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id);
+  return count ?? 0;
+}
+
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, h) => ({
+  value: h,
+  label: `${String(h).padStart(2, '0')}:00`,
+}));
+
+const HOUR_HINTS: Record<number, string> = {
+  7: 'เริ่มต้นวัน — บันทึกค่ารถ/ค่ากาแฟ',
+  8: 'เริ่มต้นวัน — บันทึกค่ารถ/ค่ากาแฟ',
+  12: 'พักเที่ยง — บันทึกค่าอาหาร',
+  18: 'หลังเลิกงาน — สรุปรายจ่าย',
+  20: 'หลังอาหารเย็น — ทบทวนทั้งวัน',
+  21: 'ก่อนนอน — รีวิวรายจ่ายวันนี้',
+  22: 'ก่อนนอน — รีวิวรายจ่ายวันนี้',
+};
+
 export default async function ReminderSettingsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -31,6 +57,7 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
   const enabled = profile?.reminder_enabled ?? false;
   const hour = profile?.reminder_hour ?? 21;
   const skipIfLogged = profile?.reminder_skip_if_logged ?? true;
+  const pushCount = await getPushCount();
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -50,6 +77,24 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
           </p>
         </div>
       </header>
+
+      {/* Device status */}
+      <Card className={pushCount > 0 ? 'border-emerald-300 bg-emerald-50' : 'border-amber-300 bg-amber-50'}>
+        <CardContent className="p-4 text-sm">
+          {pushCount > 0 ? (
+            <p className="text-emerald-700">
+              ✓ เชื่อมต่อ {pushCount} อุปกรณ์ — พร้อมรับการแจ้งเตือน
+            </p>
+          ) : (
+            <p className="text-amber-700">
+              ⚠️ ยังไม่ได้เปิดสิทธิ์แจ้งเตือนบนอุปกรณ์นี้ —{' '}
+              <Link href="/recurring" className="font-semibold underline">
+                ไปที่ /recurring แล้วกด Enable notifications
+              </Link>
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="space-y-4 p-5">
@@ -73,22 +118,29 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
               />
             </div>
 
-            {/* Time — locked to 21:00 on Hobby plan */}
+            {/* Time — now picker */}
             <div className="space-y-2">
-              <Label>
-                {isTh ? 'เวลาแจ้งเตือน' : 'Reminder time'}
+              <Label htmlFor="reminder_hour" className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                {isTh ? 'เวลาแจ้งเตือน (เวลาไทย)' : 'Reminder time (Bangkok TZ)'}
               </Label>
-              <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2">
-                <span className="text-base font-semibold">21:00</span>
-                <span className="text-sm text-muted-foreground">
-                  {isTh ? '(3 ทุ่ม เวลาไทย — ก่อนนอนทบทวนค่าใช้จ่าย)' : '(9 PM Bangkok — review before bed)'}
-                </span>
-              </div>
-              <input type="hidden" name="reminder_hour" value="21" />
+              <select
+                id="reminder_hour"
+                name="reminder_hour"
+                defaultValue={String(hour)}
+                className="block w-full rounded-md border bg-background px-3 py-2 text-sm"
+              >
+                {HOUR_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                    {HOUR_HINTS[o.value] ? ` — ${HOUR_HINTS[o.value]}` : ''}
+                  </option>
+                ))}
+              </select>
               <p className="text-[11px] text-muted-foreground">
                 {isTh
-                  ? 'หมายเหตุ: Vercel Hobby plan จำกัดให้แจ้งเตือนได้วันละ 1 ครั้ง — เวลานี้เหมาะสำหรับการทบทวนรายวัน หากต้องการกำหนดเวลาเอง อัปเกรดเป็น Pro plan'
-                  : 'Note: Vercel Hobby plan limits reminders to once a day. Upgrade to Pro for custom hours.'}
+                  ? '💡 แนะนำ 20:00-22:00 ก่อนนอน — ทบทวนรายจ่ายของวันได้ครบถ้วน'
+                  : '💡 Tip: 20:00-22:00 works best for end-of-day review'}
               </p>
             </div>
 
@@ -118,15 +170,29 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
         </CardContent>
       </Card>
 
-      <Card className="border-amber-300 bg-amber-50">
-        <CardContent className="space-y-2 p-4 text-xs text-amber-900">
-          <p className="font-semibold">
-            ⚠️ {isTh ? 'เพิ่มเติม' : 'Note'}
-          </p>
-          <ul className="list-disc space-y-1 pl-4">
-            <li>{isTh ? 'ต้องเปิดสิทธิ์ "การแจ้งเตือน" ใน /recurring ก่อน' : 'You must grant notification permission first (in /recurring)'}</li>
-            <li>{isTh ? 'การแจ้งเตือนมาทุกวันตามเวลาที่ตั้ง (เวลาไทย)' : 'Reminder fires daily at the set hour (Bangkok time)'}</li>
-            <li>{isTh ? 'ใช้ได้บน mobile PWA + browser ที่อนุญาต push' : 'Works on mobile PWA + push-enabled browsers'}</li>
+      {/* Test button */}
+      {pushCount > 0 && (
+        <Card>
+          <CardContent className="p-5 space-y-3">
+            <div>
+              <p className="text-sm font-semibold">🧪 ทดสอบเลย</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                ส่ง push ทดสอบไปยังอุปกรณ์ที่เชื่อมต่อ — ใช้เช็คว่าระบบทำงานก่อนรอเวลาจริง
+              </p>
+            </div>
+            <TestReminderButton />
+          </CardContent>
+        </Card>
+      )}
+
+      <Card className="border-muted bg-muted/30">
+        <CardContent className="space-y-2 p-4 text-xs">
+          <p className="font-semibold">💡 ข้อมูล</p>
+          <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
+            <li>ระบบเช็คทุกชั่วโมง → ส่งแจ้งเตือนแค่ใน "ชั่วโมงที่ตั้งไว้" เท่านั้น (1 ครั้ง/วัน)</li>
+            <li>"ข้ามถ้าวันนี้บันทึกแล้ว" — ระบบจะเช็คก่อนส่ง ไม่กวนถ้าคุณบันทึกไปแล้ว</li>
+            <li>ใช้ได้บน mobile PWA + browser ที่อนุญาต push (Chrome, Edge, Safari iOS 16.4+)</li>
+            <li>iOS Safari: ต้อง "Add to Home Screen" ก่อนถึงรับ push ได้</li>
           </ul>
         </CardContent>
       </Card>
