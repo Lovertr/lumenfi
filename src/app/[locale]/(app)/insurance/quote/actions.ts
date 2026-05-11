@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { getRouteForUser } from '@/lib/agents/queries';
+import { createServiceClient } from '@/lib/supabase/admin';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FALLBACK_NOTIFY = process.env.AGENT_NOTIFY_EMAIL ?? 'tintanee.t@gmail.com';
@@ -127,6 +128,29 @@ export async function submitInsuranceLead(_prev: unknown, formData: FormData) {
     message,
     userEmail: user.email ?? null,
   });
+
+  // If this agent is on trial, increment leads used
+  if (route.agent_id) {
+    try {
+      const svc = createServiceClient();
+      const { data: sub } = await svc
+        .from('agent_subscriptions')
+        .select('id, plan, trial_leads_used')
+        .eq('agent_id', route.agent_id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (sub && (sub as any).plan === 'trial') {
+        await svc
+          .from('agent_subscriptions')
+          .update({ trial_leads_used: ((sub as any).trial_leads_used ?? 0) + 1 })
+          .eq('id', (sub as any).id);
+      }
+    } catch (e) {
+      console.warn('[quote] trial cap update failed:', e);
+    }
+  }
 
   revalidatePath('/insurance');
   return { success: true as const };

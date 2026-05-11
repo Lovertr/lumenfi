@@ -133,16 +133,18 @@ export default async function AgentDashboardPage({
             <p className="mt-1 text-2xl font-bold">{leads?.length ?? 0}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">แพลน</p>
-            <p className="mt-1 text-base font-bold capitalize">{(sub as any)?.plan ?? '—'}</p>
-            {sub && (sub as any).plan === 'trial' && (
-              <p className="text-[10px] text-muted-foreground">
-                {(sub as any).trial_leads_used}/{(sub as any).trial_leads_cap} leads
-              </p>
-            )}
-          </CardContent>
+        <Card className="transition-colors hover:bg-muted/30">
+          <Link href="/agents/billing">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">แพลน →</p>
+              <p className="mt-1 text-base font-bold capitalize">{(sub as any)?.plan ?? '—'}</p>
+              {sub && (sub as any).plan === 'trial' && (
+                <p className="text-[10px] text-muted-foreground">
+                  {(sub as any).trial_leads_used}/{(sub as any).trial_leads_cap} leads
+                </p>
+              )}
+            </CardContent>
+          </Link>
         </Card>
       </div>
 

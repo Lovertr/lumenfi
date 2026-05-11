@@ -110,7 +110,45 @@ async function handleChargeComplete(supabase: any, charge: any) {
   } else if (type === 'subscription' || tx?.type === 'subscription_initial') {
     const cycle = (charge.metadata?.billing_cycle as string) ?? tx?.billing_cycle ?? 'monthly';
     await activateSubscription(supabase, userId, cycle as 'monthly' | 'yearly', charge);
+  } else if (type === 'agent_subscription' || tx?.type === 'agent_subscription') {
+    const agentId = (charge.metadata?.agent_id as string) ?? null;
+    const planCode = (charge.metadata?.plan_code as string) ?? tx?.plan_code ?? 'starter';
+    const cycle = (charge.metadata?.billing_cycle as string) ?? tx?.billing_cycle ?? 'monthly';
+    if (agentId) await activateAgentSub(supabase, agentId, planCode, cycle, (charge.amount ?? 0) / 100, charge.id);
   }
+}
+
+async function activateAgentSub(
+  supabase: any,
+  agentId: string,
+  planCode: string,
+  cycle: string,
+  amountThb: number,
+  chargeId: string,
+) {
+  const periodDays = cycle === 'annual' ? 365 : 30;
+  const periodEnd = new Date(Date.now() + periodDays * 86400000);
+
+  // Expire current active subs for this agent
+  await supabase
+    .from('agent_subscriptions')
+    .update({ status: 'expired' })
+    .eq('agent_id', agentId)
+    .eq('status', 'active');
+
+  await supabase.from('agent_subscriptions').insert({
+    agent_id: agentId,
+    plan: planCode,
+    status: 'active',
+    current_period_start: new Date().toISOString(),
+    current_period_end: periodEnd.toISOString(),
+    cancel_at_period_end: false,
+    monthly_amount: cycle === 'annual' ? Math.round(amountThb / 12) : amountThb,
+    billing_cycle: cycle,
+    omise_subscription_id: chargeId,
+    trial_leads_used: 0,
+    trial_leads_cap: 0,
+  });
 }
 
 async function handleChargeFailed(supabase: any, charge: any) {
