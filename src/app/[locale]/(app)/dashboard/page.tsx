@@ -264,7 +264,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
       <Card>
         <CardContent className="p-4 lg:p-5">
           <h2 className="mb-3 text-sm font-semibold">รายรับ-รายจ่าย</h2>
-          <IncomeExpenseChart />
+          <IncomeExpenseChart payCycleDay={payCycleDay} />
         </CardContent>
       </Card>
 

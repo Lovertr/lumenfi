@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ReferenceLine } from 'recharts';
 import { Loader2 } from 'lucide-react';
 import { fetchIncomeExpenseTimeSeries } from '@/app/[locale]/(app)/dashboard/actions';
+import { getCurrentCycle, getPreviousCycle } from '@/lib/pay-cycle';
 
 type Granularity = 'day' | 'week' | 'month';
 
@@ -23,12 +24,24 @@ const GRANULARITY_LABELS: Record<Granularity, string> = {
 };
 
 // Preset chips per granularity (label, fromOffsetDays or special)
-const DAY_PRESETS = [
+type DayPreset =
+  | { id: string; label: string; days: number; special?: undefined }
+  | { id: string; label: string; days?: undefined; special: 'this_month' | 'last_month' | 'this_cycle' | 'last_cycle' };
+
+const DAY_PRESETS_BASE: DayPreset[] = [
   { id: 'last_7', label: '7 วันล่าสุด', days: 7 },
   { id: 'last_14', label: '14 วันล่าสุด', days: 14 },
   { id: 'last_30', label: '30 วันล่าสุด', days: 30 },
-  { id: 'this_month', label: 'เดือนนี้', special: 'this_month' as const },
-  { id: 'last_month', label: 'เดือนที่แล้ว', special: 'last_month' as const },
+  { id: 'this_month', label: 'เดือนนี้', special: 'this_month' },
+  { id: 'last_month', label: 'เดือนที่แล้ว', special: 'last_month' },
+];
+
+const DAY_PRESETS_WITH_CYCLE: DayPreset[] = [
+  { id: 'this_cycle', label: 'งวดนี้', special: 'this_cycle' },
+  { id: 'last_cycle', label: 'งวดที่แล้ว', special: 'last_cycle' },
+  { id: 'last_7', label: '7 วันล่าสุด', days: 7 },
+  { id: 'last_14', label: '14 วันล่าสุด', days: 14 },
+  { id: 'last_30', label: '30 วันล่าสุด', days: 30 },
 ];
 
 const WEEK_PRESETS = [
@@ -69,9 +82,10 @@ function endOfMonth(year: number, month0: number): Date {
   return new Date(year, month0 + 1, 0);
 }
 
-export function IncomeExpenseChart() {
-  const [granularity, setGranularity] = useState<Granularity>('week');
-  const [presetId, setPresetId] = useState<string>('last_3m');
+export function IncomeExpenseChart({ payCycleDay }: { payCycleDay?: number | null }) {
+  const hasCycle = payCycleDay != null && payCycleDay >= 1 && payCycleDay <= 31;
+  const [granularity, setGranularity] = useState<Granularity>('day');
+  const [presetId, setPresetId] = useState<string>(hasCycle ? 'this_cycle' : 'this_month');
   const [customMode, setCustomMode] = useState(false);
 
   // Custom range state — semantics depend on granularity
@@ -83,8 +97,8 @@ export function IncomeExpenseChart() {
 
   // Resolve range to absolute fromDate/toDate
   const { fromDate, toDate, isValid, errorMsg } = useMemo(() => {
-    return resolveRange(granularity, presetId, customMode, customFrom, customTo);
-  }, [granularity, presetId, customMode, customFrom, customTo]);
+    return resolveRange(granularity, presetId, customMode, customFrom, customTo, payCycleDay ?? null);
+  }, [granularity, presetId, customMode, customFrom, customTo, payCycleDay]);
 
   const [data, setData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState(false);
@@ -112,13 +126,13 @@ export function IncomeExpenseChart() {
   function handleGranularityChange(g: Granularity) {
     setGranularity(g);
     setCustomMode(false);
-    if (g === 'day') setPresetId('last_30');
+    if (g === 'day') setPresetId(hasCycle ? 'this_cycle' : 'this_month');
     else if (g === 'week') setPresetId('last_3m');
     else setPresetId('last_12m');
   }
 
   const presets =
-    granularity === 'day' ? DAY_PRESETS :
+    granularity === 'day' ? (hasCycle ? DAY_PRESETS_WITH_CYCLE : DAY_PRESETS_BASE) :
     granularity === 'week' ? WEEK_PRESETS : MONTH_PRESETS;
 
   const totalIncome = data.reduce((s, p) => s + p.income, 0);
@@ -349,7 +363,8 @@ function resolveRange(
   presetId: string,
   customMode: boolean,
   customFrom: string,
-  customTo: string
+  customTo: string,
+  payCycleDay: number | null
 ): { fromDate: string; toDate: string; isValid: boolean; errorMsg?: string } {
   const today = new Date();
   const todayStr = isoDate(today);
@@ -386,8 +401,20 @@ function resolveRange(
 
   // Preset
   if (granularity === 'day') {
-    const p = DAY_PRESETS.find((p) => p.id === presetId);
+    // Combined preset list — search both
+    const all = [...DAY_PRESETS_BASE, ...DAY_PRESETS_WITH_CYCLE];
+    const p = all.find((p) => p.id === presetId);
     if (!p) return { fromDate: '', toDate: '', isValid: false };
+    if (p.special === 'this_cycle') {
+      const c = getCurrentCycle(payCycleDay);
+      // Cap toDate at today so we don't show empty future days
+      const end = c.endDate > todayStr ? todayStr : c.endDate;
+      return { fromDate: c.startDate, toDate: end, isValid: true };
+    }
+    if (p.special === 'last_cycle') {
+      const c = getPreviousCycle(payCycleDay);
+      return { fromDate: c.startDate, toDate: c.endDate, isValid: true };
+    }
     if (p.special === 'this_month') {
       const first = startOfMonth(today.getFullYear(), today.getMonth());
       return { fromDate: isoDate(first), toDate: todayStr, isValid: true };
