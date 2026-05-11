@@ -152,21 +152,12 @@ export default async function DashboardPage({ params, searchParams }: { params: 
 
   return (
     <div className="space-y-4 p-4 pt-6 lg:pt-10">
-      <header className="flex items-center justify-between">
-        <div>
+      <header className="flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <p className="text-sm text-muted-foreground">
             {t('greeting')} {greeting}
           </p>
           <h1 className="text-xl font-bold lg:text-2xl">{t('subtitle')}</h1>
-          <div className="mt-1 flex items-center gap-2">
-            <p className="text-[11px] text-muted-foreground">
-              📊 {cycle.label} · {cycle.rangeLabel}
-            </p>
-            <CycleToggle
-              hasPayCycleDay={payCycleDay != null}
-              currentMode={cycleMode}
-            />
-          </div>
         </div>
         <div className="flex items-center gap-1.5 lg:hidden">
           <HealthBadge score={data.healthScore} />
@@ -179,6 +170,23 @@ export default async function DashboardPage({ params, searchParams }: { params: 
           <NotificationBellServer />
         </div>
       </header>
+
+      {/* Cycle scope row — chip + date range + toggle */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-3 py-1 text-xs font-medium">
+          <span>📊</span>
+          <span>{cycle.label}</span>
+        </span>
+        <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+          {cycle.rangeLabel}
+        </span>
+        <div className="ml-auto">
+          <CycleToggle
+            hasPayCycleDay={payCycleDay != null}
+            currentMode={cycleMode}
+          />
+        </div>
+      </div>
 
       {/* Discovery row: Spotlight + Feature Tour */}
       <div className="grid gap-3 lg:grid-cols-2">

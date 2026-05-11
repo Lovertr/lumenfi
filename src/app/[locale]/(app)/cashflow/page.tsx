@@ -95,9 +95,14 @@ export default async function CashFlowPage({ params }: { params: Promise<{ local
             </h2>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </div>
-          <p className="mb-2 text-[11px] text-muted-foreground">
-              📊 {cf.cycle.label} · {cf.cycle.rangeLabel}
-            </p>
+          <div className="mb-2 flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2 py-0.5 text-[11px] font-medium">
+                📊 {cf.cycle.label}
+              </span>
+              <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                {cf.cycle.rangeLabel}
+              </span>
+            </div>
             <CashFlowChart data={cf.daily} />
         </CardContent>
       </Card>

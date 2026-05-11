@@ -82,9 +82,14 @@ export default async function BudgetsPage({ params }: { params: Promise<{ locale
               {t('title')}
             </h1>
             <p className="text-xs text-muted-foreground">{t('subtitle')}</p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
-              📊 {cycle.label} · {cycle.rangeLabel}
-            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2 py-0.5 text-[11px] font-medium">
+                📊 {cycle.label}
+              </span>
+              <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                {cycle.rangeLabel}
+              </span>
+            </div>
           </div>
         </div>
       </header>
