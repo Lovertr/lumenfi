@@ -54,16 +54,26 @@ export function ExpensePieChart({
               ))}
             </Pie>
             <Tooltip
+              wrapperStyle={{ outline: 'none', zIndex: 50 }}
               content={({ active, payload }) => {
                 if (!active || !payload || payload.length === 0) return null;
                 const d: any = payload[0].payload;
                 return (
-                  <div className="rounded-md border bg-popover px-3 py-2 text-xs shadow-md">
-                    <p className="font-semibold">
-                      {d.icon} {d.name}
+                  <div className="rounded-lg border-2 border-foreground/10 bg-white px-3 py-2 text-xs shadow-xl dark:bg-slate-900">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 rounded-sm"
+                        style={{ backgroundColor: d.color }}
+                      />
+                      <p className="font-semibold text-foreground">
+                        {d.icon} {d.name}
+                      </p>
+                    </div>
+                    <p className="mt-1 text-sm font-bold text-foreground">
+                      {formatTHB(d.value)}
                     </p>
-                    <p className="mt-0.5 text-muted-foreground">
-                      {formatTHB(d.value)} · {d.percent.toFixed(1)}%
+                    <p className="text-[10px] text-muted-foreground">
+                      {d.percent.toFixed(1)}% ของรายจ่ายทั้งหมด
                     </p>
                   </div>
                 );

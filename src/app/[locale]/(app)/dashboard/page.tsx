@@ -9,6 +9,7 @@ import { formatTHB } from '@/lib/utils';
 import { getDashboardData, getDashboardDataForCycle } from '@/lib/queries/dashboard';
 import { getCurrentCycle } from '@/lib/pay-cycle';
 import { ExpensePieChart } from '@/components/dashboard/expense-pie-chart';
+import { CycleToggle } from '@/components/dashboard/cycle-toggle';
 import { materializeDueRecurring } from '@/lib/recurring';
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
 import { IncomeExpenseChart } from '@/components/dashboard/income-expense-chart';
@@ -50,7 +51,9 @@ function HealthBadge({ score }: { score: number }) {
   );
 }
 
-export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function DashboardPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = searchParams ? await searchParams : {};
+  const cycleMode = sp.cycle === 'calendar' ? 'calendar' : 'pay';
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('Dashboard');
@@ -142,7 +145,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       payCycleDay = (prof2 as any)?.pay_cycle_day ?? null;
     } catch {}
   }
-  const cycle = getCurrentCycle(payCycleDay);
+  // If user toggled to 'calendar' view, ignore payCycleDay
+  const cycle = getCurrentCycle(cycleMode === 'calendar' ? null : payCycleDay);
   const data = await getDashboardDataForCycle(cycle.startDate, cycle.endDate);
 
   return (
@@ -153,9 +157,15 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
             {t('greeting')} {greeting}
           </p>
           <h1 className="text-xl font-bold lg:text-2xl">{t('subtitle')}</h1>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            📊 {cycle.label} · {cycle.rangeLabel}
-          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <p className="text-[11px] text-muted-foreground">
+              📊 {cycle.label} · {cycle.rangeLabel}
+            </p>
+            <CycleToggle
+              hasPayCycleDay={payCycleDay != null}
+              currentMode={cycleMode}
+            />
+          </div>
         </div>
         <div className="flex items-center gap-1.5 lg:hidden">
           <HealthBadge score={data.healthScore} />
