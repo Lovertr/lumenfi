@@ -54,6 +54,7 @@ interface Profile {
   risk_tolerance: string | null;
   investment_experience: string | null;
   financial_goal_summary: string | null;
+  pay_cycle_day: number | null;
 }
 
 function NumberField({ id, label, value, placeholder, hint }: {
@@ -169,6 +170,21 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           <div className="space-y-2">
             <Label htmlFor="num_dependents">จำนวนคนในอุปการะ</Label>
             <Input id="num_dependents" name="num_dependents" type="number" min={0} max={20} defaultValue={profile.num_dependents ?? 0} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="pay_cycle_day" className="text-xs">วันที่เงินเดือนออก (1-31)</Label>
+            <Input
+              id="pay_cycle_day"
+              name="pay_cycle_day"
+              type="number"
+              min={1}
+              max={31}
+              placeholder="25"
+              defaultValue={profile.pay_cycle_day ?? ''}
+            />
+            <p className="text-[10px] text-muted-foreground">
+              ตั้งวันที่เงินเดือนเข้าบัญชี — Dashboard จะใช้รอบนี้แทนปฏิทินเดือน เช่น 25 ก.ค. - 24 ส.ค. (ปล่อยว่าง = ใช้ 1-31 ตามเดือนปฏิทิน)
+            </p>
             <p className="text-[11px] text-muted-foreground">บุตร / คู่สมรส / บุพการี</p>
           </div>
         </div>

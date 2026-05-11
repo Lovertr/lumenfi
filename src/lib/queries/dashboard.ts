@@ -32,7 +32,7 @@ export interface DashboardData {
   debtsCount: number;
 }
 
-async function _getDashboardData(): Promise<DashboardData> {
+async function _getDashboardData(cycleStart?: string, cycleEnd?: string): Promise<DashboardData> {
   const empty: DashboardData = {
     netWorth: 0,
     totalAssets: 0,
@@ -57,9 +57,13 @@ async function _getDashboardData(): Promise<DashboardData> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return empty;
 
-    const start = new Date();
-    start.setDate(1);
-    start.setHours(0, 0, 0, 0);
+    // Cycle window — caller passes startDate / optional endDate (ISO YYYY-MM-DD).
+    // Default: 1st of current calendar month → end of month.
+    const today = new Date();
+    const defaultStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const defaultEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const startStrIn = cycleStart ?? defaultStart.toISOString().slice(0, 10);
+    const endStrIn = cycleEnd ?? defaultEnd.toISOString().slice(0, 10);
 
     const [accountsRes, debtsRes, txRes, goalsRes, investmentsRes] = await Promise.all([
       supabase
@@ -125,13 +129,13 @@ async function _getDashboardData(): Promise<DashboardData> {
     const totalLiabilities = totalLiabilitiesAcc + totalDebt;
     const netWorth = totalAssets - totalLiabilities;
 
-    // Month income / expense (filter by current month start)
-    const startStr = start.toISOString().slice(0, 10);
+    // Month income / expense (filter by cycle window: startStrIn ≤ date ≤ endStrIn)
     let monthIncome = 0;
     let monthExpense = 0;
     const catMap = new Map<string, { name: string; icon: string; color: string; amount: number }>();
     for (const t of (txRes.data ?? []) as any[]) {
-      if ((t.date ?? '').slice(0, 10) < startStr) continue;
+      const d = (t.date ?? '').slice(0, 10);
+      if (d < startStrIn || d > endStrIn) continue;
       const amt = Number(t.amount);
       if (t.type === 'income') monthIncome += amt;
       if (t.type === 'expense') {
@@ -215,3 +219,7 @@ async function _getDashboardData(): Promise<DashboardData> {
 
 
 export const getDashboardData = cache(_getDashboardData);
+/** Same as getDashboardData but accepts an explicit cycle window. */
+export const getDashboardDataForCycle = cache(
+  (cycleStart: string, cycleEnd: string) => _getDashboardData(cycleStart, cycleEnd)
+);

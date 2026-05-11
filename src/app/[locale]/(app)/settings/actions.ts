@@ -65,6 +65,12 @@ export async function updateProfile(_prev: unknown, formData: FormData) {
       monthly_expense_estimate: num(formData.get('monthly_expense_estimate')),
       monthly_income_target: num(formData.get('monthly_income_target')),
       monthly_expense_target: num(formData.get('monthly_expense_target')),
+
+      // Pay cycle
+      pay_cycle_day: (() => {
+        const v = parseInt((formData.get('pay_cycle_day') as string) || '', 10);
+        return Number.isFinite(v) && v >= 1 && v <= 31 ? v : null;
+      })(),
     })
     .eq('id', user.id);
 

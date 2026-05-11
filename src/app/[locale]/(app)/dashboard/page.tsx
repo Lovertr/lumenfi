@@ -6,7 +6,9 @@ import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { NotificationBellServer } from '@/components/notifications/notification-bell-server';
 import { formatTHB } from '@/lib/utils';
-import { getDashboardData } from '@/lib/queries/dashboard';
+import { getDashboardData, getDashboardDataForCycle } from '@/lib/queries/dashboard';
+import { getCurrentCycle } from '@/lib/pay-cycle';
+import { ExpensePieChart } from '@/components/dashboard/expense-pie-chart';
 import { materializeDueRecurring } from '@/lib/recurring';
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions';
 import { IncomeExpenseChart } from '@/components/dashboard/income-expense-chart';
@@ -112,7 +114,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
     try {
       const { data: prof } = await supabase
         .from('profiles')
-        .select('occupation, employment_type, risk_tolerance, financial_goal_summary, income_salary_monthly, expense_food_monthly, expense_housing_monthly, monthly_income, monthly_expense_estimate')
+        .select('occupation, employment_type, risk_tolerance, financial_goal_summary, income_salary_monthly, expense_food_monthly, expense_housing_monthly, monthly_income, monthly_expense_estimate, pay_cycle_day')
         .eq('id', user.id)
         .maybeSingle();
       if (prof) {
@@ -128,7 +130,20 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   }
   const showProfileReminder = profilePercent < 50;
 
-  const data = await getDashboardData();
+  // Pay cycle: if user set pay_cycle_day, use that; otherwise calendar month
+  let payCycleDay: number | null = null;
+  if (user) {
+    try {
+      const { data: prof2 } = await supabase
+        .from('profiles')
+        .select('pay_cycle_day')
+        .eq('id', user.id)
+        .maybeSingle();
+      payCycleDay = (prof2 as any)?.pay_cycle_day ?? null;
+    } catch {}
+  }
+  const cycle = getCurrentCycle(payCycleDay);
+  const data = await getDashboardDataForCycle(cycle.startDate, cycle.endDate);
 
   return (
     <div className="space-y-4 p-4 pt-6 lg:pt-10">
@@ -138,6 +153,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
             {t('greeting')} {greeting}
           </p>
           <h1 className="text-xl font-bold lg:text-2xl">{t('subtitle')}</h1>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            📊 {cycle.label} · {cycle.rangeLabel}
+          </p>
         </div>
         <div className="flex items-center gap-1.5 lg:hidden">
           <HealthBadge score={data.healthScore} />
@@ -198,15 +216,15 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
             </p>
             <div className="mt-5 grid grid-cols-3 gap-3 text-xs lg:gap-6 lg:text-sm">
               <div>
-                <p className="opacity-70">รายรับเดือนนี้</p>
+                <p className="opacity-70">รายรับ{cycle.isPayCycle ? 'งวดนี้' : 'เดือนนี้'}</p>
                 <p className="mt-0.5 font-semibold text-[#10B981] lg:text-lg">+{formatTHB(data.monthIncome)}</p>
               </div>
               <div>
-                <p className="opacity-70">รายจ่ายเดือนนี้</p>
+                <p className="opacity-70">รายจ่าย{cycle.isPayCycle ? 'งวดนี้' : 'เดือนนี้'}</p>
                 <p className="mt-0.5 font-semibold text-[#FCA5A5] lg:text-lg">-{formatTHB(data.monthExpense)}</p>
               </div>
               <div>
-                <p className="opacity-70">สุทธิเดือนนี้</p>
+                <p className="opacity-70">สุทธิ{cycle.isPayCycle ? 'งวดนี้' : 'เดือนนี้'}</p>
                 <p className={`mt-0.5 font-semibold lg:text-lg ${data.monthBalance < 0 ? 'text-[#FCA5A5]' : 'text-[#10B981]'}`}>
                   {data.monthBalance >= 0 ? '+' : ''}{formatTHB(data.monthBalance)}
                 </p>
@@ -288,35 +306,19 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                   {locale === 'th' ? 'ดูทั้งหมด' : 'View all'}
                 </Link>
               </div>
-              <div className="space-y-2">
-                {data.topCategories.map((cat) => {
-                  const percent = data.monthExpense > 0 ? (cat.amount / data.monthExpense) * 100 : 0;
-                  return (
-                    <div key={cat.name} className="flex items-center gap-3">
-                      <span className="text-xl">{cat.icon}</span>
-                      <div className="flex-1">
-                        <div className="flex justify-between text-sm">
-                          <span>{cat.name}</span>
-                          <span className="font-medium">{formatTHB(cat.amount)}</span>
-                        </div>
-                        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                          <div
-                            className="h-full rounded-full"
-                            style={{ width: `${percent}%`, backgroundColor: cat.color }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <ExpensePieChart
+                categories={data.topCategories}
+                total={data.monthExpense}
+              />
             </CardContent>
           </Card>
         ) : (
           <Card className="border-dashed">
             <CardContent className="flex h-full flex-col items-center justify-center p-6 text-center">
               <p className="text-sm text-muted-foreground">
-                {locale === 'th' ? 'ยังไม่มีรายการในเดือนนี้' : 'No transactions this month'}
+                {locale === 'th'
+                  ? `ยังไม่มีรายการใน${cycle.isPayCycle ? 'งวด' : 'เดือน'}นี้`
+                  : 'No transactions this cycle'}
               </p>
               <Button asChild size="sm" variant="outline" className="mt-3">
                 <Link href="/transactions/new">+ Add</Link>
