@@ -208,10 +208,9 @@ export function SalesCoachChat() {
                     Sales Coach กำลังคิด...
                   </span>
                 ) : m.role === 'assistant' && !m.error ? (
-                  <div
-                    className="prose prose-sm max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}
-                  />
+                  <div className="prose prose-sm max-w-none leading-relaxed dark:prose-invert">
+                    {renderMarkdown(m.content)}
+                  </div>
                 ) : (
                   m.content
                 )}
