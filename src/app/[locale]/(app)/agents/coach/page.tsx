@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { SalesCoachChat } from '@/components/agents/sales-coach-chat';
+import { CoachHistoryBar } from '@/components/agents/coach-history-bar';
+import { listCoachConversations } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -147,6 +149,7 @@ export default async function AgentCoachPage({
   }
 
   const products = ((agent as any).products as string[] | null) ?? [];
+  const conversations = await listCoachConversations();
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -197,6 +200,8 @@ export default async function AgentCoachPage({
           </div>
         </CardContent>
       </Card>
+
+      <CoachHistoryBar conversations={conversations} />
 
       <SalesCoachChat />
 

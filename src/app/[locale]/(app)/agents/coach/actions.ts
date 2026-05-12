@@ -1,12 +1,16 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { callAIViaGateway, PaywallError } from '@/lib/billing/gateway';
 import type { ChatMessage } from '@/lib/ai/types';
 
 type CoachResult =
-  | { reply: string }
+  | { reply: string; conversationId?: string }
   | { error: string; upgradeUrl?: string };
+
+const FEATURE_TAG = 'coach';
 
 const PRODUCT_LABELS_TH: Record<string, string> = {
   life: 'ประกันชีวิต',
@@ -36,15 +40,18 @@ const SYSTEM_PROMPT = `คุณเป็น "Sales Coach AI" ของ Lumenfi 
 - ถ้าตัวแทนถามคำถามที่นอกเหนือเรื่องขาย (เช่น เทคนิคแอป) ให้ตอบสั้นๆ แล้วชวนกลับมาเรื่องขาย
 - พูดเหมือนโค้ชที่เคารพคู่สนทนา — ไม่สั่งสอน ไม่จู้จี้`;
 
+// ───────────────────────────────────────────────────────────────
+// Chat (paywall-gated)
+// ───────────────────────────────────────────────────────────────
 export async function sendSalesCoachMessage(
   history: ChatMessage[],
   userMessage: string,
+  conversationId?: string,
 ): Promise<CoachResult> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'unauthorized' };
 
-  // Verify caller is an active agent
   const { data: agent } = await supabase
     .from('agents')
     .select('id, status, agent_name, display_name, company, products, license_number')
@@ -53,8 +60,7 @@ export async function sendSalesCoachMessage(
   if (!agent) return { error: 'not_agent' };
   if ((agent as any).status !== 'active') return { error: 'agent_not_active' };
 
-  // ── Paywall: Sales Coach AI is for paid plans only ───────────────
-  // Free / trial agents see an upgrade card and cannot call the model.
+  // Paywall: Sales Coach AI is for paid plans only (Starter+)
   const { data: sub } = await supabase
     .from('agent_subscriptions')
     .select('plan, status')
@@ -67,11 +73,9 @@ export async function sendSalesCoachMessage(
     !!sub &&
     (sub as any).status === 'active' &&
     paidPlans.includes(((sub as any).plan ?? '').toLowerCase());
-  if (!onPaidPlan) {
-    return { error: 'agent_paywall' };
-  }
+  if (!onPaidPlan) return { error: 'agent_paywall' };
 
-  // Pull a few quick stats so the coach can be specific
+  // Quick stats for context
   let leadStats = '';
   try {
     const { count: total } = await supabase
@@ -88,17 +92,13 @@ export async function sendSalesCoachMessage(
       .select('id', { count: 'exact', head: true })
       .eq('agent_id', (agent as any).id)
       .eq('status', 'closed_won');
-    leadStats =
-      `Leads ทั้งหมด: ${total ?? 0} · ติดต่อแล้ว: ${contacted ?? 0} · ปิดดีล: ${closed ?? 0}`;
+    leadStats = `Leads ทั้งหมด: ${total ?? 0} · ติดต่อแล้ว: ${contacted ?? 0} · ปิดดีล: ${closed ?? 0}`;
   } catch {
-    /* swallow — context is optional */
+    /* swallow */
   }
 
   const products = ((agent as any).products as string[] | null) ?? [];
-  const productLabels = products
-    .map((p) => PRODUCT_LABELS_TH[p] ?? p)
-    .join(' · ');
-
+  const productLabels = products.map((p) => PRODUCT_LABELS_TH[p] ?? p).join(' · ');
   const agentContext = [
     `# ตัวแทนที่คุณกำลังโค้ชอยู่`,
     `- ชื่อ: ${(agent as any).agent_name ?? '—'}`,
@@ -109,7 +109,6 @@ export async function sendSalesCoachMessage(
   ]
     .filter(Boolean)
     .join('\n');
-
   const systemPrompt = `${SYSTEM_PROMPT}\n\n${agentContext}`;
 
   const messages: ChatMessage[] = [
@@ -117,13 +116,14 @@ export async function sendSalesCoachMessage(
     { role: 'user', content: userMessage },
   ];
 
+  let assistantText: string;
   try {
     const result = await callAIViaGateway({
       feature: 'chat',
       systemPrompt,
       messages,
     });
-    return { reply: result.text };
+    assistantText = result.text;
   } catch (e: any) {
     if (e instanceof PaywallError) {
       return { error: e.code, upgradeUrl: e.upgradeUrl };
@@ -131,4 +131,98 @@ export async function sendSalesCoachMessage(
     console.error('sendSalesCoachMessage:', e);
     return { error: e?.message?.slice(0, 200) ?? 'ai_error' };
   }
+
+  // ── Persist: create conversation if first turn, append both messages ──
+  let convId = conversationId ?? null;
+  try {
+    if (!convId) {
+      const title = userMessage.slice(0, 60).trim() + (userMessage.length > 60 ? '...' : '');
+      const { data: created } = await supabase
+        .from('ai_conversations')
+        .insert({ user_id: user.id, title, feature: FEATURE_TAG })
+        .select('id')
+        .single();
+      convId = (created as any)?.id ?? null;
+    }
+    if (convId) {
+      await supabase.from('ai_messages').insert([
+        {
+          conversation_id: convId,
+          user_id: user.id,
+          role: 'user',
+          content: userMessage,
+          feature: FEATURE_TAG,
+        },
+        {
+          conversation_id: convId,
+          user_id: user.id,
+          role: 'assistant',
+          content: assistantText,
+          feature: FEATURE_TAG,
+        },
+      ]);
+      await supabase
+        .from('ai_conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', convId)
+        .eq('user_id', user.id);
+    }
+  } catch (e: any) {
+    // Persistence failure shouldn't break the chat experience.
+    console.warn('[coach] persist failed:', e?.message ?? e);
+  }
+
+  return { reply: assistantText, conversationId: convId ?? undefined };
+}
+
+// ───────────────────────────────────────────────────────────────
+// Conversation history persistence
+// ───────────────────────────────────────────────────────────────
+
+export async function listCoachConversations() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from('ai_conversations')
+    .select('id, title, created_at, updated_at')
+    .eq('user_id', user.id)
+    .eq('feature', FEATURE_TAG)
+    .order('updated_at', { ascending: false })
+    .limit(50);
+  return data ?? [];
+}
+
+export async function getCoachMessages(conversationId: string): Promise<ChatMessage[]> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from('ai_messages')
+    .select('role, content, created_at')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', user.id)
+    .eq('feature', FEATURE_TAG)
+    .order('created_at');
+  return (data ?? []).map((m) => ({
+    role: m.role as 'user' | 'assistant' | 'system',
+    content: m.content,
+  }));
+}
+
+export async function deleteCoachConversation(formData: FormData) {
+  const id = formData.get('id') as string | null;
+  if (!id) return;
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+  await supabase
+    .from('ai_conversations')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .eq('feature', FEATURE_TAG);
+  revalidatePath('/agents/coach');
+  // If we deleted the one we're currently viewing, fall back to coach home
+  revalidatePath(`/agents/coach/c/${id}`);
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from '@/i18n/routing';
 import { Send, Sparkles, AlertCircle, User, Bot, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -64,8 +65,18 @@ const ERR_MAP: Record<string, string> = {
   agent_paywall: 'Sales Coach AI สำหรับแพ็คเกจ Starter+ เท่านั้น — อัพเกรดที่ /agents/pricing',
 };
 
-export function SalesCoachChat() {
-  const [messages, setMessages] = useState<DisplayMessage[]>([]);
+export function SalesCoachChat({
+  conversationId: initialConversationId,
+  initialMessages = [],
+}: {
+  conversationId?: string;
+  initialMessages?: ChatMessage[];
+} = {}) {
+  const router = useRouter();
+  const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId);
+  const [messages, setMessages] = useState<DisplayMessage[]>(
+    initialMessages.map((m, i) => ({ id: `init-${i}`, role: m.role, content: m.content })),
+  );
   const [input, setInput] = useState('');
   const [pending, setPending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -103,12 +114,22 @@ export function SalesCoachChat() {
     const result = await sendSalesCoachMessage(
       historyForApi.slice(0, -1), // exclude the just-added user msg (server appends)
       text,
+      conversationId,
     );
 
     setPending(false);
     setMessages((prev) => {
       const without = prev.filter((m) => m.id !== placeholder.id);
       if ('reply' in result) {
+        // Capture the conversation id once and reflect it in the URL so refresh keeps history
+        const wasNew = !conversationId;
+        if (result.conversationId && !conversationId) {
+          setConversationId(result.conversationId);
+          if (wasNew) {
+            // Don't navigate — just update history sidebar so the new convo appears
+            router.refresh();
+          }
+        }
         return [
           ...without,
           { id: crypto.randomUUID(), role: 'assistant', content: result.reply },
