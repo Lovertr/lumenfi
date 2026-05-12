@@ -119,7 +119,7 @@ export default async function ReferralLandingPage({
             </p>
 
             {/* Gold reward callout */}
-            <Card className="mb-6 border-[#C9A45A]/40 bg-gradient-to-br from-[#C9A45A]/15 via-[#C9A45A]/8 to-transparent text-white shadow-2xl">
+            <Card className="mb-6 border-[#C9A45A]/40 !bg-gradient-to-br !from-[#2a1f0c] !via-[#1a1408] !to-[#100b04] text-white shadow-2xl">
               <CardContent className="flex items-center gap-4 p-5">
                 <div className="flex h-14 w-14 flex-none items-center justify-center rounded-2xl bg-gradient-to-br from-[#C9A45A] to-[#8A6932] text-2xl shadow-md">
                   🎁
@@ -379,7 +379,7 @@ export default async function ReferralLandingPage({
           </p>
 
           <div className="mx-auto mt-8 max-w-lg">
-            <Card className="relative overflow-hidden border-2 border-[#C9A45A]/40 bg-white/5">
+            <Card className="relative overflow-hidden border-2 border-[#C9A45A]/40 !bg-white/5">
               <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-[#C9A45A]/20 blur-2xl" />
               <CardContent className="relative space-y-4 p-8 text-left">
                 <div className="flex items-center gap-3">
