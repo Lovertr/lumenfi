@@ -63,6 +63,89 @@ export default async function AgentCoachPage({
     );
   }
 
+  // Paywall: Sales Coach AI is for paid plans only (Starter+)
+  const { data: sub } = await supabase
+    .from('agent_subscriptions')
+    .select('plan, status')
+    .eq('agent_id', (agent as any).id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const paidPlans = ['starter', 'pro', 'team', 'founder'];
+  const onPaidPlan =
+    !!sub &&
+    (sub as any).status === 'active' &&
+    paidPlans.includes(((sub as any).plan ?? '').toLowerCase());
+
+  if (!onPaidPlan) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6 lg:pt-10">
+        <header className="flex items-center gap-2">
+          <Button asChild size="icon" variant="ghost" className="h-9 w-9 -ml-2">
+            <Link href="/agents/dashboard">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="flex items-center gap-2 text-xl font-bold">
+              <GraduationCap className="h-5 w-5 text-amber-600" />
+              Sales Coach AI
+            </h1>
+            <p className="text-xs text-muted-foreground">โค้ชนักขาย — สำหรับแพ็คเกจที่ชำระแล้ว</p>
+          </div>
+        </header>
+
+        <Card className="relative overflow-hidden border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+          <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-amber-300/40 blur-3xl" />
+          <CardContent className="relative space-y-4 p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-2xl text-white shadow-md">
+                🎓
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-amber-900">
+                  Sales Coach AI เป็นฟีเจอร์ของแพ็คเกจ Starter ขึ้นไป
+                </h2>
+                <p className="mt-1 text-sm text-amber-800">
+                  อัพเกรดเพื่อใช้ AI โค้ชนักขายที่ถูกเทรนเฉพาะคุณ — เทคนิคเปิด-ปิดดีล · objection handling · pitch ตาม persona · content marketing · follow-up cadence
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-2 rounded-lg border border-amber-200 bg-white/60 p-4 text-sm sm:grid-cols-3">
+              <div className="space-y-0.5">
+                <p className="font-semibold">Starter</p>
+                <p className="text-xs text-muted-foreground">฿299/เดือน · 25 leads</p>
+              </div>
+              <div className="space-y-0.5 rounded-md bg-amber-100 px-2 py-1">
+                <p className="font-semibold text-amber-900">Pro ⭐ แนะนำ</p>
+                <p className="text-xs text-amber-800">฿699/เดือน · leads ไม่จำกัด</p>
+              </div>
+              <div className="space-y-0.5">
+                <p className="font-semibold">Team</p>
+                <p className="text-xs text-muted-foreground">฿1,990/เดือน · 5 ตัวแทน</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button asChild className="bg-amber-600 text-white hover:bg-amber-700">
+                <Link href="/agents/pricing">ดูแพ็คเกจ + อัพเกรด</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/agents/dashboard">กลับ Dashboard</Link>
+              </Button>
+            </div>
+
+            <p className="rounded-md bg-white/50 p-3 text-[11px] text-amber-900">
+              💡 ระหว่าง trial (3 leads ฟรี 14 วัน) Sales Coach AI ยังไม่เปิด — แต่ฟีเจอร์อื่นใช้ได้ครบ:
+              รับ lead · INA Report PDF · จัดการ pipeline · ดู analytics
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const products = ((agent as any).products as string[] | null) ?? [];
 
   return (

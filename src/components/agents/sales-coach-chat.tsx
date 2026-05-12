@@ -61,6 +61,7 @@ const ERR_MAP: Record<string, string> = {
   quota_chat_exceeded: 'คุณใช้ Lumenfi AI หมด quota รายวันแล้ว · ใส่ key ตัวเองที่ /ai/settings หรืออัพเกรด Pro',
   no_key_configured: 'ยังไม่ได้ตั้งค่า AI key — ไปที่ /ai/settings',
   no_ai_access: 'ต้องอัพเกรด Pro หรือใส่ AI key ของตัวเอง',
+  agent_paywall: 'Sales Coach AI สำหรับแพ็คเกจ Starter+ เท่านั้น — อัพเกรดที่ /agents/pricing',
 };
 
 export function SalesCoachChat() {

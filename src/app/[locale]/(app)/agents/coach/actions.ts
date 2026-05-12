@@ -53,6 +53,24 @@ export async function sendSalesCoachMessage(
   if (!agent) return { error: 'not_agent' };
   if ((agent as any).status !== 'active') return { error: 'agent_not_active' };
 
+  // ── Paywall: Sales Coach AI is for paid plans only ───────────────
+  // Free / trial agents see an upgrade card and cannot call the model.
+  const { data: sub } = await supabase
+    .from('agent_subscriptions')
+    .select('plan, status')
+    .eq('agent_id', (agent as any).id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const paidPlans = ['starter', 'pro', 'team', 'founder'];
+  const onPaidPlan =
+    !!sub &&
+    (sub as any).status === 'active' &&
+    paidPlans.includes(((sub as any).plan ?? '').toLowerCase());
+  if (!onPaidPlan) {
+    return { error: 'agent_paywall' };
+  }
+
   // Pull a few quick stats so the coach can be specific
   let leadStats = '';
   try {
