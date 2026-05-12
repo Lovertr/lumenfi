@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { formatFreshness } from '@/lib/agents/products-db';
-import { toggleProductActive, updateCompanyResearchUrl } from './actions';
+import { toggleProductActive, updateCompanyResearchUrl, clearCompanyProducts } from './actions';
 import { SyncNowButton } from '@/components/admin/sync-now-button';
 
 export const dynamic = 'force-dynamic';
@@ -65,7 +65,7 @@ export default async function AdminProductsPage({
 
     const { data: rs } = await supabase
       .from('product_sync_runs')
-      .select('id, started_at, finished_at, status, products_added, products_updated, products_marked_inactive, error_message, triggered_by')
+      .select('id, started_at, finished_at, status, products_added, products_updated, products_marked_inactive, error_message, triggered_by, raw_excerpt, ai_response_excerpt')
       .eq('company_id', (active as any).id)
       .order('started_at', { ascending: false })
       .limit(10);
@@ -226,11 +226,24 @@ export default async function AdminProductsPage({
               {/* Products list */}
               <Card>
                 <CardContent className="p-0">
-                  <div className="border-b p-4">
+                  <div className="flex items-center justify-between border-b p-4">
                     <p className="text-sm font-semibold">
                       ผลิตภัณฑ์ ({products.filter((p: any) => p.active).length} active /{' '}
                       {products.length} total)
                     </p>
+                    {products.length > 0 && (
+                      <form action={clearCompanyProducts}>
+                        <input type="hidden" name="company_id" value={(active as any).id} />
+                        <Button
+                          type="submit"
+                          size="sm"
+                          variant="ghost"
+                          className="text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                        >
+                          ล้างทั้งหมด
+                        </Button>
+                      </form>
+                    )}
                   </div>
                   {products.length === 0 ? (
                     <p className="p-6 text-center text-sm text-muted-foreground">
@@ -301,30 +314,49 @@ export default async function AdminProductsPage({
                   ) : (
                     <ul className="space-y-1.5 text-xs">
                       {recentRuns.map((r: any) => (
-                        <li key={r.id} className="flex items-center gap-2">
-                          {r.status === 'success' ? (
-                            <CheckCircle2 className="h-3.5 w-3.5 flex-none text-emerald-600" />
-                          ) : r.status === 'error' ? (
-                            <AlertCircle className="h-3.5 w-3.5 flex-none text-destructive" />
-                          ) : (
-                            <Loader2 className="h-3.5 w-3.5 flex-none animate-spin text-muted-foreground" />
-                          )}
-                          <span className="text-muted-foreground">
-                            {new Date(r.started_at).toLocaleString('th-TH')}
-                          </span>
-                          <span className="text-muted-foreground">·</span>
-                          <span className="text-muted-foreground">{r.triggered_by}</span>
-                          {r.status === 'success' && (
-                            <span className="text-emerald-700">
-                              +{r.products_added} · ~{r.products_updated} · −
-                              {r.products_marked_inactive}
-                            </span>
-                          )}
-                          {r.error_message && (
-                            <span className="truncate text-destructive">
-                              {r.error_message}
-                            </span>
-                          )}
+                        <li key={r.id}>
+                          <details className="group">
+                            <summary className="flex cursor-pointer items-center gap-2">
+                              {r.status === 'success' ? (
+                                <CheckCircle2 className="h-3.5 w-3.5 flex-none text-emerald-600" />
+                              ) : r.status === 'error' ? (
+                                <AlertCircle className="h-3.5 w-3.5 flex-none text-destructive" />
+                              ) : (
+                                <Loader2 className="h-3.5 w-3.5 flex-none animate-spin text-muted-foreground" />
+                              )}
+                              <span className="text-muted-foreground">
+                                {new Date(r.started_at).toLocaleString('th-TH')}
+                              </span>
+                              <span className="text-muted-foreground">·</span>
+                              <span className="text-muted-foreground">{r.triggered_by}</span>
+                              {r.status === 'success' && (
+                                <span className="text-emerald-700">
+                                  +{r.products_added} · ~{r.products_updated} · −
+                                  {r.products_marked_inactive}
+                                </span>
+                              )}
+                              {r.error_message && (
+                                <span className="truncate text-destructive">
+                                  {r.error_message}
+                                </span>
+                              )}
+                              <span className="ml-auto text-[10px] text-muted-foreground group-open:rotate-90 transition-transform">▶</span>
+                            </summary>
+                            <div className="ml-5 mt-2 space-y-2 text-[11px]">
+                              {r.raw_excerpt && (
+                                <div className="rounded border bg-muted/40 p-2">
+                                  <p className="mb-1 font-semibold text-muted-foreground">📥 Input ที่ส่งให้ AI</p>
+                                  <pre className="whitespace-pre-wrap break-words font-mono leading-snug">{r.raw_excerpt.slice(0, 800)}</pre>
+                                </div>
+                              )}
+                              {r.ai_response_excerpt && (
+                                <div className="rounded border bg-amber-50/40 p-2">
+                                  <p className="mb-1 font-semibold text-amber-900">🤖 AI Response</p>
+                                  <pre className="whitespace-pre-wrap break-words font-mono leading-snug text-amber-900">{r.ai_response_excerpt.slice(0, 1500)}</pre>
+                                </div>
+                              )}
+                            </div>
+                          </details>
                         </li>
                       ))}
                     </ul>

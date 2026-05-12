@@ -30,6 +30,127 @@ const VALID_CATEGORIES = [
 
 type Category = (typeof VALID_CATEGORIES)[number];
 
+// ───────────────────────────────────────────────────────────────────────
+// KNOWN PRODUCT SEEDS — public marketing names that an admin can hand to
+// the AI as anchors. The AI must include these AND can add more it knows.
+// This keeps research mode honest while still letting it discover new SKUs.
+// ───────────────────────────────────────────────────────────────────────
+const KNOWN_PRODUCT_SEEDS: Record<string, string[]> = {
+  BLA: [
+    // คุ้มครองชีวิต
+    'บีแอลเอ พรีเมียร์ลิงค์',
+    'บีแอลเอ เวลธ์ลิงค์',
+    'กรุงเทพ แฮปปี้ คิดส์',
+    'แฮปปี้เซฟวิ่ง 999',
+    'เพรสทีจ ไลฟ์',
+    'แฮปปี้ โฮลไลฟ์ (มีเงินปันผล)',
+    'ตลอดชีพ สุดคุ้ม',
+    'ห่วงรัก พรีเมียร์ 99/20',
+    'ห่วงรัก พรีเมียร์ 9901',
+    'ห่วงรัก พรีเมียร์ (มีเงินปันผล)',
+    'บีแอลเอ ตลอดชีพ 99/99',
+    // สร้างเงินออม
+    'เพรสทีจ เซฟวิ่ง 12/6',
+    'กรุงเทพ สุดคุ้ม',
+    'กรุงเทพ สมาร์ทคิดส์',
+    'แฮปปี้เซฟวิ่ง 15/7',
+    'แท็กซ์ เซฟเวอร์ 10/5 (มีเงินปันผล)',
+    'เพรสทีจ เซฟวิ่ง 10/4',
+    'บีแอลเอ แฮปปี้เซฟวิ่ง 99/5 (มีเงินปันผล)',
+    'บีแอลเอ แฮปปี้เซฟวิ่ง 99/10 (มีเงินปันผล)',
+    'บีแอลเอ แฮปปี้เซฟวิ่ง 126',
+    'บีแอลเอ แฮปปี้เซฟวิ่ง 14/7 (มีเงินปันผล)',
+    'บีแอลเอ แฮปปี้เซฟวิ่ง 16/8 (มีเงินปันผล)',
+    'บีแอลเอ แฮปปี้เซฟวิ่ง 18/10 (มีเงินปันผล)',
+    'บีแอลเอ แฮปปี้เซฟวิ่ง 208 (มีเงินปันผล)',
+    'บีแอลเอ แฮปปี้เซฟวิ่ง 2515 (มีเงินปันผล)',
+    'บีแอลเอ ปันสุข 80/20',
+    // วางแผนเกษียณ
+    'บำนาญ แฮปปี้ เพนชั่น',
+    // คุ้มครองสุขภาพ + CI
+    'บีแอลเอ มัลติแคร์',
+    'บีแอลเอ มัลติ ซีไอ',
+  ],
+  AIA: [
+    'AIA Annuity Sure',
+    'AIA Annuity Fix 7',
+    'AIA Annuity Premium 90',
+    'AIA Health Saver',
+    'AIA H&S Plus Gold',
+    'AIA Issara Plus',
+    'AIA Pay Life',
+    'AIA CI Plus',
+    'AIA CI SuperCare',
+    'AIA Multi-Pay CI',
+    'AIA Endowment 15/8',
+    'AIA Endowment 25/10',
+    'AIA Wealth Pro Excel',
+    'AIA Lady CI',
+    'AIA Senior Care Plus',
+    'AIA Universal Life',
+    'AIA 20 Pay Life',
+  ],
+  ALLIANZ: [
+    'My Allianz Pension',
+    'My Allianz Critical Care',
+    'My Allianz Health',
+    'My Allianz Wealth',
+    'My Allianz iCare',
+    'My Allianz Saving 10/5',
+    'My Allianz Life Plus',
+    'My Allianz Whole Life 99/20',
+    'My Allianz Smart Saver',
+  ],
+  FWD: [
+    'FWD Easy E-Pension',
+    'FWD Easy Health',
+    'FWD Easy Life Plus',
+    'FWD Easy Cancer Care',
+    'FWD Precious Care',
+    'FWD Easy Pension 60',
+    'FWD Smart Wealth',
+    'FWD Easy Saver',
+    'FWD Cancer EZ Saver',
+    'FWD Easy Senior',
+  ],
+  KTAXA: [
+    'iWealthy',
+    'iWealthy Ultra',
+    'iProtect',
+    'iProtect S',
+    'iHealthy',
+    'iHealthy Ultra',
+    'iHealthy Lady',
+    'iRetire',
+    'iLink Start',
+    'iGen',
+    'iLove Endowment 15/8',
+    'iLink Premier',
+  ],
+  MTL: [
+    'D Health Plus',
+    'D Kids',
+    'D Senior',
+    'D Cancer',
+    'D Heart',
+    'Smart Saving 5/15',
+    'บำนาญเมืองไทย รีเทิร์น 99/60',
+    'เมืองไทย Smart Protection 99/20',
+    'เมืองไทย Smart Annuity 60/85',
+    'เมืองไทย Smart CI 60/85',
+    'เมืองไทย Smart Kids Saving',
+  ],
+  TLI: [
+    'ไทยประกัน Health Star',
+    'ไทยประกัน Lady CI',
+    'บำนาญสุขเกษียณ 60/85',
+    'บำนาญสุขเกษียณ 55/85',
+    'ไทยประกัน Smart Life 90/8',
+    'ไทยประกัน Endowment 15/8',
+    'ไทยประกัน CI Plus',
+  ],
+};
+
 interface ExtractedProduct {
   name: string;
   altName?: string;
@@ -256,14 +377,19 @@ export async function syncCompanyProducts(
         `เนื้อหาหน้าเว็บ:\n${text}`;
     } else {
       systemPrompt = RESEARCH_PROMPT;
+      const seeds = KNOWN_PRODUCT_SEEDS[(company as any).code] ?? [];
+      const seedBlock = seeds.length
+        ? `\n\nผลิตภัณฑ์ที่ต้องมีในรายการ (anchor list — ต้องใส่ทุกตัว แล้วเพิ่มอื่นๆ ที่รู้):\n${seeds.map((n, i) => `${i + 1}. ${n}`).join('\n')}\n\nสำหรับแต่ละตัวด้านบน — เติม category/tagline/benefits/ideal/salesAngle ให้ครบ และเพิ่มผลิตภัณฑ์อื่นๆ ที่บริษัทขายจริงและคุณรู้`
+        : '';
       userContent =
         `กรุณาระบุผลิตภัณฑ์ประกันชีวิตเด่นๆ ของบริษัทนี้:\n` +
         `- ชื่อ: ${(company as any).name}\n` +
         `- รหัส: ${(company as any).code}\n` +
-        `- เว็บไซต์: ${research_url}\n\n` +
+        `- เว็บไซต์: ${research_url}\n` +
         (fetchError
-          ? `(หมายเหตุ: ดึงเว็บไซต์ตรงๆ ไม่ได้ — ${fetchError}. ใช้ความรู้สาธารณะที่ทราบแทน)`
-          : '');
+          ? `\n(หมายเหตุ: ดึงเว็บไซต์ตรงๆ ไม่ได้ — ${fetchError}. ใช้ความรู้สาธารณะที่ทราบแทน)`
+          : '') +
+        seedBlock;
     }
 
     const r = await callAIViaGateway({

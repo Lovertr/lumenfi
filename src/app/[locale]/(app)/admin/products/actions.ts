@@ -94,3 +94,18 @@ export async function updateCompanyResearchUrl(formData: FormData): Promise<void
   await svc.from('insurance_companies').update({ research_url: url }).eq('id', id);
   revalidatePath('/admin/products');
 }
+
+export async function clearCompanyProducts(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = formData.get('company_id') as string;
+  if (!id) return;
+  const svc = createServiceClient();
+  // Soft delete — mark all inactive instead of dropping rows (preserves audit
+  // history of products the company once offered).
+  await svc
+    .from('insurance_products')
+    .update({ active: false })
+    .eq('company_id', id)
+    .eq('active', true);
+  revalidatePath('/admin/products');
+}
