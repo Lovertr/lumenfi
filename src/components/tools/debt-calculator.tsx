@@ -1,5 +1,7 @@
 'use client';
 
+import { Link as RouterLink } from '@/i18n/routing';
+
 import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
@@ -619,6 +621,12 @@ export function DebtCalculator({
             <p className="flex items-center gap-1.5 text-sm font-semibold">
               <Brain className="h-4 w-4 text-purple-600" />
               {t('aiAdvisorTitle')}
+              <RouterLink
+                href="/tools/debt/plans"
+                className="ml-1 text-[10px] font-medium text-primary underline-offset-2 hover:underline"
+              >
+                ดูประวัติ →
+              </RouterLink>
             </p>
             <Button size="sm" onClick={askAI} disabled={aiLoading || validDebts.length === 0 || !snapshot}>
               {aiLoading ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Sparkles className="mr-1 h-3 w-3" />}
@@ -725,16 +733,26 @@ export function DebtCalculator({
                                   </details>
                                 )}
                               </div>
-                              <Button
-                                size="sm"
-                                variant={isSelected ? 'outline' : 'default'}
-                                disabled={savingOption === p.id}
-                                onClick={() => handlePickPlan(p)}
-                              >
-                                {savingOption === p.id ? (
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                ) : isSelected ? 'บันทึกใหม่' : 'เลือกแผนนี้'}
-                              </Button>
+                              <div className="flex flex-col items-end gap-1.5">
+                                <Button
+                                  size="sm"
+                                  variant={isSelected ? 'outline' : 'default'}
+                                  disabled={savingOption === p.id}
+                                  onClick={() => handlePickPlan(p)}
+                                >
+                                  {savingOption === p.id ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : isSelected ? 'บันทึกใหม่' : 'เลือกแผนนี้'}
+                                </Button>
+                                {isSelected && activePlan?.id && (
+                                  <RouterLink
+                                    href={`/tools/debt/plans/${activePlan.id}`}
+                                    className="text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                                  >
+                                    📄 ดูรายละเอียด →
+                                  </RouterLink>
+                                )}
+                              </div>
                             </div>
                           </div>
                         );
