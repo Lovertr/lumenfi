@@ -1,0 +1,1382 @@
+════════════════════════════════════════════════════════════════════
+LUMENFI — KNOWLEDGE BASE (FULL REFERENCE)
+════════════════════════════════════════════════════════════════════
+
+เอกสารฉบับนี้คือคู่มือฉบับสมบูรณ์ของ Lumenfi สำหรับใช้เป็น source
+อ้างอิงใน NotebookLM หรือเครื่องมือ AI search/retrieval อื่นๆ
+ครอบคลุมทุกมิติ — ตั้งแต่ "Lumenfi คืออะไร" ไปจนถึงสถาปัตยกรรม
+ทางเทคนิคและแผน roadmap
+
+วันที่อัพเดต: 12 พฤษภาคม 2026
+เว็บไซต์: https://lumenfi.projectostech.com
+ภาษาเอกสาร: ไทยเป็นหลัก · มีคำศัพท์อังกฤษกำกับเมื่อสมควร
+
+
+════════════════════════════════════════════════════════════════════
+PART 1 — IDENTITY (อัตลักษณ์ของ Lumenfi)
+════════════════════════════════════════════════════════════════════
+
+1.1 LUMENFI คืออะไร
+───────────────────
+
+Lumenfi คือแอพพลิเคชั่นบริหารการเงินส่วนตัวครบวงจรสำหรับครอบครัวไทย
+ออกแบบมาเพื่อรวมทุกเรื่องเงิน — รายรับ-รายจ่าย หนี้สิน การลงทุน
+ประกัน ภาษี เป้าหมายการเงิน และเกษียณ — ไว้ในแอพเดียว พร้อมที่ปรึกษา
+การเงิน AI 8 มิติที่ตอบเป็นภาษาไทยและใช้ข้อมูลจริงของผู้ใช้ในการ
+วิเคราะห์
+
+Lumenfi ไม่ใช่แค่ "เครื่องมือบันทึก" เหมือนแอพการเงินทั่วไป — แต่
+เป็น "ระบบเลขาทางการเงินส่วนตัว" ที่:
+
+- เห็นภาพรวมการเงินทั้งชีวิตของคุณในจอเดียว
+- เข้าใจว่าทำไมเงินเดือนคุณหายไปไหน
+- บอกวันที่แน่นอนที่คุณจะปลดหนี้ได้
+- ช่วยวางแผนเกษียณด้วยตัวเลขจริง
+- วิเคราะห์ Gap ประกันให้เห็นช่องว่างที่จริง
+- เตือนทุกวันให้บันทึก (AI Secretary)
+- รองรับรอบเงินเดือนคนไทย (ไม่ใช่แค่วันที่ 1-31)
+
+1.2 ที่มาของชื่อ "Lumenfi"
+─────────────────────────
+
+ชื่อ Lumenfi แตกออกเป็น 2 ส่วน:
+
+  Lumen (ลูเม็น)  = หน่วยของแสงสว่าง / แสง
+  Fi              = ย่อมาจาก Finance (การเงิน)
+
+ความหมายโดยรวม = "แสงสว่างที่ส่องนำทางในกระแสการเงิน"
+
+โลโก้: รูปอักษร L ในกล่องสีน้ำเงินเข้ม (Ink Black) มีรังสีทอง 24 เส้น
+รัศมีพุ่งออกจากตัวอักษร — เปรียบเสมือนประภาคารในความมืดของการ
+สับสนทางการเงิน
+
+ภาษาทางการตลาด:
+"หนึ่งแสง · หนึ่งทาง · การเงินทั้งชีวิตคุณ"
+"One light. One path. All of your money."
+
+1.3 อัตลักษณ์ทางการมองเห็น — Aurum Quietus
+─────────────────────────────────────────
+
+ระบบสีและภาพ Aurum Quietus (Latin: "Golden Quiet") = ความเงียบสงบ
+สีทอง — ใช้สื่อความหรู มั่นคง น่าเชื่อถือ แต่ไม่หวือหวา
+
+สีหลัก:
+  Navy Ink         #0F172A    (พื้นหลัง hero, ตัวอักษรหลัก)
+  Gold Aurum       #C9A45A    (ปุ่ม CTA, accents, brand)
+  Champagne        #E4C789    (gradient accent, hover)
+  Bronze           #8A6932    (gradient ลึก, fade-out)
+  Background       #FAFAF7    (off-white, soft)
+
+ตัวเลือกฟอนต์: Sarabun + Noto Sans Thai (สำหรับไทย) + Inter
+(สำหรับอังกฤษ) — ทั้งหมดเป็นฟอนต์ที่อ่านง่ายในขนาดเล็ก
+
+1.4 Founder Origin Story
+─────────────────────────
+
+Lumenfi ถูกสร้างโดยคนที่เคยติดอยู่ในวงจรหนี้ไม่รู้จบ — ไม่ใช่
+เพราะรายได้น้อยเกินไป แต่เพราะ:
+
+1. ไม่เห็นว่าเงินไหลไปไหน
+2. ไม่เข้าใจว่าทำไมเงินถึงรั่ว
+3. ไม่มีแผนชัดเจนที่จะปลดออก
+
+นอกจากเรื่องหนี้แล้ว ผู้สร้างยังเคยเจอความสับสนหลายมิติ:
+- จะลงทุนยังไงดี?
+- จะออมแบบไหน?
+- ประกันจำเป็นไหม ต้องเท่าไร?
+- ภาษีลดหย่อนได้ครบไหม?
+
+คำถามแต่ละข้อพาไปคนละทิศ — ทำให้รู้สึกเหมือนยืนกลางแยกที่ทุกป้าย
+ชี้คนละทาง
+
+แอพการเงินที่มีอยู่ในตลาดทำให้ผู้สร้างรู้สึกเหมือนเป็น "การบ้าน":
+- "บันทึกอันนี้สิ"
+- "แบ่งหมวดอันนั้นสิ"
+- "รู้สึกแย่ พยายามอีก"
+
+Lumenfi คือเครื่องมือที่ผู้สร้าง "อยากมีในตอนนั้น" — แอพที่:
+- โชว์ภาพรวมให้เห็น
+- บอกก้าวต่อไปให้ชัด
+- ปฏิบัติต่อผู้ใช้เหมือนคน ไม่ใช่ตาราง Excel
+
+วัตถุประสงค์: เป็นแสงสว่างที่ส่องนำทาง — แทนที่จะปล่อยให้ผู้ใช้
+เดาทางเอง
+
+1.5 Mission Statement
+─────────────────────
+
+ทำให้ครอบครัวไทยคุมเงินของตัวเองได้ — โดย:
+1. ลด friction ในการดูข้อมูล (Net Worth สด · กระแสเงินสดสด)
+2. ใช้ AI ที่ปรึกษาเชิงลึกที่อิงข้อมูลจริงของผู้ใช้
+3. ราคาที่จับต้องได้ — Free สำหรับฟีเจอร์หลัก, Pro ฿149/เดือน
+
+วัตถุประสงค์รอง: หารายได้เพื่อความยั่งยืน — เพราะมีต้นทุนการพัฒนา
+และค่า AI ที่ต้องจ่ายให้ provider จริง (Anthropic / OpenAI / Gemini)
+
+
+════════════════════════════════════════════════════════════════════
+PART 2 — THE PROBLEM (ปัญหาที่ Lumenfi แก้)
+════════════════════════════════════════════════════════════════════
+
+2.1 6 ความเจ็บปวดทางการเงินที่ครอบครัวไทยส่วนใหญ่ติด
+──────────────────────────────────────────────────────
+
+PAIN 1: "เงินเดือนเข้าปุ๊บ หายปั๊บ"
+  วันเงินเดือนออกรู้สึกดี อาทิตย์เดียวเช็คยอดแล้วเซ็ง
+  ตอบไม่ได้ว่าใช้กับอะไรไปบ้าง 5 อย่างยังไม่ครบ
+
+PAIN 2: "บัตรเครดิตไม่ลดเลยทุกเดือน"
+  จ่ายขั้นต่ำทุกเดือน ยอดแทบไม่ลด ดอกกินไปเรื่อยๆ
+  แต่ตัวเลขเต็มๆ มันน่ากลัวจนไม่อยากดู
+
+PAIN 3: "ตั้งงบทุกครั้ง ใช้เกินทุกครั้ง"
+  ตั้งตัวเลข ใช้เกิน รู้สึกผิด เลิก
+  เดือนต่อไปก็เป็นแบบเดิม วนๆ ไป
+
+PAIN 4: "ออมไม่ได้เลยสักบาท"
+  สิ้นเดือนคือศูนย์ บางทีติดลบมากกว่าเดือนที่แล้ว
+  Emergency Fund ยังเป็นความฝัน
+
+PAIN 5: "ลอง Excel แล้ว ลองแอพอื่นแล้ว"
+  แอพอื่นให้บันทึกค่ากาแฟทุกแก้ว
+  ไม่รองรับภาษาไทย ไม่เห็นภาพรวม
+  สุดท้ายเลิกหลัง 2 อาทิตย์
+
+PAIN 6: "กลัวเรื่องเกษียณมาก"
+  รู้ว่าควรเก็บมากขึ้น แต่ไม่รู้ต้องเท่าไร
+  ต้องเก็บยังไง เก็บที่ไหน
+  เลยไม่ได้เริ่มเก็บ
+
+2.2 ทำไมแอพการเงินอื่นแก้ปัญหาไม่ได้
+────────────────────────────────────
+
+แอพที่มีในตลาดมักจะ:
+
+- กระจัดกระจาย — แอพหนึ่งบันทึก แอพหนึ่งวิเคราะห์ลงทุน
+  แอพหนึ่งคำนวณภาษี ลูกค้าต้องสลับไปมา
+- ไม่รองรับ pay cycle ไทย — บังคับใช้ปฏิทินเดือน 1-31
+  แต่เงินเดือนคนไทยออกวันที่ 25 หรือ 28
+- ไม่มีบริบทคนไทย — RMF/SSF/PVD, ประกัน BLA/AIA, สลิปธนาคารไทย
+- ไม่มี AI ที่ใช้ข้อมูลจริง — มีแค่ chatbot ทั่วไปที่ไม่รู้จักผู้ใช้
+- บังคับให้บันทึกทุกอย่างละเอียด — ทำให้ user ล้มเลิกใน 2-3 อาทิตย์
+
+2.3 The "Many Directions" Paradox
+──────────────────────────────────
+
+ผู้ใช้ส่วนใหญ่ติดที่ "ไม่รู้จะเริ่มตรงไหน":
+- จะปลดหนี้บัตรก่อน หรือออม Emergency Fund ก่อน?
+- จะลงทุน RMF หรือ SSF ดี?
+- จะซื้อประกันชีวิตหรือประกันสุขภาพก่อน?
+- จะวางแผนเกษียณยังไงเมื่อภาระยังเยอะอยู่?
+
+แอพการเงินทั่วไปบอกแค่ "นี่คือข้อมูลของคุณ" — แต่ไม่ได้บอก
+"คุณควรทำอะไรต่อ" Lumenfi แก้ตรงนี้ด้วย AI Advisor 8 มิติ
+ที่จัดอันดับสิ่งที่ควรทำตามผลกระทบจริง
+
+
+════════════════════════════════════════════════════════════════════
+PART 3 — THE SOLUTION (ทางออกของ Lumenfi)
+════════════════════════════════════════════════════════════════════
+
+3.1 หลัก 3 ขั้นที่ Lumenfi แก้วงจรหนี้
+─────────────────────────────────────
+
+ขั้นที่ 1 — SEE (เห็น)
+  เห็นว่าเงินไหลไปไหนจริงๆ
+  เครื่องมือ: บันทึกใน 5 วิ, OCR สแกนใบเสร็จ, Net Worth สด
+  เป้าหมาย: ไม่ต้องเปิด Excel ไม่ต้องรู้สึกผิด
+
+ขั้นที่ 2 — UNDERSTAND (เข้าใจ)
+  เข้าใจว่า "ทำไม" มันถึงรั่ว
+  เครื่องมือ: AI Advisor 8 มิติที่เชื่อมจุด ใช้ตัวเลขจริง
+  เป้าหมาย: รู้ว่าหนี้ตัวไหนกินคุณมากที่สุด · 3 อย่างที่ทำเดือนนี้
+            แล้วจะเปลี่ยนชีวิต
+
+ขั้นที่ 3 — ESCAPE (หลุดออก)
+  หลุดจากวงจรหนี้บนกำหนดเวลาที่จริงจัง
+  เครื่องมือ: Avalanche/Snowball calculator, เป้าหมาย auto-pilot,
+            AI Secretary push เตือน
+  เป้าหมาย: รู้วันที่แน่นอนที่จะปลดหนี้ — ไม่ใช่ความรู้สึกคลุมเครือ
+
+3.2 Brand Essence — "หนึ่งแสง หนึ่งทาง การเงินทั้งชีวิตคุณ"
+─────────────────────────────────────────────────────────
+
+หนี้ ออม ลงทุน ประกัน ภาษี เกษียณ — ไม่ใช่ปัญหา 6 เรื่องที่แยกขาด
+มันคือชีวิตการเงินชีวิตเดียวของคุณ
+
+Lumenfi เป็นแห่งแรกในไทยที่มอง 6 เรื่องนี้พร้อมกัน ด้วย AI ตัวเดียว
+ที่เห็นภาพรวมทั้งหมด แล้วบอกคุณว่าก้าวต่อไปควรเดินไปทางไหน
+
+6 มิติที่เชื่อมเป็นชีวิตเดียว:
+1. หนี้ — รู้เลยว่าเมื่อไรปลด
+2. ออม — รู้ว่าต้องเก็บเท่าไร ที่ไหน ทำไม
+3. ลงทุน — ซื้ออะไร เมื่อไร สัดส่วนเท่าไร
+4. ประกัน — Gap ชีวิต / สุขภาพ / CI ที่แท้จริง
+5. ภาษี — RMF/SSF/PVD ที่เหมาะกับคุณ
+6. เกษียณ — อีกกี่เดือนถึงจะหยุดทำงานได้
+
+
+════════════════════════════════════════════════════════════════════
+PART 4 — TARGET AUDIENCES (กลุ่มเป้าหมาย)
+════════════════════════════════════════════════════════════════════
+
+4.1 B2C — ผู้ใช้ทั่วไป
+──────────────────────
+
+PRIMARY:
+- มนุษย์เงินเดือนไทย อายุ 28-50 ปี
+- รายได้เดือนละ ฿20,000-100,000+
+- มีหนี้สิน 1+ ก้อน (บัตรเครดิต / ผ่อนบ้าน / สินเชื่อส่วนบุคคล)
+- กังวลเรื่องเกษียณ/ลูก/บ้าน
+- ใช้สมาร์ทโฟน + อ่านภาษาไทยเป็นหลัก
+
+SECONDARY:
+- พ่อแม่มือใหม่ (พ่อแม่ลูก 0-5 ขวบ)
+- เจ้าของกิจการขนาดเล็ก (SME owner)
+- คน Gen Z เพิ่งเริ่มทำงาน อยากตั้งต้นการเงินถูก
+- คนใกล้เกษียณ 50-60 ปี ต้องการความชัดเจน
+
+4.2 B2B — ตัวแทนประกัน
+──────────────────────
+
+- ตัวแทนประกันชีวิต/สุขภาพ/CI ที่มีใบอนุญาตที่ active จาก คปภ.
+- บริษัทประกันใหญ่: BLA, AIA, Allianz Ayudhya, FWD, KTAXA, MTL, TLI
+- รายได้หลัก: commission จากการปิดดีล
+- ความต้องการ: leads ที่มีคุณภาพ (qualified intent · มี consent)
+- ขนาด: ตัวแทน solo ถึงสำนักงานทีม 5+ คน
+
+4.3 Personas (ตัวอย่างผู้ใช้จำลอง)
+────────────────────────────────
+
+PERSONA 1 — "ตึก" — มนุษย์เงินเดือนติดบัตร
+  อายุ 32 · ทำงานบัญชี · เงินเดือน ฿35,000
+  หนี้บัตร 3 ใบ รวม ฿180,000 · จ่ายขั้นต่ำทุกเดือน
+  ความต้องการ: รู้ว่าเมื่อไรจะปลดหนี้ + วางแผนปลด
+
+PERSONA 2 — "ปุ๊ก" — พ่อแม่มือใหม่
+  อายุ 35 · ทำงานสายเทค · เงินเดือน ฿80,000
+  มีลูก 2 ปี · กังวลค่าเลี้ยง + ค่าเรียน + ประกัน
+  ความต้องการ: ตรวจ Gap ประกัน + วางแผนการศึกษาลูก
+
+PERSONA 3 — "ใหญ่" — ใกล้เกษียณ
+  อายุ 52 · ผู้บริหารกลาง · เงินเดือน ฿120,000
+  มีเงินสะสมประมาณ ฿2 ล้าน · ไม่มั่นใจว่าพอเกษียณไหม
+  ความต้องการ: แผนเกษียณ 25-30× expense + Rebalance
+
+PERSONA 4 — "กิจ" — เจ้าของร้านอาหาร
+  อายุ 40 · รายได้ผันผวน ฿50,000-150,000/เดือน
+  หนี้สินเชื่อกิจการ · ผ่อนรถ · ภรรยาเป็นแม่บ้าน
+  ความต้องการ: cash flow management + ภาษีบุคคลธรรมดา
+
+PERSONA 5 — "ตัวแทนต้น" — ตัวแทนประกัน solo
+  อายุ 28 · ตัวแทน BLA 3 ปี · ปิดดีล 4-6 ฉบับ/เดือน
+  ความต้องการ: leads เพิ่ม + เทคนิคขาย + INA Report สวยๆ
+
+
+════════════════════════════════════════════════════════════════════
+PART 5 — FEATURE INVENTORY (รายการฟีเจอร์ครบทั้งหมด)
+════════════════════════════════════════════════════════════════════
+
+5.1 ACCOUNT MANAGEMENT (จัดการบัญชี)
+────────────────────────────────────
+
+- รองรับบัญชี: เงินสด · ธนาคาร · บัตรเครดิต · e-Wallet · ออมทรัพย์
+- ใส่ยอดเริ่มต้น + เลขบัญชี (ใช้กับ OCR)
+- บัตรเครดิต: ใส่วงเงิน → คำนวณ utilization
+- ดู net worth ของแต่ละบัญชี
+- โอนเงินระหว่างบัญชีได้ (transfer transaction)
+- Archive บัญชีเก่าได้โดยไม่ลบประวัติ
+
+5.2 TRANSACTION LOGGING (บันทึกรายรับ-รายจ่าย)
+───────────────────────────────────────────────
+
+- 3 ประเภท: รายจ่าย · รายรับ · โอน
+- บันทึกใน 5 วินาที: แตะหมวด พิมพ์ยอด เสร็จ
+- หมวดหมู่: 13 default + custom unlimited
+- ผูกกับเป้าหมายการออมได้
+- บันทึกเป็นรายการประจำ (recurring) — สร้างอัตโนมัติทุกเดือน
+- Tags + notes + photo attachment
+- Search + filter ตามวัน หมวด บัญชี
+
+5.3 OCR RECEIPT SCAN (สแกนใบเสร็จด้วย AI)
+─────────────────────────────────────────
+
+- ถ่ายรูปหรืออัพโหลดรูปใบเสร็จ
+- AI Vision (Gemini/Claude) สกัด: ยอด · วันที่ · หมวด · ร้านค้า
+- ผู้ใช้ตรวจสอบและแก้ไขได้ก่อนบันทึก
+- รองรับใบเสร็จไทย/อังกฤษ
+- สลิป QR-code โอนเงินก็ใช้ได้
+
+5.4 NET WORTH TIME-SERIES CHART
+────────────────────────────────
+
+- กราฟเส้น Net Worth ตามเวลา (1m/3m/6m/1y/all)
+- คำนวณ: ทรัพย์สิน (บัญชี+ลงทุน+อสังหา) ลบหนี้สิน
+- Snapshot อัตโนมัติทุกวัน 15:00 UTC ผ่าน cron
+- เปอร์เซ็นต์เปลี่ยนแปลงจากจุดเริ่มต้นของช่วง
+- แตะเข้าไปดูรายละเอียดทรัพย์สิน/หนี้สิน
+- เห็นภาพรวมตามเวลาว่าขึ้น ลง หรือนิ่ง
+
+5.5 CASH FLOW (กระแสเงินสด)
+───────────────────────────
+
+- เงินสดในมือ (รวมทุกบัญชี)
+- Runway: ถ้ารายได้หยุดวันนี้ อยู่ได้กี่เดือน
+- Net เฉลี่ย 30 / 60 / 90 วัน
+- กราฟ daily P/L
+- แจ้งเตือนสถานะ: สบาย · ตึง · เสี่ยง
+- รองรับรอบเงินเดือน (1-31 หรือ salary-day window)
+
+5.6 DEBT MANAGEMENT (จัดการหนี้สิน)
+───────────────────────────────────
+
+ประเภทหนี้ที่รองรับ:
+- บัตรเครดิต (revolving + statement/due day tracking)
+- สินเชื่อบ้าน (long-term amortization)
+- สินเชื่อรถ
+- สินเชื่อส่วนบุคคล
+- กยศ. / สินเชื่อการศึกษา
+- หนี้นอกระบบ (ระบุได้)
+
+รูปแบบดอกเบี้ย:
+- Flat rate (ดอกคงที่ต่อยอดเริ่มต้น)
+- Effective rate (ลดต้นลดดอก)
+- Daily revolving (บัตรเครดิตคำนวณดอกรายวันจากยอดคงเหลือ)
+
+ฟีเจอร์:
+- ตารางผ่อน 60 เดือน (amortization schedule)
+- DTI (Debt-to-Income) ratio + เตือนเมื่อ > 40% หรือ > 50%
+- ผ่อนเพิ่ม simulator — จ่ายเพิ่มเดือนละเท่าไรจบเร็วกี่เดือน
+- Statement + due day reminder
+- Payment history log
+- Smart auto-split (เงินต้น vs ดอกเบี้ย) เมื่อบันทึกการจ่าย
+
+5.7 DEBT PAYOFF STRATEGIES (แผนปลดหนี้)
+───────────────────────────────────────
+
+- Avalanche (ดอกสูงก่อน) — ประหยัดดอกที่สุด
+- Snowball (ก้อนเล็กก่อน) — สร้างกำลังใจเร็ว
+- Refinance simulator — เปรียบเทียบกับอัตราตลาด
+- AI Advisor "ควร refinance ไหม" — ตอบด้วยตัวเลขจริง
+
+5.8 GOALS (เป้าหมายการเงิน)
+───────────────────────────
+
+- สร้างเป้าหมาย: Emergency Fund · ดาวน์บ้าน · ลูก · เกษียณ · custom
+- ตั้ง target amount + target date
+- ผูกกับบัญชี (savings) หรือการลงทุน → ยอดอัพเดทอัตโนมัติ
+- Progress bar + ETA (เมื่อไรถึงจะถึงเป้า)
+- เตือนเมื่อ progress ช้ากว่าที่ควร
+- ผูก transaction ตอนบันทึกเข้าเป้าหมายได้
+
+5.9 BUDGETS (งบประมาณรายเดือน)
+──────────────────────────────
+
+- 13 default categories: การศึกษา · ของขวัญ/บริจาค · ของใช้ ·
+  ค่าที่อยู่อาศัย · ค่าน้ำ-ค่าไฟ · เงินเดือน · ชำระหนี้ ·
+  ดอกเบี้ย · เดินทาง · บันเทิง · รายได้เสริม · สุขภาพ · อาหาร
+- ตั้งงบต่อหมวด
+- Progress bar รายเดือน + เตือนเมื่อใกล้/เกิน
+- แนะนำงบจาก 3 เดือนหลัง (median)
+- รองรับรอบเงินเดือน
+- Push notification เมื่อหมวดเกิน 100%
+
+5.10 INVESTMENTS (การลงทุน)
+───────────────────────────
+
+ประเภทการลงทุนที่รองรับ:
+- หุ้นไทย (SET / mai)
+- หุ้นต่างประเทศ (US / global)
+- กองทุนรวม (RMF / SSF / PVD / regular)
+- ทองคำ (gold spot / gold futures)
+- คริปโต (BTC / ETH / etc.)
+- พันธบัตร / หุ้นกู้
+- อสังหาริมทรัพย์
+
+ฟีเจอร์ย่อย:
+- Portfolio dashboard — P/L · % return · asset allocation donut
+- Holding detail page (per symbol)
+- Asset allocation by ประเภท / สกุล / ตลาด
+- DCA Auto — ลงทุนรายเดือนอัตโนมัติ (record-only — ไม่ได้ซื้อจริง)
+- DCA Calculator — วางแผน DCA
+- Watchlist + Price Alert (push เมื่อราคาถึงเป้า)
+- Risk Metrics — ต้องมี snapshot 7+ วัน
+- เทียบกับ SET Index — performance benchmark
+- Dividend tracker
+- Capital gains report (yearly tax export)
+- Goal linking — ผูกพอร์ตกับเป้าหมาย
+
+5.11 TAX-SAVING TRACKER (RMF/SSF/PVD)
+─────────────────────────────────────
+
+- ใส่รายได้ต่อปี → คำนวณเพดานสูงสุดของแต่ละประเภท
+  - RMF: 30% ของรายได้ ไม่เกิน 500,000 (รวมกับ SSF/PVD)
+  - SSF: 30% ของรายได้ ไม่เกิน 200,000
+  - PVD: 15% ของเงินเดือน
+- Track ว่าใช้ไปเท่าไหร่ + เหลือเท่าไหร่
+- เปิด toggle ที่ holding "นี่คือกองทุนลดหย่อนภาษี"
+- ใส่ lock-in date (SSF 10 ปี · RMF 5 ปี + อายุ 55)
+- Progress bar สี เขียว/เหลือง/แดง
+
+5.12 INSURANCE GAP ANALYSIS
+───────────────────────────
+
+ประเภทประกันที่วิเคราะห์:
+- ประกันชีวิต (Life)
+- ประกันสุขภาพ (Health)
+- ประกันโรคร้ายแรง (CI)
+- ประกันอุบัติเหตุ (PA)
+- Emergency Fund (เงินสำรองฉุกเฉิน — ไม่ใช่ประกันแต่ track ใน
+  ระบบเดียวกัน)
+
+วิเคราะห์ Gap จาก:
+- อายุ
+- จำนวน dependents
+- หนี้สิน
+- ค่าใช้จ่ายต่อปี
+- รายได้
+
+แบ่งสถานะ: วิกฤต · ควรพิจารณา · ขั้นต่อไป · คุ้มครองแล้ว
+ทุนแนะนำ + เบี้ยประมาณการ
+ขอใบเสนอประกัน → ส่งไป agent ใน B2B marketplace
+
+5.13 INA REPORT PDF (Insurance Needs Analysis)
+──────────────────────────────────────────────
+
+เอกสาร PDF 1 หน้าสำหรับตัวแทน/ลูกค้าใช้นัดประชุม
+ประกอบด้วย:
+- Profile สรุปลูกค้า
+- Insurance Gap แบ่งตามประเภท
+- ทุนแนะนำ + เหตุผล
+- Logo + ชื่อ + เลขใบอนุญาตของตัวแทน (B2B)
+- Booking URL ของตัวแทน
+
+5.14 COMPREHENSIVE REPORTS (รายงานครบทุกมิติ)
+──────────────────────────────────────────────
+
+หมวด:
+- รายรับ-รายจ่าย (รายวัน/สัปดาห์/เดือน · trend 12 เดือน)
+- Net Worth (กราฟ + breakdown)
+- Cash Flow (Runway + 30/60/90 trend)
+- งบประมาณ (รายหมวด + เปรียบเทียบเดือน)
+- หนี้ (DTI + ดอก + ตารางผ่อน)
+- เป้าหมาย (% progress + ETA)
+- การลงทุน (allocation + P/L + vs SET)
+- ประกัน (Gap)
+- ภาษี (RMF/SSF/PVD)
+- เกษียณ (25-30× expense)
+
+Export: CSV ทุกรายงาน, PDF (Pro only ใน Phase 2)
+
+5.15 TOOLS (เครื่องมือ)
+───────────────────────
+
+- คำนวณภาษีบุคคลธรรมดาไทย (TAX Calculator)
+- จำลองเงินกู้ (Loan Simulator)
+- แผนปลดหนี้ (Debt Strategy Comparator)
+- AI วิเคราะห์ "ควรกู้ก้อนนี้ไหม"
+
+5.16 IN-APP NOTIFICATIONS (Bell + Drawer)
+─────────────────────────────────────────
+
+- กระดิ่งมุมขวาบนของทุกหน้า
+- รวมข่าวสำคัญ: หนี้ใกล้กำหนด · งบเกิน · gap วิกฤต · AI Secretary
+- Subscription expiring · Lead ใหม่ (agent) · Admin approvals (admin)
+- 30 วันเก็บ → ลบอัตโนมัติ
+- Mark as read · อ่านทั้งหมด
+
+5.17 DAILY REMINDER (แจ้งเตือนรายวัน)
+────────────────────────────────────
+
+- ส่ง push notification ทุกวันให้บันทึกค่าใช้จ่าย
+- ตั้งเวลาได้ 0-23 น. (Bangkok TZ)
+- "ข้ามถ้าวันนี้บันทึกแล้ว" option
+- Auto-save (ติ๊กแล้วทำงานทันที ไม่ต้องกดปุ่ม)
+- ใช้ pg_cron บน Supabase + Vercel cron daily
+
+5.18 PAY CYCLE (รอบเงินเดือน)
+─────────────────────────────
+
+- รองรับ 2 รูปแบบ:
+  - ปฏิทินเดือน (1-31)
+  - รอบเงินเดือน (เช่น 25 → 24 ของเดือนถัดไป)
+- ผลกระทบทั่วทั้งแอพ:
+  - Dashboard "เดือนนี้"
+  - Cash Flow chart
+  - งบประมาณ
+  - AI Advisor "เดือนนี้"
+
+5.19 MULTI-LANGUAGE (i18n)
+──────────────────────────
+
+- ไทย (default)
+- English
+- สลับด้วยปุ่มเดียวที่ header
+- รองรับ persistence ผ่าน next-intl cookie
+- ฟอนต์ Sarabun + Noto Sans Thai สำหรับไทย
+
+5.20 PWA (Progressive Web App)
+──────────────────────────────
+
+- Install as app บน Home Screen
+- ทำงาน offline สำหรับบันทึกพื้นฐาน
+- Sync เมื่อเชื่อม internet
+- Push notifications บน mobile
+- รองรับ iOS Safari 16.4+ และ Android Chrome
+
+5.21 IN-APP HELP / KNOWLEDGE BASE
+──────────────────────────────────
+
+- /help — ศูนย์ช่วยเหลือ
+- 30+ บทความ แบ่งหมวด
+- Help Assistant — AI ตอบคำถามจากบทความ + ข้อมูลแอพ
+- หมวด: เริ่มต้น · รายรับ-รายจ่าย · งบ · เป้าหมาย · หนี้ · ประกัน ·
+  AI · เครื่องมือ · ความเป็นส่วนตัว · ลงทุน · ตัวแทน · ชวนเพื่อน ·
+  แพลน + ราคา · ทั่วไป
+
+5.22 ONBOARDING WIZARD
+──────────────────────
+
+- ครั้งแรกใช้แอพ — wizard ถาม:
+  - รายได้/รายจ่ายโดยประมาณ
+  - จำนวน dependents
+  - ภาระหนี้
+  - พื้นที่
+- ใช้สำหรับ AI fallback context และ Insurance gap
+
+
+════════════════════════════════════════════════════════════════════
+PART 6 — AI FEATURES (พระเอกของแอพ)
+════════════════════════════════════════════════════════════════════
+
+6.1 AI CHAT (แชต AI)
+────────────────────
+
+- หน้า /ai
+- chat-style conversation
+- มี history (ดูย้อนหลัง · ลบได้)
+- ใช้กับ:
+  - Lumenfi key (Free 5/วัน · Pro ไม่จำกัด)
+  - BYO key (Anthropic / OpenAI / Gemini / OpenRouter) — ไม่จำกัด
+- Context: รับข้อมูลพื้นฐานของผู้ใช้ (รายรับ-รายจ่าย · Net Worth)
+  เพื่อตอบเฉพาะ
+- Privacy mode: บทสนทนาไม่ผ่านเซิร์ฟเวอร์ Lumenfi เมื่อใช้ BYO key
+
+6.2 AI ADVISOR 8 มิติ (พระเอกตัวจริง)
+────────────────────────────────────
+
+หน้า /advisor
+รายงานวิเคราะห์เชิงลึก 8 มิติ ใช้ข้อมูลจริงของผู้ใช้:
+
+มิติที่ 1 — สุขภาพการเงินรวม (Comprehensive Financial Health)
+  - คะแนน 0-100
+  - Top 5 priorities ที่ควรแก้
+  - แผน 30 / 60 / 90 วัน
+
+มิติที่ 2 — กลยุทธ์ปลดหนี้ (Debt Strategy)
+  - Avalanche vs Snowball vs Refinance vs Consolidate
+  - คำนวณวันปลดหนี้
+  - แนะนำเฉพาะตามสถานการณ์
+
+มิติที่ 3 — วิเคราะห์การลงทุน (Investment Analysis)
+  - Asset allocation review
+  - FX exposure
+  - Risk metrics
+  - Rebalance hints
+
+มิติที่ 4 — ลดภาษี (Tax Optimization)
+  - RMF/SSF/PVD เพดาน
+  - สิทธิลดหย่อนที่ใช้ได้
+  - Q4 reminder
+
+มิติที่ 5 — วางแผนเกษียณ (Retirement Planning)
+  - 25-30× expense ปลายทาง
+  - 4% rule ของอเมริกัน
+  - แผนเดินหน้าจากปัจจุบัน
+
+มิติที่ 6 — เร่งบรรลุเป้าหมาย (Goal Acceleration)
+  - SMART goal framework
+  - auto-pilot strategy
+  - re-deadline ถ้าจำเป็น
+
+มิติที่ 7 — ตรวจ Gap ประกัน (Insurance Gap)
+  - Life · Health · CI วิเคราะห์เทียบกับสิ่งที่ควรมี
+
+มิติที่ 8 — Emergency Fund Readiness
+  - 6 เท่าของรายจ่าย
+  - แผนถม
+
+ราคา:
+- Free: 1 รายงาน/เดือน
+- Pay-as-you-go: ฿7-8/รายงาน (ซื้อ credit pack)
+- Pro: ไม่จำกัด
+
+สำคัญ: BYO Key ใช้กับ AI Advisor ไม่ได้ — เป็นฟีเจอร์พรีเมียมที่
+ต้องผ่าน Lumenfi key (server-paid) เท่านั้น
+
+6.3 AI SECRETARY (เลขาคอยเตือน)
+───────────────────────────────
+
+- Cron job รันทุกวัน — ตรวจสุขภาพการเงิน
+- ถ้าเจอเรื่องเร่งด่วน → ส่ง push notification
+- เตือนเรื่อง:
+  - DTI > 50% (วิกฤต) / > 40% (เริ่มเสี่ยง)
+  - Emergency Fund < 1 เดือน
+  - เป้าหมายใกล้ deadline แต่ progress ช้า
+  - Budget เกิน
+  - ใกล้สิ้นปีแต่ยังไม่ใช้ลดหย่อนภาษี
+  - พอร์ตกระจุก > 40% ใน 1 ตัว
+  - ไม่บันทึกธุรกรรม 7+ วัน
+- 1 alert / วัน / user (เลือก issue ที่สำคัญสุด)
+- Pro only
+
+6.4 AI SALES COACH (สำหรับตัวแทน)
+─────────────────────────────────
+
+- หน้า /agents/coach
+- chat-style — โค้ชนักขายประกัน 15+ ปีประสบการณ์
+- ตอบ:
+  - เทคนิคเปิดการสนทนา
+  - Objection handling (แพง · ขอคิดดู · มีอยู่แล้ว)
+  - Pitch ตาม persona
+  - Follow-up cadence
+  - Social content
+  - Close techniques
+- Context: ผลิตภัณฑ์ของบริษัทตัวแทน (จาก Product Catalog)
+- บันทึกประวัติแชท · ลบได้
+- Starter+ only (Trial 14 วันยังไม่เปิด)
+
+6.5 AI SALES ASSISTANT (per-lead pitch)
+───────────────────────────────────────
+
+- หน้า /agents/leads/[id]
+- รับ lead → AI วิเคราะห์ prospect → draft pitch
+- ใช้ข้อมูล Insurance Gap ของลูกค้า
+- Pro only (Agent)
+
+6.6 AI PRODUCT CATALOG SYNC (admin)
+───────────────────────────────────
+
+- หน้า /admin/products
+- AI ดึงข้อมูลผลิตภัณฑ์จากเว็บไซต์บริษัทประกัน
+- 7 บริษัทเริ่มต้น: BLA · AIA · Allianz · FWD · KTAXA · MTL · TLI
+- 2 mode: Extract (fetch HTML) + Research (AI ใช้ความรู้สาธารณะ)
+- Seed fallback: ถ้า AI return 0 → ใช้รายชื่อ anchor ที่ admin ตั้งไว้
+- Cron daily 03:00 UTC + 6-day staleness check
+- Used by Sales Coach AI เป็น context
+
+6.7 AI OCR VISION
+─────────────────
+
+- สแกนใบเสร็จ/สลิป
+- Provider: Anthropic Claude Vision · Gemini Pro Vision
+- ใช้ BYO key หรือ Lumenfi key
+- Free tier มี quota ใหม่ทุกวัน
+
+6.8 AI HELP ASSISTANT
+─────────────────────
+
+- /help → ช่อง "ถาม AI ช่วยเหลือ"
+- ตอบคำถามเกี่ยวกับการใช้งานแอพ
+- Context: 30+ help articles + app data
+
+6.9 AI MODEL ROUTING
+────────────────────
+
+Lumenfi-paid keys:
+- Free tier (LUMENFI_FREE_AI_KEY): Gemini 1.5 Flash (cost-optimized)
+- Pro tier (LUMENFI_AI_KEY): Claude Sonnet 4.5 (higher quality)
+- Fallback chain ถ้า model deprecated
+
+BYO Key รองรับ:
+- Anthropic Claude (sk-ant-*)
+- OpenAI (sk-*)
+- Google Gemini (AIzaSy*)
+- OpenRouter (sk-or-*)
+
+Auto-infer provider จาก key shape ถ้า env ผิด
+
+
+════════════════════════════════════════════════════════════════════
+PART 7 — B2B AGENT MARKETPLACE
+════════════════════════════════════════════════════════════════════
+
+7.1 WHY IT EXISTS
+─────────────────
+
+Lumenfi ผู้ใช้ B2C ตรวจ Insurance Gap แล้วเห็นว่าควรซื้อประกัน →
+"ขอใบเสนอ" → ส่ง lead ไปที่ตัวแทน
+
+Win-win-win:
+- User ได้ที่ปรึกษาประกันโดยไม่ต้องหาเอง
+- ตัวแทนได้ qualified leads (ไม่ใช่ cold call)
+- Lumenfi ได้ revenue จาก subscription ตัวแทน
+
+7.2 LEAD ROUTING 3 ชั้น
+───────────────────────
+
+ชั้นที่ 1 — Direct (Invite Link)
+  User สมัครผ่าน /i/AGTXXXX ของตัวแทน → ผูกตรง ๆ
+  ไม่มี contest
+
+ชั้นที่ 2 — Smart Match (Area + Product)
+  ไม่มี invite → ระบบ match ตามพื้นที่จังหวัด + ผลิตภัณฑ์ที่ขาย
+  Round-robin ในตัวแทนที่ match
+  
+ชั้นที่ 3 — Admin Fallback
+  ไม่ match → admin จัดสรรเอง (1 วัน)
+
+7.3 AGENT SIGNUP FLOW
+─────────────────────
+
+1. /agents/signup — กรอกข้อมูล:
+   - บริษัท · ชื่อ · เลขใบอนุญาต · ระยะเวลาใบอนุญาต
+   - พื้นที่ · ผลิตภัณฑ์ที่ขาย
+   - LINE ID · เบอร์โทร · booking URL
+   - รูปโปรไฟล์ · bio
+2. รอ admin อนุมัติ (≤ 24 ชม.)
+3. เริ่ม trial 14 วัน · 3 leads ฟรี
+4. ได้ invite link → แชร์ลูกค้า
+
+7.4 AGENT FEATURES
+──────────────────
+
+- Lead dashboard (status workflow: new · contacted · meeting · closed_won/lost)
+- INA Report PDF download
+- Sales Coach AI (Starter+)
+- AI Sales Assistant per-lead pitch (Pro+)
+- LINE Notify integration (Pro+)
+- Custom photo + bio (Pro+)
+- Performance analytics (conversion · response time · revenue)
+- Booking link integration
+- Lead export CSV (Pro+)
+
+7.5 AGENT PLANS
+───────────────
+
+Trial — ฟรี 14 วัน · 3 leads
+  - Invite link + Lead dashboard
+  - INA Report
+  - Email notify
+  
+Starter — ฿299/เดือน (฿2,990/ปี)
+  - 25 leads/เดือน
+  - Sales Coach AI 🎓 (เริ่มที่นี่)
+  - ทุกอย่างใน Trial
+  - เหมาะ: ตัวแทน solo
+
+Pro ⭐ — ฿699/เดือน (฿6,990/ปี) — แนะนำ
+  - Leads ไม่จำกัด
+  - AI Sales Assistant per-lead
+  - LINE Notify + SMS
+  - Custom photo + bio
+  - Priority support
+  - Lead export CSV
+
+Team — ฿1,990/เดือน (฿19,900/ปี)
+  - 5 ตัวแทนในทีม
+  - Shared leads pool
+  - Team leaderboard
+  - Performance analytics รวมทีม
+
+7.6 BILLING
+───────────
+
+- Omise payment gateway (Thai-friendly)
+- Auto-renew with retry logic (3 attempts in 7 days)
+- Webhooks for charge.complete / charge.failed
+- Cron daily — expire subs + notify before charge
+
+
+════════════════════════════════════════════════════════════════════
+PART 8 — REFERRAL SYSTEM
+════════════════════════════════════════════════════════════════════
+
+8.1 USER REFERRAL (Pro 30d for both)
+────────────────────────────────────
+
+- User generates 6-char code (e.g. RM5AYT)
+- Share link: lumenfi.projectostech.com/r/RM5AYT
+- Friend signs up via link → both get Pro 30 days FREE
+- 1 user สามารถใส่ referral code ของคนอื่นได้ครั้งเดียวตลอดกาล
+- Referrer ชวนได้ไม่จำกัด → reward stacks
+
+8.2 /r/[code] LANDING PAGE
+──────────────────────────
+
+- Welcome page สวยๆ ที่โชว์ชื่อคนชวน
+- Pain → Outcome narrative
+- 6 value-prop cards
+- 3-step explainer
+- Final CTA → /signup?invite=CODE
+- เปิดข้อมูล referrer ด้วย service-role (RLS bypass for read-only)
+
+8.3 SMART CODE DETECTION
+────────────────────────
+
+ใส่ code → ระบบเช็ค 2 ขั้น:
+1. agents.invite_code (active) → ผูก profile.assigned_agent_id
+   ไม่ให้ Pro (เพราะเป็นการผูกตัวแทน)
+2. profiles.referral_code (6 ตัว) → ให้ Pro 30 วันทั้งคู่
+
+Error messages แยกชัด: code_not_found · already_used ·
+already_bound_to_agent · bind_failed
+
+8.4 SHARE TOUCHPOINTS
+─────────────────────
+
+- /settings/referral — share UI + claim form
+- ลิงก์ผ่าน LINE / Facebook / นามบัตร
+- /register?ref=CODE → forward ไป /r/CODE
+
+
+════════════════════════════════════════════════════════════════════
+PART 9 — PRICING & MONETIZATION
+════════════════════════════════════════════════════════════════════
+
+9.1 B2C — 3 ทาง
+────────────────
+
+FREE (ตลอดไป · ไม่มีบัตร):
+- ฟีเจอร์หลักครบ (logging · budgets · debts · goals · investments ·
+  net worth · cash flow · reports · tools)
+- AI Chat 5 ข้อความ/วัน (Lumenfi key) หรือ BYO ไม่จำกัด
+- AI Advisor 8 มิติ 1 รายงาน/เดือน (taste)
+- OCR Scan
+- ❌ AI Secretary (Pro only)
+- ❌ AI Advisor ผ่าน BYO key — ไม่อนุญาต
+
+PAY-AS-YOU-GO:
+- 10 reports ฿79 (~฿8/รายงาน)
+- 50 reports ฿349 (~฿7/รายงาน · 22% off)
+- 100 reports ฿599 (~฿6/รายงาน · 33% off)
+- ไม่หมดอายุ
+- ใช้ Lumenfi key (BYO ไม่ได้)
+
+PRO — ฿149/เดือน หรือ ฿1,490/ปี (ประหยัด ฿298):
+- ⭐ AI Advisor 8 มิติ ไม่จำกัด
+- AI Chat ไม่จำกัด
+- AI Secretary push เตือนรายวัน
+- ทดลองฟรี 14 วัน · ไม่ต้องผูกบัตร
+- Priority support
+- Phase 2 (วางแผน): CSV import, PDF export, Insurance reminder
+
+9.2 NO LIFETIME PLAN — โดยตั้งใจ
+────────────────────────────────
+
+เหตุผล:
+- AI cost variable — lock-in lifetime เสี่ยงขาดทุน
+- ฆ่า MRR projection
+- คนซื้อ lifetime มัก churn rate ต่ำเทียบเงินที่จ่าย — economic
+  ไม่ดี
+
+9.3 B2B — 4 tiers (ดู PART 7.5)
+───────────────────────────────
+
+9.4 BYO KEY SCOPE
+─────────────────
+
+BYO key (Anthropic · OpenAI · Gemini · OpenRouter) ใช้กับ:
+- ✅ AI Chat — ไม่จำกัด
+- ✅ OCR Vision — ไม่จำกัด
+- ❌ AI Advisor 8 มิติ — ห้ามผ่าน BYO (server-paid only)
+- ❌ AI Secretary — ห้ามผ่าน BYO (cron + server)
+
+เหตุผลทาง strategic:
+- AI Advisor = พระเอก + ต้นทุน fixed = ฟีเจอร์พรีเมียม
+- BYO ยังให้ value (chat unlimited + OCR) แก่ผู้ใช้ที่อยากใช้ key เอง
+- คนจ่าย Pro = คนต้องการ Advisor + Secretary
+
+9.5 AI COST ECONOMICS
+─────────────────────
+
+ต้นทุนต่อ 1 AI Advisor report:
+- Gemini 1.5 Flash: ~฿0.5-1
+- Claude Haiku: ~฿1-2
+- Claude Sonnet: ~฿3-5
+
+ราคาขายใน Credit pack: ฿6-8/report
+Margin: 60-90% (gross)
+
+Pro user usage average: 5-15 reports/เดือน
+- Cost to Lumenfi: ฿15-75/เดือน
+- Revenue: ฿149/เดือน
+- Margin: 50-90%
+
+9.6 REVENUE STREAMS (พิรามิดรายได้)
+──────────────────────────────────
+
+Tier 1 (เสาหลัก): B2B Agent subscriptions
+  - 100 Pro agents × ฿699 = ฿69,900/เดือน
+  - + Team plans + Starter plans
+  - + (อนาคต) commission จาก lead conversion
+
+Tier 2 (เสารอง): B2C Pro subscriptions
+  - 1,000 Pro users × ฿149 = ฿149,000/เดือน
+  - + Pay-as-you-go credit packs
+
+Tier 3 (เสาเสริม Phase 4): Affiliate
+  - บัตรเครดิตแนะนำ ฿500-2,000/application
+  - สินเชื่อ refinance ฿1,000-5,000/loan
+  - Broker account opening (SET securities)
+
+
+════════════════════════════════════════════════════════════════════
+PART 10 — SECURITY & PRIVACY
+════════════════════════════════════════════════════════════════════
+
+10.1 SUPABASE ROW-LEVEL SECURITY (RLS)
+──────────────────────────────────────
+
+- ทุก table มี RLS policy
+- User เห็นเฉพาะ row ของตัวเอง (where user_id = auth.uid())
+- แม้ Lumenfi staff ก็อ่านข้อมูล user ไม่ได้ (ต้องผ่าน support flow)
+- Service-role client ใช้เฉพาะกรณีจำเป็น (cron, admin actions)
+
+10.2 API KEY ENCRYPTION
+───────────────────────
+
+- BYO key ถูกเข้ารหัส AES-256-GCM ก่อนเก็บใน DB
+- Encryption key อยู่ใน server env (ENCRYPTION_KEY)
+- ไม่มีใครถอดรหัสได้นอกจาก server
+- Decrypt เฉพาะตอนเรียก AI provider
+
+10.3 PRIVACY MODE
+─────────────────
+
+- /ai/settings → toggle "Privacy mode"
+- เมื่อเปิด: บทสนทนา AI ไม่ผ่านเซิร์ฟเวอร์ Lumenfi (เรียก provider
+  ตรงจาก server กลับมาแล้ว discard ไม่เก็บ)
+- Default: เปิด
+
+10.4 PDPA COMPLIANCE
+────────────────────
+
+- /settings/privacy:
+  - Export JSON ของข้อมูลทั้งหมด
+  - ลบบัญชี → ลบข้อมูลถาวร (right to erasure)
+- ระบุ Data Protection Officer ใน privacy policy
+- Cookie consent banner ครั้งแรกเข้าเว็บ
+- Consent ตอน lead routing (ลูกค้ายินยอมส่งข้อมูลให้ตัวแทน)
+
+10.5 LOG AUDIT
+──────────────
+
+- ai_usage_log — บันทึกทุก AI call (user · feature · provider · tokens · status)
+- product_sync_runs — บันทึกการ sync product catalog
+- agent_subscriptions — บันทึก subscription history
+- referrals — บันทึก referral redemptions
+
+
+════════════════════════════════════════════════════════════════════
+PART 11 — TECH ARCHITECTURE
+════════════════════════════════════════════════════════════════════
+
+11.1 STACK
+──────────
+
+Frontend:
+- Next.js 14 App Router
+- React Server Components
+- Tailwind CSS + shadcn/ui
+- next-intl (i18n)
+- next/image (image optimization)
+- Lucide React (icons)
+- Recharts (charts)
+
+Backend:
+- Next.js Server Actions
+- Supabase JS SDK
+- Supabase Auth (email + Google OAuth)
+- Supabase Postgres
+- Supabase pg_cron + pg_net (for hourly notify)
+
+Hosting:
+- Vercel (Next.js)
+- Region: sin1 (Singapore)
+- Vercel Cron jobs (daily-only on Hobby plan)
+
+Email:
+- Resend SMTP via Supabase Auth
+- Domain: mail.projectostech.com (DKIM/SPF/DMARC verified)
+- Custom HTML templates (Aurum Quietus branded)
+
+Payment:
+- Omise (Thai-friendly · supports PromptPay)
+- Webhooks for auto-renew
+
+AI Providers (BYO option):
+- Anthropic Claude (default Pro)
+- OpenAI GPT
+- Google Gemini (default Free)
+- OpenRouter (gateway to many models)
+
+11.2 DATABASE SCHEMA (highlights)
+─────────────────────────────────
+
+Core tables:
+- profiles (user info + AI key + onboarding fields)
+- accounts (bank accounts + cash + cards)
+- transactions (income/expense/transfer)
+- categories
+- debts + debt_payments
+- goals + goal_contributions
+- budgets
+- investments + investment_transactions
+- insurance_policies
+- net_worth_snapshots (daily)
+
+AI tables:
+- ai_conversations (feature: general | coach)
+- ai_messages
+- ai_usage_log
+- ai_credits (PAYG balance)
+- advisor_reports (saved reports + snapshot)
+
+Billing tables:
+- subscription_plans (Free / Pro / agent tiers)
+- user_subscriptions (B2C)
+- agent_subscriptions (B2B)
+
+Agent marketplace:
+- agents (license + products + status)
+- insurance_leads
+- agent_messages
+
+Product catalog:
+- insurance_companies (BLA · AIA · etc.)
+- insurance_products
+- product_sync_runs (AI sync audit)
+
+Referral:
+- profiles.referral_code
+- referrals
+- profiles.assigned_agent_id
+
+Misc:
+- notifications (in-app bell)
+- push_subscriptions (Web Push API)
+- help_articles
+- versions (What's New)
+
+11.3 KEY MIGRATIONS
+───────────────────
+
+01-09: Core schema
+10-15: Insurance + AI + Notifications
+16-19: Help articles + investments + advisor
+20-25: Performance + debt + pay cycle + referrals
+26-29: Agent marketplace (phases A-D)
+30: AI conversations.feature column (coach vs general)
+31: Insurance products catalog
+32: Help articles 2026-05 batch
+
+11.4 CRON JOBS
+──────────────
+
+Vercel Cron (daily-only on Hobby):
+- /api/cron/notify — daily 14:00 UTC (push reminders)
+- /api/cron/snapshot — daily 15:00 UTC (Net Worth snapshot)
+- /api/cron/agent-billing — daily 19:00 UTC (sub expire + retry)
+- /api/cron/sync-products — daily 03:00 UTC (with 6-day staleness check)
+
+Supabase pg_cron (any schedule):
+- lumenfi-hourly-notify — hourly (re-trigger /api/cron/notify to support
+  per-user reminder hours 0-23)
+
+11.5 KEY ENV VARS
+─────────────────
+
+Required:
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY
+- ENCRYPTION_KEY (32 bytes for AES-256)
+- LUMENFI_AI_KEY (Pro tier · Anthropic)
+- LUMENFI_FREE_AI_KEY (Free tier · Gemini)
+- CRON_SECRET
+- VAPID_PUBLIC_KEY + VAPID_PRIVATE_KEY + VAPID_SUBJECT
+- OMISE_PUBLIC_KEY + OMISE_SECRET_KEY + OMISE_WEBHOOK_SECRET
+- NEXT_PUBLIC_APP_URL
+
+Optional:
+- RESEND_API_KEY (custom SMTP)
+- LINE_NOTIFY_CLIENT_ID + SECRET
+
+11.6 DEPLOYMENT FLOW
+────────────────────
+
+1. Push to git main branch
+2. Vercel auto-deploy
+3. Migration SQL: รันที่ Supabase Dashboard → SQL Editor manually
+4. Env vars: Vercel Dashboard → Settings → Environment Variables
+
+
+════════════════════════════════════════════════════════════════════
+PART 12 — USER EXPERIENCE & DESIGN
+════════════════════════════════════════════════════════════════════
+
+12.1 NAVIGATION STRUCTURE
+─────────────────────────
+
+Public (no login):
+- / — main landing (PAS-style)
+- /features — feature deep-dive
+- /pricing — B2C pricing
+- /agents — B2B landing
+- /agents/pricing — B2B pricing
+- /signup · /login
+- /r/[code] — referral welcome
+- /i/[code] — agent invite welcome
+
+Logged in (B2C):
+- /dashboard (home)
+- /transactions · /transactions/new · /transactions/scan
+- /accounts · /debts · /goals · /investments · /insurance
+- /cashflow · /networth · /budgets
+- /tools/tax · /tools/debt · /tools/loan
+- /reports
+- /advisor (8 dimensions hub) · /advisor/r/[id]
+- /ai · /ai/c/[id] · /ai/settings
+- /help · /whats-new
+- /settings · /settings/billing · /settings/referral · /settings/reminder · /settings/privacy
+- /settings/admin (admin only)
+
+Logged in (B2B agent):
+- /agents/dashboard
+- /agents/leads · /agents/leads/[id]
+- /agents/coach · /agents/coach/c/[id]
+- /agents/messages · /agents/line
+- /agents/analytics · /agents/billing
+- /agents/pricing
+
+Admin only:
+- /admin/agents
+- /admin/products
+
+12.2 SIDEBAR (Desktop) + Bottom Nav (Mobile)
+────────────────────────────────────────────
+
+Desktop Sidebar sections:
+- (no title) — Home · Transactions · Scan · Cash Flow · Net Worth
+- การเงิน — Accounts · Debts · Goals · Investments · Insurance
+- วางแผน — Budgets · Recurring · Tax · Debt Calc · Loan
+- อื่นๆ — AI Advisor · Agent Dashboard (conditional) · ชวนเพื่อน ·
+  AI Chat · Help · Reports · Pricing · Categories · Settings
+
+Bottom Nav (mobile): Home · Transactions · [+ Add] · AI · More
+"More" page รวมทั้งหมดของ Sidebar
+
+12.3 BRAND VOICE
+────────────────
+
+- ใช้ภาษาไทยเป็นหลัก · มีเทคนิคอลภาษาอังกฤษได้
+- น้ำเสียง: เป็นกันเอง · สุภาพ · ไม่กดดัน
+- หลีกเลี่ยง jargon ทางการเงินที่เข้าใจยาก
+- เน้น actionable: บอกได้ว่าควรทำอะไรต่อ
+- Empathetic: "ความรู้สึกนี้ {Name} เคยมี"
+- ไม่ judgmental: ไม่บอกว่า "คุณใช้เงินผิด"
+
+
+════════════════════════════════════════════════════════════════════
+PART 13 — WHY USE LUMENFI (จุดแข็งเทียบกับคู่แข่ง)
+════════════════════════════════════════════════════════════════════
+
+13.1 DIFFERENTIATORS
+────────────────────
+
+1. ออกแบบรอบเงินเดือนคนไทย
+   เงินเดือนวันที่ 25? บำเหน็จวันที่ 1? Lumenfi ทำตามรอบของคุณ
+   ไม่บังคับใช้ปฏิทินเดือน — ฟีเจอร์นี้คู่แข่งทำไม่ได้
+
+2. AI ที่อธิบาย ไม่ใช่แค่โชว์
+   AI Advisor เขียนรายงานเป็นภาษาไทยอธิบายว่ามีอะไรผิด และต้องทำ
+   อะไรต่อ — ด้วยตัวเลขจริงของคุณ · ChatGPT ทั่วไปทำไม่ได้เพราะไม่
+   มีข้อมูลคุณ
+
+3. ข้อมูลของคุณ คุณคุมเอง
+   Supabase RLS — แม้แต่ทีม Lumenfi ก็อ่านข้อมูลคุณไม่ได้
+   BYO Key option สำหรับ AI Chat — บทสนทนาไม่ผ่านเซิร์ฟเวอร์เรา
+
+4. Free ตลอดไป ครอบคลุมชีวิตจริง
+   บันทึก · งบ · หนี้ · เป้าหมาย · ลงทุน · Net Worth — ฟรีทั้งหมด
+   จ่ายเฉพาะถ้าอยาก AI Advisor ไม่จำกัด ไม่มีล่อหลอก
+
+5. รวมการเงินทั้งชีวิตไว้ที่เดียว
+   หนี้ + ออม + ลงทุน + ประกัน + ภาษี + เกษียณ ในแอพเดียว
+   แอพอื่นต้องใช้ 4-5 ตัวรวมกัน
+
+6. AI Advisor 8 มิติ
+   ไม่มีแอพการเงินไทยตัวอื่นที่มี AI วิเคราะห์เชิงลึก 8 มิติ
+
+13.2 COMPETITORS COMPARISON
+───────────────────────────
+
+vs Money Lover · Spendee:
+- ✓ Lumenfi: AI Advisor 8 มิติ + Net Worth + Insurance Gap
+- ✗ Lumenfi: Bank linking (yet — Phase 2)
+
+vs YNAB:
+- ✓ Lumenfi: ฟรี (YNAB $15/mo)
+- ✓ Lumenfi: ภาษาไทย + Thai pay cycle
+- ✗ Lumenfi: YNAB มี zero-based budgeting แบบเข้มข้นกว่า
+
+vs Mint (closed):
+- ✓ Lumenfi: ยังเปิด
+- ✓ Lumenfi: AI Advisor
+
+vs Excel/Google Sheets:
+- ✓ Lumenfi: ไม่ต้องตั้งสูตรเอง
+- ✓ Lumenfi: Mobile + OCR
+- ✓ Lumenfi: AI วิเคราะห์ให้
+
+vs ChatGPT / Claude (chat only):
+- ✓ Lumenfi: ใช้ข้อมูลจริงของคุณ
+- ✓ Lumenfi: เก็บข้อมูล + chart
+
+
+════════════════════════════════════════════════════════════════════
+PART 14 — ROADMAP (แผนพัฒนา)
+════════════════════════════════════════════════════════════════════
+
+14.1 PHASE 2 (Q2-Q3 2026)
+─────────────────────────
+
+- CSV Import จากธนาคารไทย (K-Plus · SCB Easy · KTB · TMB · etc.)
+  + AI auto-categorize → Pro only
+- PDF Export รายงาน → Pro only
+- Insurance policy renewal reminder + auto-quote → ผูก B2B revenue
+- Capital gains report PDF
+- Recurring DCA auto-execute (ผ่าน broker API)
+- Dashboard widgets configurable
+
+14.2 PHASE 3 (Q4 2026 - Q1 2027)
+────────────────────────────────
+
+- Family Plan ฿299/เดือน (5 บัญชี · เป้าหมายร่วม · kid mode)
+- Tax filing export (เชื่อม รด.)
+- Advisor 1-on-1 service (premium)
+- Investment portfolio rebalancer (Pro+)
+
+14.3 PHASE 4 (2027)
+───────────────────
+
+- Affiliate program กับธนาคาร/หลักทรัพย์
+- Bank linking ผ่าน Yodlee/Plaid (เมื่อ available ในไทย)
+- B2B expansion: ที่ปรึกษาการเงิน (FA) · CFP · Wealth Manager
+- iOS native app · Android native app
+- WhatsApp/LINE bot integration
+
+14.4 SCALING ASSUMPTIONS
+────────────────────────
+
+- 2026 Q3: 5,000 users · 100 agents
+- 2026 Q4: 20,000 users · 300 agents
+- 2027 Q2: 100,000 users · 1,000 agents · break-even
+- 2027 Q4: 250,000 users · 2,500 agents
+
+
+════════════════════════════════════════════════════════════════════
+PART 15 — GLOSSARY & FAQ
+════════════════════════════════════════════════════════════════════
+
+15.1 คำศัพท์สำคัญ
+──────────────────
+
+Aurum Quietus — ระบบสี/แบรนด์ของ Lumenfi (Latin: "ความเงียบสีทอง")
+
+BYO Key — Bring Your Own Key: ใช้ API key ของผู้ใช้เอง
+
+DTI — Debt-to-Income Ratio: สัดส่วนหนี้รายเดือนต่อรายได้
+
+Emergency Fund — เงินสำรองฉุกเฉิน 6 เท่าของรายจ่าย
+
+Gap (Insurance Gap) — ช่องว่างระหว่างทุนคุ้มครองปัจจุบันกับทุนที่ควรมี
+
+INA Report — Insurance Needs Analysis Report
+
+KYC — Know Your Customer (ตัวแทนต้องยืนยันใบอนุญาต)
+
+Lead — ผู้ใช้ที่ขอที่ปรึกษาประกัน → ส่งไปตัวแทน
+
+Net Worth — ทรัพย์สินทั้งหมด ลบ หนี้สินทั้งหมด
+
+OCR — Optical Character Recognition (สแกนใบเสร็จเป็นข้อความ)
+
+PDPA — Personal Data Protection Act (พรบ.คุ้มครองข้อมูลส่วนบุคคล ไทย)
+
+PWA — Progressive Web App
+
+Runway — กี่เดือนที่อยู่ได้ถ้ารายได้หยุดทันที
+
+RLS — Row-Level Security (Postgres feature)
+
+RMF/SSF/PVD — กองทุนลดหย่อนภาษีไทย
+
+SPA — Single Page Application
+
+15.2 FAQ
+─────────
+
+Q: ฟรีจริงๆ ใช่ไหม?
+A: ใช่ ฟีเจอร์หลักครบทุกอย่างฟรี — บันทึก · งบ · หนี้ · เป้าหมาย ·
+   ลงทุน · Net Worth · รายงาน · เครื่องมือคำนวณ ฯ
+   AI Chat ฟรี 5 ครั้ง/วัน หรือใช้ BYO Key ไม่จำกัด
+   AI Advisor 8 มิติ ฟรี 1 รายงาน/เดือน (taste)
+   Pro ฿149/เดือน ปลดล็อก AI Advisor ไม่จำกัด + AI Secretary
+
+Q: ข้อมูลเก็บที่ไหน?
+A: Supabase (Postgres) region SEA-1 (Singapore)
+   ทุกแถวล็อกด้วย RLS — แม้แต่ทีม Lumenfi ก็อ่านข้อมูลคุณไม่ได้
+   โดยไม่ได้รับอนุญาต
+
+Q: ใช้ภาษาไทยได้ไหม?
+A: ได้ ออกแบบ 2 ภาษา (ไทย/English) ตั้งแต่วันแรก
+   AI Advisor ตอบไทยเป็น default
+
+Q: ใช้บนมือถือได้ไหม?
+A: ได้ ติดตั้งเป็น PWA (Add to Home Screen) ทำงาน offline ได้
+   สำหรับบันทึกพื้นฐาน sync อัตโนมัติเมื่อเชื่อม internet
+
+Q: BYO Key คืออะไร?
+A: ใช้ API key ของคุณเอง (Anthropic / OpenAI / Gemini / OpenRouter)
+   ใช้กับ AI Chat + OCR ได้ไม่จำกัด
+   ใช้กับ AI Advisor ไม่ได้ (Pro/PAYG only)
+
+Q: ทำไม AI Advisor ต้องเสียเงิน?
+A: ต้นทุน AI ในการสร้าง 1 รายงาน 8 มิติ ~฿0.7-5
+   AI ต้องอ่านข้อมูลคุณทั้งหมด + เขียน 5,000+ ตัวอักษร
+   Free 1/เดือน ก็คุ้ม Pro ฿149 ใช้ไม่จำกัดสำหรับคนที่ใช้บ่อย
+
+Q: ยกเลิก Pro ได้ไหม?
+A: ได้ทุกเมื่อที่ /settings/billing
+   ใช้ได้จนสิ้น billing period แล้วกลับเป็น Free อัตโนมัติ
+
+Q: Trial 14 วันต้องผูกบัตรไหม?
+A: ไม่ต้องผูกบัตรในช่วง trial — เพียงสมัครก็เริ่ม
+   ถ้าอยาก continue หลังจาก trial จึงเพิ่มบัตร
+
+Q: เป็นตัวแทนประกัน ใช้ Lumenfi ได้ไหม?
+A: ได้ สมัครที่ /agents/signup
+   trial 14 วัน · 3 leads ฟรี · ไม่ต้องผูกบัตร
+   หลัง trial ดูแพ็คเกจที่ /agents/pricing (Starter ฿299 ขึ้นไป)
+
+Q: ลิงก์ชวนเพื่อน ทำงานยังไง?
+A: /settings/referral → ดูโค้ด 6 ตัวอักษรของคุณ → กด "คัดลอกลิงก์"
+   แชร์ให้เพื่อน เพื่อนสมัครผ่านลิงก์ → ทั้งคู่ได้ Pro 30 วันฟรี
+   ชวนได้ไม่จำกัด
+
+
+════════════════════════════════════════════════════════════════════
+END OF KNOWLEDGE BASE
+════════════════════════════════════════════════════════════════════
+
+หมายเหตุการใช้งานใน NotebookLM:
+1. Upload ไฟล์นี้เป็น source
+2. NotebookLM จะ index ทั้งเอกสาร
+3. ถามคำถามได้: "Lumenfi ต่างจาก Money Lover ยังไง", "AI Advisor
+   8 มิติ มีอะไรบ้าง", "ตั้งราคา Pro เท่าไร และทำไม", ฯ
+4. ขอ summary, comparisons, mind map ได้
+5. ถ้าต้องการ update ข้อมูล: อัพเดตไฟล์นี้ + reupload
+
+ติดต่อ: https://lumenfi.projectostech.com/help
