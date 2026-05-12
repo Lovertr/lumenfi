@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { DebtCalculator } from '@/components/tools/debt-calculator';
 import { createClient } from '@/lib/supabase/server';
 import { getCashFlowAnalysis } from '@/lib/queries/cashflow';
+import { getCurrentCycle, getCycleForDate, type CycleRange } from '@/lib/pay-cycle';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,14 +67,38 @@ async function getFinancialSnapshot() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  // Read pay-cycle setting from profile
+  const { data: profileForCycle } = await supabase
+    .from('profiles')
+    .select('pay_cycle_day')
+    .eq('id', user.id)
+    .maybeSingle();
+  const payCycleDay: number | null = (profileForCycle as any)?.pay_cycle_day ?? null;
+
+  // Build cycle windows: current + 3 previous cycles (walk back day-by-day)
+  const cyclesBack = 4;
+  const cycleWindows: CycleRange[] = [getCurrentCycle(payCycleDay)];
+  for (let i = 1; i < cyclesBack; i++) {
+    const lastStart = new Date(cycleWindows[i - 1].startDate);
+    const oneDayBack = new Date(lastStart.getTime() - 86400000);
+    cycleWindows.push(getCycleForDate(payCycleDay, oneDayBack));
+  }
+
   const WINDOW_MONTHS = 6;
   const now = new Date();
   const since = new Date(now.getFullYear(), now.getMonth() - WINDOW_MONTHS + 1, 1);
-  const sinceStr = since.toISOString().slice(0, 10);
+  // Use earliest cycle start or 6-month back, whichever is earlier
+  const earliestCycleStart = cycleWindows.reduce(
+    (min, c) => (new Date(c.startDate) < new Date(min) ? c.startDate : min),
+    cycleWindows[0].startDate,
+  );
+  const sinceStr = (new Date(since) < new Date(earliestCycleStart)
+    ? since.toISOString().slice(0, 10)
+    : earliestCycleStart);
 
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  const currentCycle = cycleWindows[0];
 
-  const [txRes, debtsRes, accRes, budgetsRes, currentMonthTx] = await Promise.all([
+  const [txRes, debtsRes, accRes, budgetsRes, currentCycleTx] = await Promise.all([
     supabase
       .from('transactions')
       .select('type, amount, date')
@@ -93,10 +118,10 @@ async function getFinancialSnapshot() {
       .eq('user_id', user.id),
     supabase
       .from('transactions')
-      .select('category_id, amount, type')
+      .select('category_id, amount, type, date')
       .eq('user_id', user.id)
-      .eq('type', 'expense')
-      .gte('date', startOfMonth),
+      .gte('date', currentCycle.startDate)
+      .lte('date', currentCycle.endDate),
   ]);
 
   let totalIncome = 0, totalExpense = 0;
@@ -110,6 +135,36 @@ async function getFinancialSnapshot() {
   const divisor = Math.min(WINDOW_MONTHS, activeMonths);
   const avgIncome = Math.round(totalIncome / divisor);
   const avgExpense = Math.round(totalExpense / divisor);
+
+  // ── Pay-cycle aware aggregation ───────────────────────────────────
+  // Bucket every transaction into the cycle it belongs to, then compute
+  // (a) current cycle totals (what user sees on Dashboard) and
+  // (b) average over last 3 full cycles.
+  function cycleIndex(dateStr: string): number {
+    const d = new Date(dateStr);
+    for (let i = 0; i < cycleWindows.length; i++) {
+      const c = cycleWindows[i];
+      if (dateStr >= c.startDate && dateStr <= c.endDate) return i;
+    }
+    return -1;
+  }
+  const cycleBuckets = cycleWindows.map(() => ({ income: 0, expense: 0 }));
+  (txRes.data ?? []).forEach((t: any) => {
+    const idx = cycleIndex(t.date as string);
+    if (idx >= 0) {
+      if (t.type === 'income') cycleBuckets[idx].income += Number(t.amount);
+      else if (t.type === 'expense') cycleBuckets[idx].expense += Number(t.amount);
+    }
+  });
+  const cycleNow = cycleBuckets[0]; // current cycle
+  // Avg over the prior cycles only (exclude current — it's still in progress)
+  const priorCycles = cycleBuckets.slice(1).filter((c) => c.income > 0 || c.expense > 0);
+  const cycleAvgIncome = priorCycles.length
+    ? Math.round(priorCycles.reduce((s, c) => s + c.income, 0) / priorCycles.length)
+    : Math.round(cycleNow.income);
+  const cycleAvgExpense = priorCycles.length
+    ? Math.round(priorCycles.reduce((s, c) => s + c.expense, 0) / priorCycles.length)
+    : Math.round(cycleNow.expense);
 
   let totalDebt = 0, monthlyPayments = 0;
   (debtsRes.data ?? []).forEach((d: any) => {
@@ -129,8 +184,8 @@ async function getFinancialSnapshot() {
 
   // Budget status: spent vs budget per category (current month)
   const spendingByCat: Record<string, number> = {};
-  (currentMonthTx.data ?? []).forEach((t: any) => {
-    if (!t.category_id) return;
+  (currentCycleTx.data ?? []).forEach((t: any) => {
+    if (!t.category_id || t.type !== 'expense') return;
     spendingByCat[t.category_id] = (spendingByCat[t.category_id] ?? 0) + Number(t.amount);
   });
   const budgetCategories = (budgetsRes.data ?? []).map((b: any) => {
@@ -169,8 +224,24 @@ async function getFinancialSnapshot() {
   } catch {}
 
   return {
-    monthly_income: avgIncome,
-    monthly_expense_total: avgExpense,
+    // Use pay-cycle aware numbers if user has set pay_cycle_day,
+    // otherwise fall back to 6-month average (calendar month aggregation).
+    monthly_income: payCycleDay ? cycleAvgIncome : avgIncome,
+    monthly_expense_total: payCycleDay ? cycleAvgExpense : avgExpense,
+    // Always expose pay-cycle aware data so AI can use the freshest numbers
+    pay_cycle: payCycleDay ? {
+      day: payCycleDay,
+      cycle_label: currentCycle.label,
+      cycle_range: currentCycle.rangeLabel,
+      this_cycle_income: Math.round(cycleNow.income),
+      this_cycle_expense: Math.round(cycleNow.expense),
+      this_cycle_net: Math.round(cycleNow.income - cycleNow.expense),
+      avg_cycle_income: cycleAvgIncome,
+      avg_cycle_expense: cycleAvgExpense,
+      cycles_analyzed: priorCycles.length,
+    } : null,
+    fallback_avg_income: avgIncome,
+    fallback_avg_expense: avgExpense,
     existing_debt_payments: Math.round(monthlyPayments),
     total_debt: Math.round(totalDebt),
     cash_available: Math.round(cashAvailable),

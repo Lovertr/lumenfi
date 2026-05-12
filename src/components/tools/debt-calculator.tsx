@@ -12,6 +12,43 @@ import { formatTHB, cn } from '@/lib/utils';
 import { saveDebtPlan, deactivateDebtPlan, quickCreateDebt, analyzeDebtSituation } from '@/app/[locale]/(app)/tools/debt/actions';
 import { useRouter } from 'next/navigation';
 
+
+// ─────────────────────────────────────────────────────────────────────
+// Parse the trailing JSON code-block produced by AI debt analysis.
+// AI emits markdown analysis followed by a ```json { "plans": [...] } ``` block.
+// Returns { advice (markdown without the JSON), plans (array) }.
+// Safe against malformed JSON — returns empty plans on parse fail.
+// ─────────────────────────────────────────────────────────────────────
+function splitAdviceAndPlans(raw: string | null): {
+  advice: string;
+  plans: Array<{
+    id: string;
+    title: string;
+    strategy: string;
+    extra_per_month: number;
+    expected_months: number;
+    total_interest: number;
+    summary: string;
+    steps?: string[];
+    pros?: string[];
+    cons?: string[];
+    recommended?: boolean;
+  }>;
+} {
+  if (!raw) return { advice: '', plans: [] };
+  const jsonBlockRe = /```json\s*([\s\S]*?)\s*```/i;
+  const m = raw.match(jsonBlockRe);
+  if (!m) return { advice: raw, plans: [] };
+  const adviceText = raw.replace(jsonBlockRe, '').trim();
+  try {
+    const parsed = JSON.parse(m[1]);
+    const plans = Array.isArray(parsed?.plans) ? parsed.plans : [];
+    return { advice: adviceText, plans };
+  } catch {
+    return { advice: adviceText, plans: [] };
+  }
+}
+
 interface DebtItem {
   id: string;
   name: string;
@@ -308,7 +345,34 @@ export function DebtCalculator({
     setSaved(false);
   }
 
-  async function handleSave() {
+  const [savingOption, setSavingOption] = useState<string | null>(null);
+
+  function periodWordFromSnap(snap: FinancialSnapshot | null | undefined): string {
+    return (snap as any)?.pay_cycle?.day ? 'งวด' : 'เดือน';
+  }
+
+  async function handlePickPlan(p: { id: string; strategy: string; extra_per_month: number; expected_months: number; total_interest: number }) {
+    setSavingOption(p.id);
+    const fd = new FormData();
+    const dbStrategy = (p.strategy === 'snowball') ? 'snowball' : 'avalanche';
+    fd.append('strategy', dbStrategy);
+    fd.append('extra_per_month', String(p.extra_per_month));
+    fd.append('total_months', String(p.expected_months));
+    fd.append('total_interest', String(p.total_interest));
+    fd.append('payoff_order', JSON.stringify([]));
+    if (aiAdvice) fd.append('ai_advice_md', aiAdvice);
+    const { plans } = splitAdviceAndPlans(aiAdvice);
+    fd.append('plan_options', JSON.stringify(plans));
+    fd.append('selected_option_id', p.id);
+    const r = await saveDebtPlan(fd);
+    setSavingOption(null);
+    if (r?.ok) {
+      setSaved(true);
+      router.refresh();
+    }
+  }
+
+    async function handleSave() {
     const fd = new FormData();
     fd.append('strategy', chosenStrategy);
     fd.append('extra_per_month', String(extraNum));
@@ -569,11 +633,118 @@ export function DebtCalculator({
                 : aiError}
             </div>
           )}
-          {aiAdvice && (
-            <div className="mt-3 rounded-lg border bg-muted/20 p-3 text-sm">
-              {renderMarkdown(aiAdvice)}
-            </div>
-          )}
+          {aiAdvice && (() => {
+            const { advice, plans } = splitAdviceAndPlans(aiAdvice);
+            return (
+              <div className="mt-3 space-y-3">
+                {advice && (
+                  <div className="rounded-lg border bg-muted/20 p-3 text-sm">
+                    {renderMarkdown(advice)}
+                  </div>
+                )}
+
+                {plans.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      📋 แผนที่ AI แนะนำ — เลือก 1 แผนเพื่อบันทึก
+                    </p>
+                    <div className="grid gap-2">
+                      {plans.map((p) => {
+                        const isSelected = activePlan?.selected_option_id === p.id;
+                        return (
+                          <div
+                            key={p.id}
+                            className={cn(
+                              'rounded-xl border-2 p-3 transition-all',
+                              isSelected
+                                ? 'border-emerald-500 bg-emerald-50'
+                                : p.recommended
+                                  ? 'border-primary/40 bg-primary/5'
+                                  : 'border-border bg-background',
+                            )}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <p className="flex flex-wrap items-center gap-1.5 text-sm font-bold">
+                                  {p.title}
+                                  {p.recommended && (
+                                    <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-primary">
+                                      ⭐ แนะนำ
+                                    </span>
+                                  )}
+                                  {isSelected && (
+                                    <span className="rounded-full bg-emerald-500 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white">
+                                      ✓ บันทึกแล้ว
+                                    </span>
+                                  )}
+                                </p>
+                                {p.summary && (
+                                  <p className="mt-1 text-xs text-muted-foreground">{p.summary}</p>
+                                )}
+                                <div className="mt-2 grid grid-cols-3 gap-2 text-[11px]">
+                                  <div>
+                                    <span className="text-muted-foreground">โปะเพิ่ม:</span>{' '}
+                                    <span className="font-semibold">฿{p.extra_per_month.toLocaleString()}/{periodWordFromSnap(snapshot)}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">ระยะเวลา:</span>{' '}
+                                    <span className="font-semibold">{p.expected_months} {p.expected_months >= 12 ? `(~${(p.expected_months/12).toFixed(1)}ปี)` : 'เดือน'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">ดอกรวม:</span>{' '}
+                                    <span className="font-semibold text-rose-600">฿{p.total_interest.toLocaleString()}</span>
+                                  </div>
+                                </div>
+                                {p.steps && p.steps.length > 0 && (
+                                  <details className="mt-2">
+                                    <summary className="cursor-pointer text-[11px] font-medium text-primary">ดูขั้นตอน · ข้อดี-ข้อเสีย</summary>
+                                    <div className="mt-2 space-y-1.5 text-[11px]">
+                                      <div>
+                                        <p className="font-semibold text-emerald-700">✓ ขั้นตอน</p>
+                                        <ul className="ml-4 list-decimal">
+                                          {p.steps.map((st, i) => <li key={i}>{st}</li>)}
+                                        </ul>
+                                      </div>
+                                      {p.pros && p.pros.length > 0 && (
+                                        <div>
+                                          <p className="font-semibold text-emerald-700">+ ข้อดี</p>
+                                          <ul className="ml-4 list-disc">
+                                            {p.pros.map((s, i) => <li key={i}>{s}</li>)}
+                                          </ul>
+                                        </div>
+                                      )}
+                                      {p.cons && p.cons.length > 0 && (
+                                        <div>
+                                          <p className="font-semibold text-amber-700">− ข้อระวัง</p>
+                                          <ul className="ml-4 list-disc">
+                                            {p.cons.map((s, i) => <li key={i}>{s}</li>)}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </details>
+                                )}
+                              </div>
+                              <Button
+                                size="sm"
+                                variant={isSelected ? 'outline' : 'default'}
+                                disabled={savingOption === p.id}
+                                onClick={() => handlePickPlan(p)}
+                              >
+                                {savingOption === p.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : isSelected ? 'บันทึกใหม่' : 'เลือกแผนนี้'}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           {!aiAdvice && !aiError && !aiLoading && (
             <p className="mt-2 text-xs text-muted-foreground">{t('aiAdvisorHint')}</p>
           )}
@@ -587,7 +758,7 @@ export function DebtCalculator({
           size="lg"
           className="w-full"
           onClick={handleSave}
-          disabled={saved || chosen.hitCap}
+          disabled={chosen.hitCap}
         >
           <Save className="mr-2 h-4 w-4" />
           {saved ? t('planSaved') : t('savePlan')}
