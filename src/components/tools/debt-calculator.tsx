@@ -632,7 +632,7 @@ function ResultCard({
         {firstTarget && (
           <div className="mb-3 rounded-xl border-2 border-primary/30 bg-primary/5 p-3">
             <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-              <Target className="h-3 w-3" /> {t('payExtraTo')}
+              <Target className="h-3 w-3" /> {t('payTopupHereFirst')}
             </p>
             <p className="mt-1 text-base font-bold">{firstTarget.name}</p>
             <p className="text-xs text-muted-foreground">
@@ -685,6 +685,9 @@ function ResultCard({
         {data.phases.length > 1 && (
           <div className="mt-3 space-y-1.5 border-t pt-3">
             <p className="text-[11px] font-semibold uppercase text-muted-foreground">{t('extraSchedule')}</p>
+            <p className="rounded-md bg-amber-50 border border-amber-200 px-2 py-1.5 text-[10px] leading-relaxed text-amber-900">
+              {t('mustPayMinNote')}
+            </p>
             {data.phases.map((p, i) => {
               const debt = debts.find((d) => d.id === p.targetId);
               return (

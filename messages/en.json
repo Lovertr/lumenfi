@@ -730,13 +730,13 @@
     "totalInterest": "Total Interest",
     "years": "yr",
     "months": "mo",
-    "order": "Payoff Order",
+    "order": "Payoff order (all debts still get minimum)",
     "paidOffIn": "paid off in month {months}",
     "comparison": "Comparison",
     "avalancheSaves": "Avalanche saves {amount} interest and finishes {months} months earlier",
     "payExtraTo": "Apply extra to this debt FIRST",
     "focusUntil": "Until month {month} (this debt cleared)",
-    "extraSchedule": "Attack order (where extra goes)",
+    "extraSchedule": "Topup order (where extra goes)",
     "monthRange": "months {from}-{to}",
     "alternative": "Alternative",
     "savePlan": "Activate this plan",
@@ -776,7 +776,9 @@
     "extraPlaceholder": "Leave blank for AI to recommend",
     "extraEmptyHint": "AI will calculate the optimal amount — click \"Ask AI\" below",
     "extraZeroHint": "No extra specified — AI will recommend strategy using minimums only",
-    "neverPayoff": "Never"
+    "neverPayoff": "Never",
+    "payTopupHereFirst": "Topup this debt first",
+    "mustPayMinNote": "⚠️ All debts always receive at least the minimum payment — \"topup\" means EXTRA on top of the minimum. Never skip a payment (lawsuit + NPL risk)"
   },
   "Scan": {
     "title": "Scan Receipt with AI",
