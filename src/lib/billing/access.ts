@@ -208,9 +208,18 @@ export async function checkAIAccess(feature: AIFeature): Promise<AIAccess> {
     };
   }
 
-  // ─── Path 2: BYO key (works for ALL features, unlimited)
+  // ─── Path 2: BYO key (chat + vision only — advisor is premium)
+  //
+  // STRATEGIC GATE: AI Advisor is Lumenfi's hero feature with high margin.
+  // BYO Key is allowed for everyday usage (chat, OCR receipt scan) so power
+  // users still get value, but the 8-dimension Advisor reports MUST flow
+  // through Lumenfi's paid keys — they're the differentiator that supports
+  // Pro subscription revenue.
   if (ctx.hasBYOKey && ctx.byoProvider) {
-    return { allowed: true, via: 'byo', provider: ctx.byoProvider };
+    if (feature === 'chat' || feature === 'vision') {
+      return { allowed: true, via: 'byo', provider: ctx.byoProvider };
+    }
+    // Fall through — advisor/secretary fall to credits/quota paths below
   }
 
   // ─── Path 3: Pay-as-you-go credits (advisor only)

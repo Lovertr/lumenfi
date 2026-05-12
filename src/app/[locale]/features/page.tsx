@@ -126,6 +126,7 @@ const SECTIONS = [
       'เร่งบรรลุเป้าหมาย — SMART goals + auto-pilot',
       'Rebalance การลงทุน · Asset allocation',
       'Emergency Fund readiness',
+      '⭐ Pro ใช้ไม่จำกัด · Free ฟรี 1 รายงาน/เดือน · BYO Key ไม่อนุญาต',
     ],
   },
   {
@@ -307,7 +308,7 @@ export default async function FeaturesPage({ params }: { params: Promise<{ local
               {
                 icon: ShieldCheck,
                 t: 'ความปลอดภัย',
-                d: 'Supabase RLS · End-to-end · BYO key option · PDPA compliant',
+                d: 'Supabase RLS · End-to-end · BYO Key สำหรับ Chat · PDPA compliant',
               },
               {
                 icon: Camera,

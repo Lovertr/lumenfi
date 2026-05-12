@@ -99,23 +99,23 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
               <ul className="mt-5 space-y-2 text-sm">
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                  ฟีเจอร์ Lumenfi ครบทุกอย่าง
+                  ฟีเจอร์ Lumenfi ครบทุกอย่าง (บันทึก · งบ · หนี้ · ลงทุน)
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                  <span>AI Chat <b>5 ข้อความ/วัน</b></span>
+                  <span>AI Chat <b>5 ข้อความ/วัน</b> · BYO Key ไม่จำกัด</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                  <span>AI Advisor <b>1 รายงาน/เดือน</b></span>
+                  <span>AI Advisor 8 มิติ <b>1 รายงาน/เดือน</b> (taste)</span>
                 </li>
                 <li className="flex items-start gap-2 text-[#0F172A]/55">
                   <X className="mt-0.5 h-4 w-4 shrink-0" />
-                  AI Secretary (Pro only)
+                  AI Secretary push (Pro only)
                 </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                  <span>BYO Key: ใช้ได้ <b>ไม่จำกัด</b></span>
+                <li className="flex items-start gap-2 text-[#0F172A]/55">
+                  <X className="mt-0.5 h-4 w-4 shrink-0" />
+                  AI Advisor ผ่าน BYO Key — ไม่อนุญาต
                 </li>
               </ul>
 
@@ -212,12 +212,12 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
 
               <ul className="mt-5 space-y-2 text-sm">
                 <li className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                  <span>AI Chat <b>ไม่จำกัด</b></span>
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#C9A45A]" />
+                  <span>⭐ <b>AI Advisor 8 มิติ ไม่จำกัด</b> — รายงานเชิงลึก</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                  <span>AI Advisor <b>ไม่จำกัด</b></span>
+                  <span>AI Chat <b>ไม่จำกัด</b> · BYO Key ก็ใช้ได้</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
@@ -225,7 +225,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                  ทดลองฟรี 14 วัน · ยกเลิกได้ทุกเมื่อ
+                  ทดลองฟรี 14 วัน · ไม่ต้องผูกบัตร
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
