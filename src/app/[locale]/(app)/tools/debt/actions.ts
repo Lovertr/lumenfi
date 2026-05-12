@@ -501,11 +501,37 @@ ${budgetText}${cashflowText}${goalsText}${consolidationText}
       profile.ai_provider as AIProvider,
       apiKey,
       [{ role: 'user', content: userMessage }],
-      systemPrompt
+      systemPrompt,
+      { maxTokens: 16000 } // Thai output + structured JSON needs more headroom
     );
     return { ok: true, advice: result.text };
   } catch (e: any) {
     console.error('analyzeDebtSituation:', e?.message);
     return { ok: false, error: 'ai_error' };
   }
+}
+
+
+export async function deleteDebtPlan(formData: FormData): Promise<{ ok: boolean; error?: string }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'unauthorized' };
+
+  const id = (formData.get('id') as string)?.trim();
+  if (!id) return { ok: false, error: 'missing_id' };
+
+  const { error } = await supabase
+    .from('debt_plans')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('deleteDebtPlan:', error);
+    return { ok: false, error: 'db_error' };
+  }
+
+  revalidatePath('/tools/debt');
+  revalidatePath('/tools/debt/plans');
+  return { ok: true };
 }

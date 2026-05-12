@@ -7,7 +7,8 @@ const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
 export async function geminiChat(
   apiKey: string,
   messages: ChatMessage[],
-  systemPrompt: string
+  systemPrompt: string,
+  maxTokens?: number
 ): Promise<ChatResponse> {
   const userMessages = messages.filter((m) => m.role !== 'system');
 
@@ -28,7 +29,7 @@ export async function geminiChat(
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents,
-          generationConfig: { maxOutputTokens: 8192 },
+          generationConfig: { maxOutputTokens: maxTokens ?? 8192 },
         }),
       });
 

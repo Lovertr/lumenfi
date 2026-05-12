@@ -4,6 +4,7 @@ export async function openaiChat(
   apiKey: string,
   messages: ChatMessage[],
   systemPrompt: string,
+  maxTokens?: number,
   baseUrl = 'https://api.openai.com/v1'
 ): Promise<ChatResponse> {
   const allMessages = [
@@ -20,7 +21,7 @@ export async function openaiChat(
     body: JSON.stringify({
       model: 'gpt-4o-mini',
       messages: allMessages,
-      max_tokens: 8192,
+      max_tokens: maxTokens ?? 8192,
     }),
   });
 
@@ -43,7 +44,8 @@ export async function openaiChat(
 export async function openrouterChat(
   apiKey: string,
   messages: ChatMessage[],
-  systemPrompt: string
+  systemPrompt: string,
+  maxTokens?: number
 ): Promise<ChatResponse> {
-  return openaiChat(apiKey, messages, systemPrompt, 'https://openrouter.ai/api/v1');
+  return openaiChat(apiKey, messages, systemPrompt, maxTokens, 'https://openrouter.ai/api/v1');
 }

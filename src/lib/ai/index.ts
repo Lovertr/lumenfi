@@ -7,17 +7,19 @@ export async function chat(
   provider: AIProvider,
   apiKey: string,
   messages: ChatMessage[],
-  systemPrompt: string
+  systemPrompt: string,
+  options?: { maxTokens?: number }
 ): Promise<ChatResponse> {
+  const maxTokens = options?.maxTokens;
   switch (provider) {
     case 'anthropic':
-      return anthropicChat(apiKey, messages, systemPrompt);
+      return anthropicChat(apiKey, messages, systemPrompt, maxTokens);
     case 'openai':
-      return openaiChat(apiKey, messages, systemPrompt);
+      return openaiChat(apiKey, messages, systemPrompt, maxTokens);
     case 'openrouter':
-      return openrouterChat(apiKey, messages, systemPrompt);
+      return openrouterChat(apiKey, messages, systemPrompt, maxTokens);
     case 'gemini':
-      return geminiChat(apiKey, messages, systemPrompt);
+      return geminiChat(apiKey, messages, systemPrompt, maxTokens);
     default:
       throw new Error(`Unknown provider: ${provider}`);
   }

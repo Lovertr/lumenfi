@@ -25,6 +25,7 @@ export interface GatewayOptions {
   domain?: string;
   systemPrompt: string;
   messages: ChatMessage[];
+  maxTokens?: number;
 }
 
 export interface GatewayResult {
@@ -74,7 +75,7 @@ export async function callAIViaGateway(opts: GatewayOptions): Promise<GatewayRes
   let status: 'success' | 'error' = 'success';
   let errorCode: string | null = null;
   try {
-    result = await chat(provider, apiKey, opts.messages, opts.systemPrompt);
+    result = await chat(provider, apiKey, opts.messages, opts.systemPrompt, { maxTokens: opts.maxTokens });
   } catch (e: any) {
     status = 'error';
     errorCode = e?.message?.slice(0, 100) ?? 'ai_error';

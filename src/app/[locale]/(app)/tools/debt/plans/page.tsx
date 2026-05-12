@@ -5,6 +5,7 @@ import { ArrowLeft, ListChecks, ChevronRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
+import { DeleteDebtPlanButton } from '@/components/tools/delete-debt-plan-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,13 +75,12 @@ export default async function DebtPlanHistoryPage({
           {plans.map((p: any) => {
             const d = new Date(p.created_at);
             return (
-              <Link
-                key={p.id}
-                href={`/tools/debt/plans/${p.id}` as any}
-                className="block"
-              >
-                <Card className="transition-all hover:border-primary/40 hover:shadow-sm">
-                  <CardContent className="flex items-center gap-3 p-4">
+              <Card key={p.id} className="transition-all hover:border-primary/40 hover:shadow-sm">
+                <CardContent className="flex items-center gap-3 p-4">
+                  <Link
+                    href={`/tools/debt/plans/${p.id}` as any}
+                    className="flex flex-1 min-w-0 items-center gap-3"
+                  >
                     <div className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-primary/10 text-primary">
                       {p.is_active ? <Star className="h-4 w-4 fill-current" /> : <ListChecks className="h-4 w-4" />}
                     </div>
@@ -101,9 +101,10 @@ export default async function DebtPlanHistoryPage({
                       </p>
                     </div>
                     <ChevronRight className="h-4 w-4 flex-none text-muted-foreground" />
-                  </CardContent>
-                </Card>
-              </Link>
+                  </Link>
+                  <DeleteDebtPlanButton planId={p.id} planTitle={planTitle(p)} />
+                </CardContent>
+              </Card>
             );
           })}
         </div>

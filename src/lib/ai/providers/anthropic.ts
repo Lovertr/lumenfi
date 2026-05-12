@@ -11,7 +11,8 @@ const MODELS = [
 export async function anthropicChat(
   apiKey: string,
   messages: ChatMessage[],
-  systemPrompt: string
+  systemPrompt: string,
+  maxTokens?: number
 ): Promise<ChatResponse> {
   const userMessages = messages.filter((m) => m.role !== 'system');
 
@@ -28,7 +29,7 @@ export async function anthropicChat(
         },
         body: JSON.stringify({
           model,
-          max_tokens: 8192,
+          max_tokens: maxTokens ?? 8192,
           system: systemPrompt,
           messages: userMessages.map((m) => ({
             role: m.role,
