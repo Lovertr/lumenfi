@@ -176,6 +176,66 @@ const FETCH_TIMEOUT_MS = 15_000;
 const MAX_HTML_CHARS = 60_000;
 const MAX_TEXT_CHARS = 12_000;
 
+function inferCategoryFromName(name: string): Category {
+  const n = name.toLowerCase();
+  // Most specific first
+  if (/(annuity|บำนาญ|เพนชั่น|pension|retire|รีไทร์|เกษียณ)/.test(n)) return 'retirement';
+  if (/(critical|ซีไอ|\bci\b|cancer|มะเร็ง|โรคร้าย|cardio|หัวใจ)/.test(n)) return 'ci';
+  if (/(health|สุขภาพ|มัลติแคร์|healthy|hospital|h&s|h ?& ?s|multi ?care|d ?health)/.test(n)) return 'health';
+  if (/(accident|อุบัติเหตุ|pa\b)/.test(n)) return 'accident';
+  if (/(unit ?link|ลิงค์|wealthy|investment|smart ?link|smart link|premier ?link|wealth ?link|i ?wealthy|issara|smart ?wealth)/.test(n)) return 'investment_linked';
+  if (/(saving|เซฟวิ่ง|สะสมทรัพย์|endowment|tax|smart saver|happy saving|smart ?saving)/.test(n)) return 'savings';
+  if (/(99\/99|99\/20|whole|ตลอดชีพ|99\/8|premier|pay ?life|life plus|whole ?life)/.test(n)) return 'whole_life';
+  return 'life';
+}
+
+function synthesizeFromSeeds(
+  seeds: string[],
+  companyName: string,
+): Array<ExtractedProduct> {
+  return seeds.map((name) => {
+    const cat = inferCategoryFromName(name);
+    const taglineByCat: Record<Category, string> = {
+      retirement: 'รับเงินบำนาญหลังเกษียณ',
+      ci: 'เงินก้อนเมื่อตรวจพบโรคร้าย',
+      health: 'คุ้มครองค่ารักษาพยาบาล',
+      accident: 'คุ้มครองอุบัติเหตุ',
+      investment_linked: 'ประกันชีวิตควบการลงทุน',
+      savings: 'สะสมทรัพย์ + คุ้มครองชีวิต',
+      whole_life: 'ตลอดชีพ — คุ้มครองยาว',
+      life: 'ประกันชีวิตเพื่อคนข้างหลัง',
+    };
+    const idealByCat: Record<Category, string> = {
+      retirement: 'มนุษย์เงินเดือน 35-55 ปี · อยากวางแผนเกษียณ',
+      ci: 'อายุ 30+ · มีประวัติครอบครัวโรคร้าย',
+      health: 'อายุ 25-55 · ต้องการคุ้มครองค่ารักษา',
+      accident: 'ทุกวัย · ทำงานความเสี่ยงสูง',
+      investment_linked: 'รายได้สูง · ยอมรับความเสี่ยงได้',
+      savings: 'คนที่ตั้งเป้าเก็บเงินก้อน 5-10 ปี',
+      whole_life: 'พ่อแม่ · เจ้าของกิจการ · ต้องการ wealth transfer',
+      life: 'เสาหลักครอบครัว · มี dependents',
+    };
+    const angleByCat: Record<Category, string> = {
+      retirement: '"ภาษีจ่ายฟรี" เปลี่ยนเป็น "บำนาญที่จ่ายตัวเอง"',
+      ci: '"CI คือทุนสำรองที่ทำให้คุณเลือกการรักษาดีๆ ได้"',
+      health: '"ป่วยหนัก 1 ครั้งกินเงินเก็บ 5 ปี"',
+      accident: '"ค่ารักษาจากอุบัติเหตุไม่คาดคิด"',
+      investment_linked: '"ปกป้องไปด้วย ลงทุนไปด้วย"',
+      savings: '"เก็บเงิน + คุ้มครอง + ลดหย่อนภาษี"',
+      whole_life: '"จ่ายไม่กี่ปี ปกป้องคนข้างหลังตลอดชีวิต"',
+      life: '"ทดแทนรายได้ของเสาหลักหากเกิดอะไรขึ้น"',
+    };
+    return {
+      name,
+      category: cat,
+      tagline: `${companyName} · ${taglineByCat[cat]}`,
+      benefits: [taglineByCat[cat]],
+      ideal: idealByCat[cat],
+      salesAngle: angleByCat[cat],
+    };
+  });
+}
+
 function stripHtml(html: string): string {
   // Aggressively strip — comments, script, style, then tags.
   let out = html
@@ -444,6 +504,21 @@ export async function syncCompanyProducts(
     };
   }
 
+  // ── FALLBACK: AI returned 0 but we have seeds for this company ──
+  // This happens when Claude is too cautious in research mode. Use the seeds
+  // directly with inferred category/tagline so the admin never gets stuck
+  // with an empty catalog. Mark this in the audit log.
+  let usedFallback = false;
+  if (
+    products.length === 0 &&
+    mode === 'research' &&
+    KNOWN_PRODUCT_SEEDS[(company as any).code]?.length
+  ) {
+    const seeds = KNOWN_PRODUCT_SEEDS[(company as any).code];
+    products = synthesizeFromSeeds(seeds, (company as any).name);
+    usedFallback = true;
+  }
+
   // 6) Upsert products + mark missing ones inactive
   const now = new Date().toISOString();
   let added = 0;
@@ -536,8 +611,12 @@ export async function syncCompanyProducts(
     'success',
     { added, updated, markedInactive },
     undefined,
-    ((mode === 'research' ? `[RESEARCH MODE${fetchError ? ' · fetch=' + fetchError : ''}]\n` : '[EXTRACT MODE]\n') + text).slice(0, 2000),
-    aiText.slice(0, 2000),
+    (
+      (mode === 'research'
+        ? `[RESEARCH MODE${fetchError ? ' · fetch=' + fetchError : ''}${usedFallback ? ' · SEED FALLBACK' : ''}]\n`
+        : '[EXTRACT MODE]\n') + text
+    ).slice(0, 2000),
+    (usedFallback ? `[Fallback synthesized from ${KNOWN_PRODUCT_SEEDS[(company as any).code]?.length ?? 0} known seeds]\n` : '') + aiText.slice(0, 2000),
   );
 
   return {
