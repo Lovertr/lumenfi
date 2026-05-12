@@ -23,6 +23,9 @@ interface ActivePlan {
   total_months: number | null;
   total_interest: number | null;
   payoff_order: { debt_id?: string; name: string; month: number }[] | null;
+  ai_advice_md: string | null;
+  plan_options: any | null;
+  selected_option_id: string | null;
   created_at: string;
 }
 
@@ -49,7 +52,7 @@ async function getActivePlan(): Promise<ActivePlan | null> {
 
   const { data } = await supabase
     .from('debt_plans')
-    .select('id, strategy, extra_per_month, total_months, total_interest, payoff_order, created_at')
+    .select('id, strategy, extra_per_month, total_months, total_interest, payoff_order, ai_advice_md, plan_options, selected_option_id, created_at')
     .eq('user_id', user.id)
     .eq('is_active', true)
     .maybeSingle();

@@ -26,6 +26,20 @@ export async function saveDebtPlan(formData: FormData) {
     payoffOrder = [];
   }
 
+  // Optional rich fields: AI advice + plan options + snapshot
+  const aiAdviceMd = (formData.get('ai_advice_md') as string) || null;
+  const selectedOptionId = (formData.get('selected_option_id') as string) || null;
+  let planOptions: any = null;
+  let snapshotPayload: any = null;
+  try {
+    const rawOpts = formData.get('plan_options') as string;
+    if (rawOpts) planOptions = JSON.parse(rawOpts);
+  } catch { /* swallow */ }
+  try {
+    const rawSnap = formData.get('snapshot') as string;
+    if (rawSnap) snapshotPayload = JSON.parse(rawSnap);
+  } catch { /* swallow */ }
+
   // Deactivate any existing active plan
   await supabase
     .from('debt_plans')
@@ -40,6 +54,10 @@ export async function saveDebtPlan(formData: FormData) {
     total_months: totalMonths,
     total_interest: totalInterest,
     payoff_order: payoffOrder,
+    ai_advice_md: aiAdviceMd,
+    plan_options: planOptions,
+    selected_option_id: selectedOptionId,
+    snapshot: snapshotPayload,
     is_active: true,
   });
 

@@ -27,6 +27,9 @@ interface ActivePlan {
   total_months: number | null;
   total_interest: number | null;
   payoff_order: { debt_id?: string; name: string; month: number }[] | null;
+  ai_advice_md?: string | null;
+  plan_options?: any | null;
+  selected_option_id?: string | null;
   created_at: string;
 }
 
@@ -200,7 +203,12 @@ export function DebtCalculator({
         name: d.name,
         balance: Number(d.current_balance),
         rate: Number(d.interest_rate),
-        minPayment: Number(d.monthly_payment ?? Math.max(d.current_balance * 0.02, 500)),
+        // Default to the actual monthly_payment from DB. Fall back to 2%
+        // of balance (or min ฿500) only if no value set. Round to 2 decimals
+        // so the UI never shows 730.7210000.
+        minPayment: Math.round(
+          Number(d.monthly_payment ?? Math.max(d.current_balance * 0.02, 500)) * 100,
+        ) / 100,
       }))
     : [
         { id: '1', name: 'บัตรเครดิต', balance: 50000, rate: 18, minPayment: 1000 },
@@ -231,7 +239,7 @@ export function DebtCalculator({
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
-  const [aiAdvice, setAiAdvice] = useState<string | null>(null);
+  const [aiAdvice, setAiAdvice] = useState<string | null>(activePlan?.ai_advice_md ?? null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
@@ -307,6 +315,7 @@ export function DebtCalculator({
     fd.append('total_months', String(chosen.months));
     fd.append('total_interest', String(Math.round(chosen.totalInterest)));
     fd.append('payoff_order', JSON.stringify(chosen.payoffOrder));
+    if (aiAdvice) fd.append('ai_advice_md', aiAdvice);
     const r = await saveDebtPlan(fd);
     if (!('error' in r) || !r.error) setSaved(true);
   }
@@ -415,7 +424,13 @@ export function DebtCalculator({
                 </div>
                 <div className="col-span-4 sm:col-span-3">
                   <p className="text-[10px] text-muted-foreground">{t('minPayment')}</p>
-                  <Input className="h-8 text-sm" value={String(d.minPayment)} onChange={(e) => updateDebt(d.id, 'minPayment', e.target.value)} />
+                  <Input
+                  className="h-8 text-sm"
+                  type="text"
+                  inputMode="decimal"
+                  value={Number.isFinite(d.minPayment) ? d.minPayment.toFixed(2) : '0.00'}
+                  onChange={(e) => updateDebt(d.id, 'minPayment', e.target.value)}
+                />
                 </div>
                 <Button size="icon" variant="ghost" onClick={() => removeDebt(d.id)} className="col-span-1 h-8 w-8 text-destructive">
                   <Trash2 className="h-3.5 w-3.5" />
