@@ -1,0 +1,68 @@
+<!--
+  Lumenfi · magic-link.html
+  Paste into: Supabase Dashboard → Auth → Email Templates
+  Variable used: {{ .ConfirmationURL }}
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <title>🔑 ลิงก์เข้าใช้งาน Lumenfi</title>
+</head>
+<body style="margin:0; padding:0; background-color:#FAFAF7; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Sarabun','Noto Sans Thai',Roboto,'Helvetica Neue',Arial,sans-serif; color:#0F172A;">
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all;">เข้าใช้งานด้วยลิงก์ปลอดภัย</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FAFAF7;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(15,23,42,0.08);">
+          <tr>
+            <td style="background:linear-gradient(135deg,#0F172A 0%,#10162B 50%,#0B0F1F 100%); padding:36px 32px 28px 32px; text-align:center;">
+              <img src="https://lumenfi.projectostech.com/icon-192.png" alt="Lumenfi" width="64" height="64" style="display:inline-block; border-radius:14px; box-shadow:0 4px 16px rgba(201,164,90,0.3);" />
+              <h1 style="margin:16px 0 6px 0; color:#ffffff; font-size:22px; font-weight:700; line-height:1.2;">
+                🔑 ลิงก์เข้าใช้งาน Lumenfi
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:36px 32px 24px 32px;">
+              <h2 style="margin:0 0 12px 0; color:#0F172A; font-size:20px; font-weight:700; line-height:1.3;">ลิงก์เข้าใช้งาน — กดเดียวเข้าระบบ</h2>
+              <p style="margin:0 0 24px 0; color:rgba(15,23,42,0.7); font-size:15px; line-height:1.6;">เพื่อความปลอดภัย คุณขอ login ด้วย magic link — กดปุ่มด้านล่างเพื่อเข้าใช้งานทันที (ไม่ต้องใส่ password)</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                <tr>
+                  <td align="center" style="background-color:#C9A45A; border-radius:10px;">
+                    <a href="{{ .ConfirmationURL }}" style="display:inline-block; padding:14px 32px; color:#0F172A; font-size:15px; font-weight:700; text-decoration:none; border-radius:10px;">เข้าใช้งาน Lumenfi →</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:24px 0 0 0; color:rgba(15,23,42,0.5); font-size:12px; line-height:1.6; text-align:center;">
+                ปุ่มกดไม่ได้? คัดลอกลิงก์นี้ใส่ browser:<br />
+                <a href="{{ .ConfirmationURL }}" style="color:#C9A45A; word-break:break-all; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 32px 32px;">
+              <p style="margin:0; color:rgba(15,23,42,0.45); font-size:11px; line-height:1.6; text-align:center; border-top:1px solid rgba(15,23,42,0.08); padding-top:20px;">
+                🔒 ลิงก์หมดอายุใน 1 ชั่วโมง · ใช้ได้ครั้งเดียว<br />ถ้าคุณไม่ได้ขอ — เพิกเฉยอีเมลนี้ได้ ไม่มีใครเข้า account ของคุณได้
+              </p>
+            </td>
+          </tr>
+        </table>
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; margin-top:16px;">
+          <tr>
+            <td align="center" style="padding:16px 32px; color:rgba(15,23,42,0.4); font-size:11px; line-height:1.6;">
+              © 2026 Lumenfi · Aurum Quietus<br />
+              <a href="https://lumenfi.projectostech.com" style="color:rgba(15,23,42,0.5); text-decoration:none;">lumenfi.projectostech.com</a>
+              &nbsp;·&nbsp;
+              <a href="https://lumenfi.projectostech.com/help" style="color:rgba(15,23,42,0.5); text-decoration:none;">ศูนย์ช่วยเหลือ</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!--
+  Lumenfi · Confirm Signup Email Template
+  ────────────────────────────────────────────────────────────────
+  Paste this into:
+    Supabase Dashboard → Authentication → Email Templates → Confirm signup
+
+  Template variables used:
+    {{ .ConfirmationURL }}  — the magic link to click
+    {{ .Email }}            — recipient email (optional fallback)
+
+  Design rules:
+  - Table-based layout (every email client supports it)
+  - Inline CSS (Gmail strips <style> tags)
+  - Web-safe fallbacks for fonts
+  - 600px max width (industry standard)
+  - Dark hero / light body / dark CTA — high contrast
+  - Plain-text version included at bottom (some clients prefer it)
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <title>ยืนยันอีเมลของคุณ · Lumenfi</title>
+</head>
+<body style="margin:0; padding:0; background-color:#FAFAF7; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Sarabun','Noto Sans Thai',Roboto,'Helvetica Neue',Arial,sans-serif; color:#0F172A;">
+  <!-- Preheader (hidden, shows in inbox preview) -->
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all;">
+    ยินดีต้อนรับสู่ Lumenfi — กดยืนยันอีเมลเพื่อเริ่มใช้งาน · บริหารการเงินอย่างมีแผน
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FAFAF7;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <!-- Container -->
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(15,23,42,0.08);">
+
+          <!-- Dark gold header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#0F172A 0%,#10162B 50%,#0B0F1F 100%); padding:36px 32px 28px 32px; text-align:center;">
+              <!-- Logo (uses Lumenfi L mark hosted on the site) -->
+              <img src="https://lumenfi.projectostech.com/icon-192.png" alt="Lumenfi" width="64" height="64" style="display:inline-block; border-radius:14px; box-shadow:0 4px 16px rgba(201,164,90,0.3);" />
+              <h1 style="margin:16px 0 6px 0; color:#ffffff; font-size:24px; font-weight:700; line-height:1.2;">
+                ยินดีต้อนรับสู่ <span style="background:linear-gradient(90deg,#E4C789,#C9A45A,#8A6932); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; color:#C9A45A;">Lumenfi</span>
+              </h1>
+              <p style="margin:0; color:rgba(255,255,255,0.65); font-size:13px; line-height:1.5;">
+                แอพบริหารการเงินส่วนตัวครบทุกมิติ
+              </p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:36px 32px 24px 32px;">
+              <h2 style="margin:0 0 12px 0; color:#0F172A; font-size:20px; font-weight:700; line-height:1.3;">
+                อีก 1 ขั้นตอน — ยืนยันอีเมลของคุณ
+              </h2>
+              <p style="margin:0 0 24px 0; color:rgba(15,23,42,0.7); font-size:15px; line-height:1.6;">
+                ขอบคุณที่สมัครใช้ Lumenfi! กดปุ่มด้านล่างเพื่อยืนยันอีเมลของคุณ
+                จากนั้นคุณจะใช้ฟีเจอร์ทั้งหมดได้ทันที — Net Worth · กระแสเงินสด · หนี้ · เป้าหมาย · AI ที่ปรึกษา 8 มิติ
+              </p>
+
+              <!-- CTA button (table-based for max compatibility) -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                <tr>
+                  <td align="center" style="background-color:#C9A45A; border-radius:10px;">
+                    <a href="{{ .ConfirmationURL }}"
+                       style="display:inline-block; padding:14px 32px; color:#0F172A; font-size:15px; font-weight:700; text-decoration:none; border-radius:10px;">
+                      ยืนยันอีเมลและเริ่มใช้งาน →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Fallback link -->
+              <p style="margin:24px 0 0 0; color:rgba(15,23,42,0.5); font-size:12px; line-height:1.6; text-align:center;">
+                ปุ่มกดไม่ได้? คัดลอกลิงก์นี้ใส่ browser:<br />
+                <a href="{{ .ConfirmationURL }}" style="color:#C9A45A; word-break:break-all; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- What's inside teaser -->
+          <tr>
+            <td style="padding:0 32px 24px 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FAFAF7; border-radius:12px; border:1px solid rgba(15,23,42,0.06);">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0 0 12px 0; color:#0F172A; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">
+                      🎁 สิ่งที่คุณจะได้ทันที
+                    </p>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="padding:4px 0; color:rgba(15,23,42,0.8); font-size:14px; line-height:1.6;">
+                          <span style="color:#C9A45A; font-weight:700;">✓</span>&nbsp;&nbsp; เห็น Net Worth + กระแสเงินสดในจอเดียว
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:4px 0; color:rgba(15,23,42,0.8); font-size:14px; line-height:1.6;">
+                          <span style="color:#C9A45A; font-weight:700;">✓</span>&nbsp;&nbsp; AI ที่ปรึกษา 8 มิติ (ปลดหนี้ · ภาษี · เกษียณ · Gap ประกัน)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:4px 0; color:rgba(15,23,42,0.8); font-size:14px; line-height:1.6;">
+                          <span style="color:#C9A45A; font-weight:700;">✓</span>&nbsp;&nbsp; รองรับรอบเงินเดือนไทย — ไม่ใช่แค่ 1-31
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:4px 0; color:rgba(15,23,42,0.8); font-size:14px; line-height:1.6;">
+                          <span style="color:#C9A45A; font-weight:700;">✓</span>&nbsp;&nbsp; ฟรีตลอด — ไม่มีบัตร ไม่มีล่อหลอก
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Security note -->
+          <tr>
+            <td style="padding:0 32px 32px 32px;">
+              <p style="margin:0; color:rgba(15,23,42,0.45); font-size:11px; line-height:1.6; text-align:center; border-top:1px solid rgba(15,23,42,0.08); padding-top:20px;">
+                🔒 ลิงก์นี้หมดอายุภายใน 24 ชั่วโมง · ใช้ได้ครั้งเดียว<br />
+                ถ้าคุณไม่ได้สมัคร Lumenfi — ไม่ต้องทำอะไร อีเมลนี้จะถูกละเลย
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+        <!-- Footer outside container -->
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; margin-top:16px;">
+          <tr>
+            <td align="center" style="padding:16px 32px; color:rgba(15,23,42,0.4); font-size:11px; line-height:1.6;">
+              © 2026 Lumenfi · Aurum Quietus<br />
+              <a href="https://lumenfi.projectostech.com" style="color:rgba(15,23,42,0.5); text-decoration:none;">lumenfi.projectostech.com</a>
+              &nbsp;·&nbsp;
+              <a href="https://lumenfi.projectostech.com/help" style="color:rgba(15,23,42,0.5); text-decoration:none;">ศูนย์ช่วยเหลือ</a>
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
