@@ -413,8 +413,17 @@ export async function syncCompanyProducts(
   try {
     const html = await fetchHtml(research_url);
     text = stripHtml(html);
-    if (text.length < 200) {
-      fetchError = 'page_empty (likely JS-rendered SPA)';
+    // Detect thin / nav-only content: JS-rendered SPAs return just the
+    // navigation + footer in static HTML. If we don't see any product-list
+    // signals (multiple plan-like words), treat as empty and switch to
+    // research mode.
+    const productSignals =
+      (text.match(/(แผน|ประกัน(?!ชีวิต$))|plan |saving|endowment|annuity|pension|premier|ตลอดชีพ|มัลติ|cancer|critical|พรีเมียร์|แฮปปี้|เซฟวิ่ง/gi)
+        ?.length ?? 0);
+    if (text.length < 800 || productSignals < 6) {
+      fetchError = text.length < 200
+        ? 'page_empty (likely JS-rendered SPA)'
+        : `thin_content (only nav/footer · ${productSignals} product signals · ${text.length} chars)`;
       mode = 'research';
       text = '';
     }
@@ -505,13 +514,17 @@ export async function syncCompanyProducts(
   }
 
   // ── FALLBACK: AI returned 0 but we have seeds for this company ──
-  // This happens when Claude is too cautious in research mode. Use the seeds
-  // directly with inferred category/tagline so the admin never gets stuck
-  // with an empty catalog. Mark this in the audit log.
+  // Why this is unconditional now:
+  //   - In RESEARCH mode AI can be too cautious and decline to enrich
+  //   - In EXTRACT mode the fetched page may be a JS-rendered SPA (only
+  //     nav/footer in static HTML) — AI correctly reports 'no product
+  //     details found'
+  // Either way, if products.length === 0 and we have seeded names, use them
+  // so the admin never ends up with an empty catalog. The audit log marks
+  // this so it's never silent.
   let usedFallback = false;
   if (
     products.length === 0 &&
-    mode === 'research' &&
     KNOWN_PRODUCT_SEEDS[(company as any).code]?.length
   ) {
     const seeds = KNOWN_PRODUCT_SEEDS[(company as any).code];
