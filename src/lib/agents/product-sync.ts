@@ -94,9 +94,7 @@ async function fetchHtml(url: string): Promise<string> {
   }
 }
 
-const SYS_PROMPT = `คุณคือ AI ที่ช่วยสกัด (extract) รายชื่อผลิตภัณฑ์ประกันจากเนื้อหาเว็บไซต์
-คืนค่าเป็น JSON เท่านั้น ห้ามใส่ข้อความก่อน/หลัง JSON
-รูปแบบ:
+const SCHEMA_BLOCK = `รูปแบบ:
 {
   "products": [
     {
@@ -110,11 +108,26 @@ const SYS_PROMPT = `คุณคือ AI ที่ช่วยสกัด (ext
     }
   ]
 }
-กฎ:
-- ห้ามแต่งผลิตภัณฑ์เอง — ต้องเป็นชื่อจริงจากเว็บไซต์
-- ห้ามใส่ตัวเลขเบี้ย/วงเงิน (เพราะมีโอกาสผิด)
-- ถ้าเนื้อหาไม่เพียงพอ คืน {"products": []}
-- categoryต้องอยู่ใน enum ด้านบนเท่านั้น`;
+กฎร่วม:
+- ห้ามใส่ตัวเลขเบี้ย/วงเงินที่อาจผิด
+- categoryต้องอยู่ใน enum ด้านบนเท่านั้น
+- ตอบ JSON เท่านั้น ไม่มีข้อความก่อน/หลัง`;
+
+const EXTRACT_PROMPT = `คุณคือ AI ที่ช่วยสกัด (extract) รายชื่อผลิตภัณฑ์ประกันจากเนื้อหาเว็บไซต์
+${SCHEMA_BLOCK}
+กฎเพิ่มเติม:
+- ห้ามแต่งผลิตภัณฑ์เอง — ต้องเป็นชื่อจริงจากเนื้อหาเว็บไซต์ที่ให้
+- ถ้าเนื้อหาไม่เพียงพอ คืน {"products": []}`;
+
+const RESEARCH_PROMPT = `คุณคือ AI ที่มีความรู้เรื่องผลิตภัณฑ์ประกันชีวิตในประเทศไทย
+ภารกิจ: เมื่อได้รับชื่อบริษัทประกัน ให้ระบุผลิตภัณฑ์เด่นๆ ที่บริษัทนั้นขายจริง
+ใช้เฉพาะข้อมูลสาธารณะที่ทราบ — ห้ามแต่งชื่อขึ้นเอง
+ถ้าไม่แน่ใจ → ไม่ใส่เลยดีกว่าใส่ผิด
+${SCHEMA_BLOCK}
+กฎเพิ่มเติม:
+- ใส่เฉพาะผลิตภัณฑ์เด่นที่เป็นที่รู้จัก (5-12 ตัว ก็เพียงพอ)
+- ระบุชื่อจริงตามที่ใช้ในตลาด (เช่น "บำนาญแฮปปี้เพนชั่น" ของ BLA, "AIA Health Saver", ฯ)
+- ไม่ต้องครอบทุกผลิตภัณฑ์ — เลือกที่มั่นใจ`;
 
 export async function syncCompanyProducts(
   supabase: SupabaseClient,
@@ -196,66 +209,63 @@ export async function syncCompanyProducts(
       .eq('id', companyId);
   };
 
-  // 3) Fetch HTML
-  let html: string;
+  // ── HYBRID MODE ──────────────────────────────────────────────────
+  // Step A: try to fetch the company's product page. Many insurance sites
+  // are behind Cloudflare/WAF and block server-side fetches with HTTP 403.
+  // If that happens we don't fail — we switch to RESEARCH MODE where AI
+  // recalls well-known products from its training knowledge instead.
+  let mode: 'extract' | 'research' = 'extract';
+  let text = '';
+  let fetchError: string | null = null;
   try {
-    html = await fetchHtml(research_url);
+    const html = await fetchHtml(research_url);
+    text = stripHtml(html);
+    if (text.length < 200) {
+      fetchError = 'page_empty (likely JS-rendered SPA)';
+      mode = 'research';
+      text = '';
+    }
   } catch (e: any) {
-    await finishRun('error', { added: 0, updated: 0, markedInactive: 0 }, `fetch: ${e?.message ?? e}`);
-    return {
-      companyId,
-      companyCode: (company as any).code,
-      status: 'error',
-      added: 0,
-      updated: 0,
-      markedInactive: 0,
-      error: `fetch: ${e?.message ?? e}`,
-      runId,
-    };
-  }
-  const text = stripHtml(html);
-  if (text.length < 200) {
-    await finishRun(
-      'error',
-      { added: 0, updated: 0, markedInactive: 0 },
-      'page_empty',
-      text.slice(0, 2000),
-    );
-    return {
-      companyId,
-      companyCode: (company as any).code,
-      status: 'error',
-      added: 0,
-      updated: 0,
-      markedInactive: 0,
-      error: 'page_empty',
-      runId,
-    };
+    fetchError = e?.message ?? String(e);
+    mode = 'research';
+    text = '';
   }
 
-  // 4) Ask AI to extract
+  // Step B: call AI in the chosen mode
   let aiText: string;
   try {
+    let systemPrompt: string;
+    let userContent: string;
+    if (mode === 'extract' && text) {
+      systemPrompt = EXTRACT_PROMPT;
+      userContent =
+        `บริษัท: ${(company as any).name} (${(company as any).code})\n` +
+        `URL: ${research_url}\n\n` +
+        `เนื้อหาหน้าเว็บ:\n${text}`;
+    } else {
+      systemPrompt = RESEARCH_PROMPT;
+      userContent =
+        `กรุณาระบุผลิตภัณฑ์ประกันชีวิตเด่นๆ ของบริษัทนี้:\n` +
+        `- ชื่อ: ${(company as any).name}\n` +
+        `- รหัส: ${(company as any).code}\n` +
+        `- เว็บไซต์: ${research_url}\n\n` +
+        (fetchError
+          ? `(หมายเหตุ: ดึงเว็บไซต์ตรงๆ ไม่ได้ — ${fetchError}. ใช้ความรู้สาธารณะที่ทราบแทน)`
+          : '');
+    }
+
     const r = await callAIViaGateway({
       feature: 'chat',
-      systemPrompt: SYS_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content:
-            `บริษัท: ${(company as any).name} (${(company as any).code})\n` +
-            `URL: ${research_url}\n\n` +
-            `เนื้อหาหน้าเว็บ:\n${text}`,
-        },
-      ],
+      systemPrompt,
+      messages: [{ role: 'user', content: userContent }],
     });
     aiText = r.text;
   } catch (e: any) {
     await finishRun(
       'error',
       { added: 0, updated: 0, markedInactive: 0 },
-      `ai: ${e?.message ?? e}`,
-      text.slice(0, 2000),
+      `ai (${mode}): ${e?.message ?? e}`,
+      (text || `[research mode] ${fetchError ?? ''}`).slice(0, 2000),
     );
     return {
       companyId,
@@ -264,7 +274,7 @@ export async function syncCompanyProducts(
       added: 0,
       updated: 0,
       markedInactive: 0,
-      error: `ai: ${e?.message ?? e}`,
+      error: `ai (${mode}): ${e?.message ?? e}`,
       runId,
     };
   }
@@ -367,7 +377,7 @@ export async function syncCompanyProducts(
     'success',
     { added, updated, markedInactive },
     undefined,
-    text.slice(0, 2000),
+    ((mode === 'research' ? `[RESEARCH MODE${fetchError ? ' · fetch=' + fetchError : ''}]\n` : '[EXTRACT MODE]\n') + text).slice(0, 2000),
     aiText.slice(0, 2000),
   );
 
