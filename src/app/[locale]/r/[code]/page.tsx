@@ -17,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { LogoMark, Wordmark } from '@/components/brand/logo-mark';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,20 +29,19 @@ export default async function ReferralLandingPage({
   const { locale, code } = await params;
   const normalizedCode = code.trim().toUpperCase();
 
-  // Look up the referrer (user) and resolve their display name.
-  // If the code doesn't match a user, fall back to the public landing page.
-  const supabase = createClient();
+  // ── Look up the referrer (user) using service client to bypass RLS ──
+  // Anonymous visitors can't read other users' profiles, so we need a
+  // service-role read here. Scope: a single SELECT of (full_name) only.
+  const svc = createServiceClient();
   let referrerName: string | null = null;
   try {
-    const { data: profile } = await supabase
+    const { data: profile } = await svc
       .from('profiles')
       .select('id, full_name')
       .eq('referral_code', normalizedCode)
       .maybeSingle();
-    if (profile && (profile as any).full_name) {
-      referrerName = (profile as any).full_name as string;
-    } else if (profile) {
-      referrerName = 'เพื่อนของคุณ';
+    if (profile) {
+      referrerName = ((profile as any).full_name as string | null) || 'เพื่อนของคุณ';
     }
   } catch (err) {
     console.warn('[/r/' + normalizedCode + '] lookup failed:', (err as any)?.message);
@@ -50,7 +50,7 @@ export default async function ReferralLandingPage({
   // If it's not a user referral, try agent invite code → forward to /i/[code]
   if (!referrerName) {
     try {
-      const { data: agent } = await supabase
+      const { data: agent } = await svc
         .from('agents')
         .select('id')
         .eq('invite_code', normalizedCode)
@@ -69,6 +69,7 @@ export default async function ReferralLandingPage({
   // If user is already signed in, send them straight to settings/referral
   // where the claim form will auto-fill + lock with this code.
   try {
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       redirect(`/${locale}/settings/referral?invite=${encodeURIComponent(normalizedCode)}`);
