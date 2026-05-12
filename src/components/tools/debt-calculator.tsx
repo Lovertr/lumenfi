@@ -279,6 +279,8 @@ export function DebtCalculator({
   const [addError, setAddError] = useState<string | null>(null);
 
   const [aiAdvice, setAiAdvice] = useState<string | null>(activePlan?.ai_advice_md ?? null);
+  const [objections, setObjections] = useState<string[]>([]);
+  const [newObjection, setNewObjection] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
@@ -301,7 +303,8 @@ export function DebtCalculator({
       snapshot,
       extraNum,
       chosenStrategy,
-      extraIsEmpty // true = ask AI to recommend optimal
+      extraIsEmpty, // true = ask AI to recommend optimal
+      objections,
     );
     setAiLoading(false);
     if (r.ok && r.advice) setAiAdvice(r.advice);
@@ -758,6 +761,89 @@ export function DebtCalculator({
                         );
                       })}
                     </div>
+                  </div>
+                )}
+
+                {/* Objections / refine — only show when plans exist */}
+                {plans.length > 0 && (
+                  <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50/30 p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-900">
+                      💬 ไม่ถูกใจแผนเหล่านี้? บอก AI ว่าทำไม
+                    </p>
+                    <p className="text-[10px] text-amber-800/80">
+                      เช่น "ทำงานเสริมไม่ได้ บริษัทห้าม" · "รีไฟแนนซ์ไม่ผ่าน credit score ต่ำ" · "ยังไม่อยากไปคลินิกแก้หนี้"
+                      — AI จะใช้ข้อมูลนี้ปรับแผนใหม่
+                    </p>
+
+                    {objections.length > 0 && (
+                      <ul className="space-y-1">
+                        {objections.map((o, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 rounded-md bg-white px-2 py-1.5 text-[11px]"
+                          >
+                            <span className="flex h-4 w-4 flex-none items-center justify-center rounded-full bg-amber-200 text-[9px] font-bold text-amber-900">
+                              {i + 1}
+                            </span>
+                            <span className="flex-1">{o}</span>
+                            <button
+                              type="button"
+                              onClick={() => setObjections((arr) => arr.filter((_, j) => j !== i))}
+                              className="text-muted-foreground hover:text-destructive"
+                              aria-label="ลบข้อโต้แย้งนี้"
+                            >
+                              ×
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        value={newObjection}
+                        onChange={(e) => setNewObjection(e.target.value)}
+                        placeholder="ข้อจำกัด/ข้อโต้แย้งของคุณ..."
+                        className="h-8 text-xs"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && newObjection.trim()) {
+                            e.preventDefault();
+                            setObjections((arr) => [...arr, newObjection.trim()]);
+                            setNewObjection('');
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          if (newObjection.trim()) {
+                            setObjections((arr) => [...arr, newObjection.trim()]);
+                            setNewObjection('');
+                          }
+                        }}
+                        disabled={!newObjection.trim()}
+                      >
+                        เพิ่ม
+                      </Button>
+                    </div>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="w-full bg-amber-600 text-white hover:bg-amber-700"
+                      onClick={askAI}
+                      disabled={aiLoading || objections.length === 0}
+                    >
+                      {aiLoading ? (
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      ) : (
+                        <Sparkles className="mr-1 h-3 w-3" />
+                      )}
+                      {aiLoading ? 'กำลังวิเคราะห์ใหม่...' : `ขอแผนใหม่พร้อมข้อโต้แย้ง (${objections.length} ข้อ)`}
+                    </Button>
                   </div>
                 )}
               </div>
