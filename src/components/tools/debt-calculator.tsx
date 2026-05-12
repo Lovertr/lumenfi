@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Trophy, Snowflake, Mountain, Save, Target, CheckCircle2, X, Loader2, Brain, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Trophy, Snowflake, Mountain, Target, CheckCircle2, X, Loader2, Brain, Sparkles } from 'lucide-react';
 import { renderMarkdown } from '@/lib/markdown';
 import { formatTHB, cn } from '@/lib/utils';
 import { saveDebtPlan, deactivateDebtPlan, quickCreateDebt, analyzeDebtSituation } from '@/app/[locale]/(app)/tools/debt/actions';
@@ -377,18 +377,7 @@ export function DebtCalculator({
     }
   }
 
-    async function handleSave() {
-    const fd = new FormData();
-    fd.append('strategy', chosenStrategy);
-    fd.append('extra_per_month', String(extraNum));
-    fd.append('total_months', String(chosen.months));
-    fd.append('total_interest', String(Math.round(chosen.totalInterest)));
-    fd.append('payoff_order', JSON.stringify(chosen.payoffOrder));
-    if (aiAdvice) fd.append('ai_advice_md', aiAdvice);
-    const r = await saveDebtPlan(fd);
-    if (!('error' in r) || !r.error) setSaved(true);
-  }
-
+  
   async function handleClear() {
     await deactivateDebtPlan();
     setSaved(false);
@@ -855,19 +844,9 @@ export function DebtCalculator({
         </CardContent>
       </Card>
 
-      {/* Save plan */}
-      {validDebts.length > 0 && (
-        <Button
-          type="button"
-          size="lg"
-          className="w-full"
-          onClick={handleSave}
-          disabled={chosen.hitCap}
-        >
-          <Save className="mr-2 h-4 w-4" />
-          {saved ? t('planSaved') : t('savePlan')}
-        </Button>
-      )}
+      {/* (Removed: bottom 'Save plan' button — duplicated the per-plan
+            picker buttons. Users now save by clicking 'เลือกแผนนี้' on
+            the desired plan card above.) */}
     </div>
   );
 }
