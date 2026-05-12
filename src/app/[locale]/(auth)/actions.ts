@@ -182,3 +182,58 @@ export async function updatePassword(_prev: unknown, formData: FormData) {
   revalidatePath('/', 'layout');
   redirect('/dashboard');
 }
+
+
+export async function resendConfirmationEmail(
+  _prev: unknown,
+  formData: FormData,
+): Promise<{ ok?: boolean; error?: string }> {
+  const email = (formData.get('email') as string)?.trim();
+  if (!emailSchema.safeParse(email).success) return { error: 'invalid_email' };
+
+  const headersList = await headers();
+  const origin =
+    headersList.get('origin') ?? process.env.NEXT_PUBLIC_APP_URL ?? '';
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: `${origin}/auth/callback` },
+  });
+  if (error) {
+    // Supabase rate-limits resend (usually 60s cooldown)
+    const m = error.message?.toLowerCase() ?? '';
+    if (m.includes('rate') || m.includes('seconds')) return { error: 'rate_limited' };
+    return { error: 'send_failed' };
+  }
+  return { ok: true };
+}
+
+export async function signInWithMagicLink(
+  _prev: unknown,
+  formData: FormData,
+): Promise<{ ok?: boolean; error?: string }> {
+  const email = (formData.get('email') as string)?.trim();
+  if (!emailSchema.safeParse(email).success) return { error: 'invalid_email' };
+
+  const headersList = await headers();
+  const origin =
+    headersList.get('origin') ?? process.env.NEXT_PUBLIC_APP_URL ?? '';
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback`,
+      shouldCreateUser: false, // only existing users — sign-up should use signUpWithEmail
+    },
+  });
+  if (error) {
+    const m = error.message?.toLowerCase() ?? '';
+    if (m.includes('rate') || m.includes('seconds')) return { error: 'rate_limited' };
+    if (m.includes('not found')) return { error: 'user_not_found' };
+    return { error: 'send_failed' };
+  }
+  return { ok: true };
+}

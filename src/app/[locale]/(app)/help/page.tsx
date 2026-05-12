@@ -17,8 +17,12 @@ const CATEGORIES: Record<string, { label: string; emoji: string }> = {
   'debts': { label: 'หนี้สิน', emoji: '💳' },
   'insurance': { label: 'ประกัน', emoji: '🛡️' },
   'ai': { label: 'AI Advisor', emoji: '🤖' },
+  'investments': { label: 'การลงทุน', emoji: '📈' },
   'tools': { label: 'เครื่องมือ', emoji: '🧮' },
   'privacy': { label: 'ความเป็นส่วนตัว', emoji: '🔒' },
+  'agents': { label: 'ตัวแทนประกัน (B2B)', emoji: '💼' },
+  'referral': { label: 'ชวนเพื่อน', emoji: '🎁' },
+  'subscription': { label: 'แพลน + ราคา', emoji: '💳' },
   'general': { label: 'ทั่วไป', emoji: '❓' },
 };
 

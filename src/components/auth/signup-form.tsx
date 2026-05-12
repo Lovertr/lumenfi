@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { GoogleButton } from './google-button';
+import { ResendConfirmation } from './resend-confirmation';
 import { signUpWithEmail } from '@/app/[locale]/(auth)/actions';
 import { Mail, Lock, User, CheckCircle2 } from 'lucide-react';
 
@@ -28,12 +29,15 @@ export function SignupForm({ inviteCode }: { inviteCode?: string }) {
 
   if (state?.success === 'check_email') {
     return (
-      <div className="space-y-4 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
-          <CheckCircle2 className="h-7 w-7" />
+      <div className="space-y-4">
+        <div className="text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
+            <CheckCircle2 className="h-7 w-7" />
+          </div>
+          <h2 className="mt-3 text-xl font-semibold">{t('checkEmail')}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t('checkEmailMessage')}</p>
         </div>
-        <h2 className="text-xl font-semibold">{t('checkEmail')}</h2>
-        <p className="text-sm text-muted-foreground">{t('checkEmailMessage')}</p>
+        <ResendConfirmation />
       </div>
     );
   }
