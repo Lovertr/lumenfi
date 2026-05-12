@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 
 export function ReferralShare({ code }: { code: string }) {
   const [copied, setCopied] = useState<'code' | 'link' | null>(null);
-  // Use canonical /signup?invite= URL — /register?ref= still works (it redirects)
-  // but the canonical link is shorter and self-explanatory.
+  // Use the /r/CODE landing page — pretty welcome before signup,
+  // so the friend sees who invited them + the Pro 30d reward callout.
+  // /register?ref=CODE still works as a fallback (it forwards here).
   const link =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/signup?invite=${code}`
-      : `https://lumenfi.projectostech.com/signup?invite=${code}`;
+      ? `${window.location.origin}/r/${code}`
+      : `https://lumenfi.projectostech.com/r/${code}`;
 
   const shareText = `มาลองใช้ Lumenfi กัน — แอพการเงินส่วนตัว + AI ที่ปรึกษาทางการเงิน
 

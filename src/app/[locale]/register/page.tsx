@@ -20,7 +20,9 @@ export default async function RegisterRedirect({
   const code = ref || invite;
 
   if (code) {
-    redirect(`/${locale}/signup?invite=${encodeURIComponent(code)}`);
+    // Send to /r/[code] which shows the referral welcome landing
+    // — it'll forward to /signup?invite=CODE on the CTA click.
+    redirect(`/${locale}/r/${encodeURIComponent(code)}`);
   }
   redirect(`/${locale}/signup`);
 }
