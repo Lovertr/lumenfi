@@ -34,6 +34,8 @@ export default async function AdminProductsPage({
   setRequestLocale(locale);
   const sp = searchParams ? await searchParams : {};
   const activeCompanyCode = (sp.c as string | undefined) || '';
+  const syncedResult = (sp.synced as string | undefined) || '';
+  const syncedMsg = (sp.msg as string | undefined) || '';
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -93,6 +95,49 @@ export default async function AdminProductsPage({
           </p>
         </div>
       </header>
+
+      {syncedResult ? (
+        <Card
+          className={
+            syncedResult === 'success'
+              ? 'border-emerald-300 bg-emerald-50'
+              : 'border-rose-300 bg-rose-50'
+          }
+        >
+          <CardContent className="flex items-start gap-3 p-4 text-sm">
+            {syncedResult === 'success' ? (
+              <CheckCircle2 className="mt-0.5 h-4 w-4 flex-none text-emerald-600" />
+            ) : (
+              <AlertCircle className="mt-0.5 h-4 w-4 flex-none text-rose-600" />
+            )}
+            <div className="flex-1">
+              <p
+                className={`font-semibold ${
+                  syncedResult === 'success' ? 'text-emerald-900' : 'text-rose-900'
+                }`}
+              >
+                {syncedResult === 'success' ? '✓ Sync เสร็จแล้ว' : '✗ Sync ล้มเหลว'}
+              </p>
+              <p
+                className={`mt-0.5 break-words text-xs ${
+                  syncedResult === 'success' ? 'text-emerald-800' : 'text-rose-800'
+                }`}
+              >
+                {syncedResult === 'success'
+                  ? `เพิ่ม/อัพเดท: ${syncedMsg || '—'}`
+                  : `เหตุผล: ${syncedMsg || 'unknown'}`}
+              </p>
+              {syncedResult === 'error' && (
+                <p className="mt-2 text-[11px] text-rose-700">
+                  💡 สาเหตุที่พบบ่อย: (1) เว็บไซต์บริษัทบล็อก server-side fetch (ลองเปลี่ยน Research URL),
+                  (2) AI gateway ไม่มี key (เช็คใน /settings/admin · Setup Lumenfi AI),
+                  (3) AI ดึงข้อมูลแล้ว return JSON ไม่ครบ (กดอีกครั้งดู)
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
         {/* Companies sidebar */}

@@ -23,10 +23,49 @@ export async function syncCompanyNow(formData: FormData): Promise<void> {
   const user = await requireAdmin();
   const id = formData.get('company_id') as string;
   if (!id) return;
+
+  // Look up the company code so we can preserve the ?c= selection in the redirect
   const svc = createServiceClient();
-  // Fire-and-await — small UI, this can take 10-30s. Acceptable for admin.
-  await syncCompanyProducts(svc, id, 'admin', user.id);
+  const { data: company } = await svc
+    .from('insurance_companies')
+    .select('code')
+    .eq('id', id)
+    .maybeSingle();
+  const codeQs = (company as any)?.code ? `&c=${(company as any).code}` : '';
+
+  let result: 'success' | 'error' = 'success';
+  let summary = '';
+  try {
+    const r = await syncCompanyProducts(svc, id, 'admin', user.id);
+    if (r.status === 'error') {
+      result = 'error';
+      summary = r.error ?? 'unknown_error';
+    } else {
+      summary = `+${r.added} · ~${r.updated} · -${r.markedInactive}`;
+    }
+  } catch (e: any) {
+    // Any uncaught exception (auth/fetch/AI/parse) — write our own log entry
+    // and surface in the redirect, so 'Sync now' is never silent.
+    result = 'error';
+    summary = (e?.message ?? String(e)).slice(0, 200);
+    try {
+      await svc.from('product_sync_runs').insert({
+        company_id: id,
+        triggered_by: 'admin',
+        triggered_by_user: user.id,
+        status: 'error',
+        finished_at: new Date().toISOString(),
+        error_message: summary,
+      });
+    } catch {
+      /* swallow */
+    }
+  }
+
   revalidatePath('/admin/products');
+  redirect(
+    `/admin/products?synced=${result}&msg=${encodeURIComponent(summary)}${codeQs}`,
+  );
 }
 
 export async function toggleProductActive(formData: FormData): Promise<void> {
