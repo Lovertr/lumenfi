@@ -1,4 +1,5 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server';
+import { createClient } from '@/lib/supabase/server';
 import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { LogoutButton } from '@/components/auth/logout-button';
@@ -7,7 +8,7 @@ import { ThemeToggle } from '@/components/layout/theme-toggle';
 import {
   TrendingUp, FolderOpen, Settings as SettingsIcon, Brain, FileBarChart,
   ChevronRight, Activity, Repeat, Wallet, Calculator, CreditCard, PiggyBank,
-  Camera, Target, Home as HomeIcon, Shield, HelpCircle,
+  Camera, Target, Home as HomeIcon, Shield, HelpCircle, Gift, Briefcase,
 } from 'lucide-react';
 
 interface MoreItem {
@@ -29,6 +30,24 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
   const t = await getTranslations('More');
   const tDash = await getTranslations('Dashboard');
   const isTh = locale === 'th';
+
+  // Check if this user is an active agent — only then we surface the
+  // Agent Dashboard shortcut in the 'อื่นๆ' section.
+  let isAgent = false;
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: agent } = await supabase
+        .from('agents')
+        .select('id, status')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if ((agent as any)?.status === 'active') isAgent = true;
+    }
+  } catch {
+    /* swallow — non-critical */
+  }
 
   const sections: MoreSection[] = [
     {
@@ -62,6 +81,22 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
     {
       title: isTh ? 'อื่นๆ' : 'Other',
       items: [
+        ...(isAgent
+          ? [{
+              href: '/agents/dashboard',
+              icon: Briefcase,
+              label: 'Agent Dashboard',
+              desc: 'ดู leads + จัดการโปรไฟล์ตัวแทน',
+              color: 'text-amber-700 bg-amber-50',
+            }]
+          : []),
+        {
+          href: '/settings/referral',
+          icon: Gift,
+          label: '🎁 ชวนเพื่อน — รับ Pro ฟรี',
+          desc: 'ทั้งคุณและเพื่อนได้ Pro 30 วัน',
+          color: 'text-rose-600 bg-rose-50',
+        },
         { href: '/help', icon: HelpCircle, label: 'คู่มือ + AI ช่วยเหลือ', desc: 'วิธีใช้งาน + ถาม AI', color: 'text-cyan-600 bg-cyan-50' },
         { href: '/ai/settings', icon: Brain, label: t('ai'), desc: t('aiDesc'), color: 'text-purple-600 bg-purple-50' },
         { href: '/reports', icon: FileBarChart, label: t('reports'), desc: t('reportsDesc'), color: 'text-cyan-600 bg-cyan-50' },

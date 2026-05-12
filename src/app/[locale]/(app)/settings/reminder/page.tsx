@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/server';
 import { saveReminderSettings } from './actions';
 import { TestReminderButton } from '@/components/settings/test-reminder-button';
+import { ReminderFormAuto } from '@/components/settings/reminder-form-auto';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,76 +98,18 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
       </Card>
 
       <Card>
-        <CardContent className="space-y-4 p-5">
-          <form action={saveReminderSettings} className="space-y-4">
-            {/* Enable toggle */}
-            <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-3">
-              <div>
-                <Label htmlFor="reminder_enabled" className="cursor-pointer text-sm font-medium">
-                  {isTh ? 'เปิดการแจ้งเตือนรายวัน' : 'Enable daily reminder'}
-                </Label>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {isTh ? 'ส่ง push notification ตามเวลาที่ตั้งไว้' : 'Send push notification at set time'}
-                </p>
-              </div>
-              <input
-                id="reminder_enabled"
-                name="reminder_enabled"
-                type="checkbox"
-                defaultChecked={enabled}
-                className="h-5 w-5 rounded border-input accent-primary"
-              />
-            </div>
-
-            {/* Time — now picker */}
-            <div className="space-y-2">
-              <Label htmlFor="reminder_hour" className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                {isTh ? 'เวลาแจ้งเตือน (เวลาไทย)' : 'Reminder time (Bangkok TZ)'}
-              </Label>
-              <select
-                id="reminder_hour"
-                name="reminder_hour"
-                defaultValue={String(hour)}
-                className="block w-full rounded-md border bg-background px-3 py-2 text-sm"
-              >
-                {HOUR_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                    {HOUR_HINTS[o.value] ? ` — ${HOUR_HINTS[o.value]}` : ''}
-                  </option>
-                ))}
-              </select>
-              <p className="text-[11px] text-muted-foreground">
-                {isTh
-                  ? '💡 แนะนำ 20:00-22:00 ก่อนนอน — ทบทวนรายจ่ายของวันได้ครบถ้วน'
-                  : '💡 Tip: 20:00-22:00 works best for end-of-day review'}
-              </p>
-            </div>
-
-            {/* Skip if logged */}
-            <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-3">
-              <div>
-                <Label htmlFor="reminder_skip_if_logged" className="cursor-pointer text-sm font-medium">
-                  {isTh ? 'ข้ามถ้าวันนี้บันทึกแล้ว' : 'Skip if already logged today'}
-                </Label>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {isTh ? 'ไม่เตือนถ้ามีรายการของวันนี้แล้ว' : "Don't notify if today's transactions exist"}
-                </p>
-              </div>
-              <input
-                id="reminder_skip_if_logged"
-                name="reminder_skip_if_logged"
-                type="checkbox"
-                defaultChecked={skipIfLogged}
-                className="h-5 w-5 rounded border-input accent-primary"
-              />
-            </div>
-
-            <Button type="submit" size="lg" className="w-full">
-              {isTh ? 'บันทึกการตั้งค่า' : 'Save settings'}
-            </Button>
-          </form>
+        <CardContent className="p-5">
+          <ReminderFormAuto
+            initialEnabled={enabled}
+            initialHour={hour}
+            initialSkipIfLogged={skipIfLogged}
+            isTh={isTh}
+            hourOptions={HOUR_OPTIONS.map((o) => ({
+              value: o.value,
+              label: o.label,
+              hint: HOUR_HINTS[o.value],
+            }))}
+          />
         </CardContent>
       </Card>
 
