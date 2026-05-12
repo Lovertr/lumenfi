@@ -22,6 +22,8 @@ import {
   Shield,
   HelpCircle,
   Sparkles,
+  Gift,
+  Briefcase,
 } from 'lucide-react';
 import { LogoMark, Wordmark } from '@/components/brand/logo-mark';
 import { cn } from '@/lib/utils';
@@ -39,7 +41,7 @@ interface NavSection {
   items: NavItem[];
 }
 
-export function DesktopSidebar() {
+export function DesktopSidebar({ isAgent = false }: { isAgent?: boolean } = {}) {
   const tNav = useTranslations('Nav');
   const tMore = useTranslations('More');
   const tDash = useTranslations('Dashboard');
@@ -79,6 +81,10 @@ export function DesktopSidebar() {
       title: tNav('home') === 'หน้าหลัก' ? 'อื่นๆ' : 'Other',
       items: [
         { href: '/advisor', icon: Sparkles, label: 'ที่ปรึกษา AI' },
+        ...(isAgent
+          ? [{ href: '/agents/dashboard', icon: Briefcase, label: 'Agent Dashboard' }]
+          : []),
+        { href: '/settings/referral', icon: Gift, label: 'ชวนเพื่อน · รับ Pro' },
         { href: '/ai', icon: Brain, label: tNav('ai') },
         { href: '/help', icon: HelpCircle, label: 'คู่มือ' },
         { href: '/reports', icon: FileBarChart, label: tMore('reports') },

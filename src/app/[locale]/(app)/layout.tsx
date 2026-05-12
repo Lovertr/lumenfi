@@ -20,18 +20,31 @@ export default async function AppLayout({
     !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
     !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project');
 
+  let isAgent = false;
   if (supabaseConfigured) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       redirect(`/${locale}/login`);
     }
+    // Detect active agent — used by sidebar to conditionally render
+    // 'Agent Dashboard' link
+    try {
+      const { data: agent } = await supabase
+        .from('agents')
+        .select('id, status')
+        .eq('user_id', user!.id)
+        .maybeSingle();
+      if ((agent as any)?.status === 'active') isAgent = true;
+    } catch {
+      /* swallow — non-critical */
+    }
   }
 
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop sidebar (hidden on mobile) */}
-      <DesktopSidebar />
+      <DesktopSidebar isAgent={isAgent} />
 
       {/* Main content area — leaves space for sidebar on lg+ */}
       <div className="lg:pl-64">
