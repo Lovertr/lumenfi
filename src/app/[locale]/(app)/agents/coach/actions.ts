@@ -5,6 +5,11 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { callAIViaGateway, PaywallError } from '@/lib/billing/gateway';
 import type { ChatMessage } from '@/lib/ai/types';
+import {
+  findCompanyForAgent,
+  getProductsForCompany,
+  renderProductsForPrompt,
+} from '@/lib/agents/products-db';
 
 type CoachResult =
   | { reply: string; conversationId?: string }
@@ -99,6 +104,29 @@ export async function sendSalesCoachMessage(
 
   const products = ((agent as any).products as string[] | null) ?? [];
   const productLabels = products.map((p) => PRODUCT_LABELS_TH[p] ?? p).join(' · ');
+
+  // ── Pull this agent's company product catalog from DB (AI-synced) ──
+  let productKnowledge = '';
+  try {
+    const company = await findCompanyForAgent(
+      supabase as any,
+      (agent as any).company,
+      (agent as any).display_name,
+    );
+    if (company) {
+      const catalogProducts = await getProductsForCompany(
+        supabase as any,
+        company.id,
+        products,
+      );
+      if (catalogProducts.length > 0) {
+        productKnowledge = '\n\n' + renderProductsForPrompt(company, catalogProducts);
+      }
+    }
+  } catch (e: any) {
+    console.warn('[coach] product catalog load failed:', e?.message ?? e);
+  }
+
   const agentContext = [
     `# ตัวแทนที่คุณกำลังโค้ชอยู่`,
     `- ชื่อ: ${(agent as any).agent_name ?? '—'}`,
@@ -109,7 +137,7 @@ export async function sendSalesCoachMessage(
   ]
     .filter(Boolean)
     .join('\n');
-  const systemPrompt = `${SYSTEM_PROMPT}\n\n${agentContext}`;
+  const systemPrompt = `${SYSTEM_PROMPT}\n\n${agentContext}${productKnowledge}`;
 
   const messages: ChatMessage[] = [
     ...history.slice(-10),

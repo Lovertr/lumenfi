@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 import { SalesCoachChat } from '@/components/agents/sales-coach-chat';
 import { CoachHistoryBar } from '@/components/agents/coach-history-bar';
 import { listCoachConversations } from './actions';
+import { findCompanyForAgent, getProductsForCompany, formatFreshness } from '@/lib/agents/products-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -150,6 +151,14 @@ export default async function AgentCoachPage({
 
   const products = ((agent as any).products as string[] | null) ?? [];
   const conversations = await listCoachConversations();
+  const company = await findCompanyForAgent(
+    supabase as any,
+    (agent as any).company,
+    (agent as any).display_name,
+  );
+  const catalogProducts = company
+    ? await getProductsForCompany(supabase as any, company.id, products)
+    : [];
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -198,6 +207,20 @@ export default async function AgentCoachPage({
               <span className="text-muted-foreground">—</span>
             )}
           </div>
+          {company && (
+            <div className="flex items-center gap-1.5 text-[11px] text-emerald-700">
+              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100">✓</span>
+              <span>
+                ฐานข้อมูลผลิตภัณฑ์ {company.name}: <b>{catalogProducts.length}</b> ตัว ·{' '}
+                {formatFreshness(company.last_synced_at)}
+              </span>
+            </div>
+          )}
+          {!company && (
+            <div className="text-[11px] text-amber-700">
+              ⚠️ ยังไม่มีฐานข้อมูลผลิตภัณฑ์สำหรับบริษัทนี้ — AI จะแนะนำเป็นประเภททั่วไป
+            </div>
+          )}
         </CardContent>
       </Card>
 
