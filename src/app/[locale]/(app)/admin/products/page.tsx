@@ -15,11 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { formatFreshness } from '@/lib/agents/products-db';
-import {
-  syncCompanyNow,
-  toggleProductActive,
-  updateCompanyResearchUrl,
-} from './actions';
+import { toggleProductActive, updateCompanyResearchUrl } from './actions';
+import { SyncNowButton } from '@/components/admin/sync-now-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -197,13 +194,10 @@ export default async function AdminProductsPage({
                         </p>
                       )}
                     </div>
-                    <form action={syncCompanyNow}>
-                      <input type="hidden" name="company_id" value={(active as any).id} />
-                      <Button type="submit" size="sm">
-                        <RefreshCw className="mr-1 h-3.5 w-3.5" />
-                        Sync now
-                      </Button>
-                    </form>
+                    <SyncNowButton
+                      companyId={(active as any).id}
+                      companyCode={(active as any).code}
+                    />
                   </div>
 
                   <form action={updateCompanyResearchUrl} className="space-y-1">

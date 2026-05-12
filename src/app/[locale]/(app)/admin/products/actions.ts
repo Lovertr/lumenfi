@@ -19,53 +19,60 @@ async function requireAdmin() {
   return user;
 }
 
-export async function syncCompanyNow(formData: FormData): Promise<void> {
-  const user = await requireAdmin();
-  const id = formData.get('company_id') as string;
-  if (!id) return;
+export type SyncNowResult = {
+  ok: boolean;
+  companyCode: string;
+  message: string;       // success: "+X · ~Y · -Z"   error: "reason: ..."
+  added?: number;
+  updated?: number;
+  markedInactive?: number;
+};
 
-  // Look up the company code so we can preserve the ?c= selection in the redirect
+export async function syncCompanyNow(companyId: string): Promise<SyncNowResult> {
+  const user = await requireAdmin();
+  if (!companyId) {
+    return { ok: false, companyCode: '', message: 'missing_company_id' };
+  }
+
   const svc = createServiceClient();
   const { data: company } = await svc
     .from('insurance_companies')
     .select('code')
-    .eq('id', id)
+    .eq('id', companyId)
     .maybeSingle();
-  const codeQs = (company as any)?.code ? `&c=${(company as any).code}` : '';
+  const code = (company as any)?.code ?? '';
 
-  let result: 'success' | 'error' = 'success';
-  let summary = '';
   try {
-    const r = await syncCompanyProducts(svc, id, 'admin', user.id);
+    const r = await syncCompanyProducts(svc, companyId, 'admin', user.id);
+    revalidatePath('/admin/products');
     if (r.status === 'error') {
-      result = 'error';
-      summary = r.error ?? 'unknown_error';
-    } else {
-      summary = `+${r.added} · ~${r.updated} · -${r.markedInactive}`;
+      return { ok: false, companyCode: code, message: r.error ?? 'unknown_error' };
     }
+    return {
+      ok: true,
+      companyCode: code,
+      message: `+${r.added} · ~${r.updated} · -${r.markedInactive}`,
+      added: r.added,
+      updated: r.updated,
+      markedInactive: r.markedInactive,
+    };
   } catch (e: any) {
-    // Any uncaught exception (auth/fetch/AI/parse) — write our own log entry
-    // and surface in the redirect, so 'Sync now' is never silent.
-    result = 'error';
-    summary = (e?.message ?? String(e)).slice(0, 200);
+    const msg = (e?.message ?? String(e)).slice(0, 200);
     try {
       await svc.from('product_sync_runs').insert({
-        company_id: id,
+        company_id: companyId,
         triggered_by: 'admin',
         triggered_by_user: user.id,
         status: 'error',
         finished_at: new Date().toISOString(),
-        error_message: summary,
+        error_message: msg,
       });
     } catch {
       /* swallow */
     }
+    revalidatePath('/admin/products');
+    return { ok: false, companyCode: code, message: msg };
   }
-
-  revalidatePath('/admin/products');
-  redirect(
-    `/admin/products?synced=${result}&msg=${encodeURIComponent(summary)}${codeQs}`,
-  );
 }
 
 export async function toggleProductActive(formData: FormData): Promise<void> {

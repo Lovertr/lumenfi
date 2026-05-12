@@ -119,15 +119,27 @@ ${SCHEMA_BLOCK}
 - ห้ามแต่งผลิตภัณฑ์เอง — ต้องเป็นชื่อจริงจากเนื้อหาเว็บไซต์ที่ให้
 - ถ้าเนื้อหาไม่เพียงพอ คืน {"products": []}`;
 
-const RESEARCH_PROMPT = `คุณคือ AI ที่มีความรู้เรื่องผลิตภัณฑ์ประกันชีวิตในประเทศไทย
-ภารกิจ: เมื่อได้รับชื่อบริษัทประกัน ให้ระบุผลิตภัณฑ์เด่นๆ ที่บริษัทนั้นขายจริง
-ใช้เฉพาะข้อมูลสาธารณะที่ทราบ — ห้ามแต่งชื่อขึ้นเอง
-ถ้าไม่แน่ใจ → ไม่ใส่เลยดีกว่าใส่ผิด
+const RESEARCH_PROMPT = `คุณคือ AI ผู้เชี่ยวชาญผลิตภัณฑ์ประกันชีวิตในประเทศไทย — รู้ทั้ง brand name, sub-line, รุ่นยอดนิยม
+ภารกิจ: เมื่อได้รับชื่อบริษัทประกัน ให้ลิสต์ผลิตภัณฑ์ที่บริษัทขายจริงให้ครบทุกหมวด (life · whole_life · health · ci · retirement · savings · accident · investment_linked)
+
+ขอ 15-30 ผลิตภัณฑ์ — ให้กว้างที่สุดเท่าที่จำได้แม่นยำ ไม่ใช่แค่ 5
+ใช้ชื่อจริงตามตลาดเท่านั้น (ตัวอย่างชื่อจริงที่ใช้:
+- BLA: "บำนาญแฮปปี้เพนชั่น", "บีแอลเอ พรีเมียร์ลิงค์", "บีแอลเอ ตลอดชีพ 99/99", "กรุงเทพ แฮปปี้ คิดส์", "แฮปปี้เซฟวิ่ง 15/7", "เพรสทีจ เซฟวิ่ง 12/6", "บีแอลเอ มัลติ ซีไอ", "บีแอลเอ มัลติแคร์", ...
+- AIA: "AIA Annuity Sure", "AIA Health Saver", "AIA Pay Life", "AIA CI Plus", "AIA Issara Plus"
+- FWD: "FWD Easy E-Pension", "FWD Easy Health", "FWD Easy Life Plus"
+- KTAXA: "iWealthy", "iProtect", "iHealthy"
+- Allianz: "My Allianz Pension", "My Allianz Critical Care", "My Allianz Health"
+- MTL: "D Health Plus", "Smart Saving"
+- TLI: "บำนาญสุขเกษียณ", "ไทยประกัน Health Star"
+)
+
 ${SCHEMA_BLOCK}
-กฎเพิ่มเติม:
-- ใส่เฉพาะผลิตภัณฑ์เด่นที่เป็นที่รู้จัก (5-12 ตัว ก็เพียงพอ)
-- ระบุชื่อจริงตามที่ใช้ในตลาด (เช่น "บำนาญแฮปปี้เพนชั่น" ของ BLA, "AIA Health Saver", ฯ)
-- ไม่ต้องครอบทุกผลิตภัณฑ์ — เลือกที่มั่นใจ`;
+ห้ามใส่:
+- ชื่อหมวดทั่วไป ("ประกันชีวิต", "ประกันสุขภาพ", "Life Insurance", "Property Insurance")
+- ช่องทาง bancassurance หรือ broker ("ผ่านธนาคาร X", "ผลิตภัณฑ์ broker")
+- ประกันที่ไม่ใช่ของบริษัทนี้
+- ตัวเลขเบี้ย/วงเงิน (เพราะมีโอกาสผิด)
+ขั้นต่ำ: 15 ผลิตภัณฑ์ ถ้ามั่นใจ`;
 
 export async function syncCompanyProducts(
   supabase: SupabaseClient,
@@ -312,9 +324,30 @@ export async function syncCompanyProducts(
   let updated = 0;
   const seenNames: string[] = [];
 
+  // Reject generic-category names + bancassurance channels — these
+  // are not actual products, they're distribution wrappers.
+  const BAD_NAME_PATTERNS = [
+    /^ประกันชีวิต$/i,
+    /^ประกันสุขภาพ$/i,
+    /^ประกันโรคร้าย/i,
+    /^ประกันทรัพย์สิน/i,
+    /^ประกันอุบัติเหตุ$/i,
+    /^life insurance$/i,
+    /^health insurance$/i,
+    /^property insurance$/i,
+    /^accident insurance$/i,
+    /bancassurance/i,
+    /ผ่านช่องทางธนาคาร/i,
+    /ช่องทางbroker/i,
+    /\bgeneric\b/i,
+  ];
+
   for (const raw of products) {
     if (!raw?.name || typeof raw.name !== 'string') continue;
     if (!VALID_CATEGORIES.includes(raw.category as Category)) continue;
+    const trimmed = raw.name.trim();
+    if (trimmed.length < 3 || trimmed.length > 200) continue;
+    if (BAD_NAME_PATTERNS.some((p) => p.test(trimmed))) continue;
 
     const row = {
       company_id: companyId,
