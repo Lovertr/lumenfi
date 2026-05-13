@@ -101,6 +101,7 @@ declare
   fk_col text;
   map_tbl text;
   select_expr text;
+  has_id boolean;
 begin
   -- Skip if table doesn't exist
   if not exists (select 1 from information_schema.tables where table_schema='public' and table_name = p_table) then
@@ -108,9 +109,17 @@ begin
     return 0;
   end if;
 
-  -- Drop + create mapping temp table for this run
-  execute format('drop table if exists %I_map', p_table);
-  execute format('create temp table %I_map (old_id uuid, new_id uuid)', p_table);
+  -- Detect whether the table has a top-level `id` UUID column (vs composite PK)
+  select exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name = p_table and column_name = 'id'
+  ) into has_id;
+
+  -- Drop + create mapping temp table only if we have an id column
+  if has_id then
+    execute format('drop table if exists %I_map', p_table);
+    execute format('create temp table %I_map (old_id uuid, new_id uuid)', p_table);
+  end if;
 
   -- Build column list (exclude id, user_id, created_at, updated_at, generated cols)
   cols_select := '';
@@ -138,17 +147,25 @@ begin
     cols_select := cols_select || ', ' || select_expr;
   end loop;
 
-  -- Build the full INSERT statement
-  -- Pre-generate new UUIDs and capture mapping
-  sql := format(
-    'with src as (select id as old_id, gen_random_uuid() as new_id from %I where user_id = $1), '
-    'mapped as (insert into %I_map select old_id, new_id from src returning *) '
-    'insert into %I (id, user_id %s) '
-    'select m.new_id, $2 %s '
-    'from %I s join %I_map m on m.old_id = s.id '
-    'where s.user_id = $1',
-    p_table, p_table, p_table, cols_insert, cols_select, p_table, p_table
-  );
+  if has_id then
+    -- Pre-generate new UUIDs and capture mapping in the map temp table
+    sql := format(
+      'with src as (select id as old_id, gen_random_uuid() as new_id from %I where user_id = $1), '
+      'mapped as (insert into %I_map select old_id, new_id from src returning *) '
+      'insert into %I (id, user_id %s) '
+      'select m.new_id, $2 %s '
+      'from %I s join %I_map m on m.old_id = s.id '
+      'where s.user_id = $1',
+      p_table, p_table, p_table, cols_insert, cols_select, p_table, p_table
+    );
+  else
+    -- Composite PK / no id column — just INSERT...SELECT, no mapping needed
+    -- (no other table can FK back to a composite PK anyway)
+    sql := format(
+      'insert into %I (user_id %s) select $2 %s from %I s where s.user_id = $1',
+      p_table, cols_insert, cols_select, p_table
+    );
+  end if;
 
   execute sql using p_src, p_tgt;
   get diagnostics cnt = row_count;
@@ -298,12 +315,4 @@ end $$;
 -- delete from net_worth_snapshots where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
 -- delete from portfolio_snapshots where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
 -- delete from insurance_policies where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
--- delete from investment_watchlist where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
--- delete from investments where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
--- delete from goals where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
--- delete from accounts where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
--- delete from categories where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
-
-
--- ═══ CLEANUP: drop the helper function after use ═════════════════════
--- drop function if exists _copy_table(text, uuid, uuid, jsonb, text[]);
+-- delete from investment_watchlist where user_id = (select id from auth.users where email='trin_tintanee@hotmail
