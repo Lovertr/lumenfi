@@ -98,9 +98,9 @@ export async function GET(req: Request) {
     );
   }) as any;
 
-  if (due.length === 0) {
-    return NextResponse.json({ ok: true, sent: 0, due: 0 });
-  }
+  // NOTE: Do NOT early-return if due.length === 0 — the daily reminder /
+  // budget / watchlist / secretary sections below MUST still run regardless
+  // of whether any recurring transactions are due this hour.
 
   // Group by user
   const byUser = new Map<string, RecurringRow[]>();
@@ -520,7 +520,6 @@ export async function GET(req: Request) {
   } catch (e) {
     console.warn('Secretary alerts failed:', e);
   }
-
   return NextResponse.json({
     ok: true,
     due: due.length,
