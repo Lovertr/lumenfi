@@ -1,7 +1,10 @@
-# 📣 Lumenfi Marketing Playbook
+# 📣 Lumenfi Marketing Playbook — Facebook-First Edition
 
-**เป้าหมาย 30 วัน:** ฿8,420+ revenue (cover ค่า Claude Cowork ฿6,000)
-**เป้าหมาย 90 วัน:** ฿27,000+ revenue/เดือน
+**Updated:** 13 พฤษภาคม 2026 · เน้น **Facebook Page เป็นหลัก** (70%), **TikTok เป็นรอง** (30%), งบ **฿0 organic-only**
+
+**เพจ:** https://www.facebook.com/lumenfi/
+
+> 💡 **NotebookLM workflow:** ดู section "การใช้ NotebookLM" ด้านล่าง — ใช้ knowledge base ของ Lumenfi (`docs/lumenfi-knowledge-base.txt`, 1,382 บรรทัด) ช่วย generate post ideas, FAQ, talking points แบบ on-brand 100%
 
 ---
 
@@ -11,813 +14,540 @@
 **Tagline ไทย:** "ส่องสว่างทุกการเงินของคุณ"
 
 **Value Prop:**
-> "Lumenfi คือแอพการเงินที่มี AI วิเคราะห์ครบทุกมิติให้คุณ — ไม่ต้องเปิดหลายแอพ ไม่ต้องคำนวณเอง ไม่ต้องจ้างที่ปรึกษา"
+> Lumenfi คือแอพการเงินที่มี AI วิเคราะห์ครบทุกมิติ — รายรับรายจ่าย หนี้ ลงทุน ภาษี ประกัน เกษียณ — ไม่ต้องเปิดหลายแอพ ไม่ต้องคำนวณเอง ไม่ต้องจ้างที่ปรึกษา
 
-**Target Personas:**
-1. 👨‍💻 SWE/IT Worker 25-35 (เริ่มลงทุน ออมจริงจัง)
-2. 👨‍👩‍👧 Working Parent 30-45 (ผ่อนบ้าน ส่งลูกเรียน)
-3. 👴 Pre-retirement 45-60 (วางแผนเกษียณ)
+**Target Personas (เรียงตามความสำคัญสำหรับ FB):**
+1. 👨‍👩‍👧 **Working Parent 30-45** — ใช้ FB บ่อย ผ่อนบ้าน ส่งลูกเรียน ผ่อนรถ
+2. 👨‍💻 **SWE/Office Worker 28-38** — เริ่มจริงจังการเงิน วางแผนเก็บบ้าน/ลงทุน
+3. 👴 **Pre-retirement 45-60** — เวลา FB สูง วางแผนเกษียณ ดูแลพ่อแม่
 
-**Differentiators:**
-- 🇹🇭 ออกแบบสำหรับคนไทย (RMF/SSF/PVD/ภาษีไทย)
-- 🤖 AI Advisor 8 มิติ (วางแผน/หนี้/ลงทุน/ภาษี/เกษียณ/เป้าหมาย/ประกัน/EF)
-- 🆓 Free tier ใช้ได้จริง — ไม่ใช่ trial
-- 🛡️ Privacy-first — BYO key ได้
-
----
-
-## 📅 30-Day Launch Plan
-
-### Week 1: Foundation
-- [ ] Setup demo accounts (3 personas) ✅
-- [ ] ถ่าย screenshot 30+ รูป
-- [ ] Setup TikTok + IG + Twitter + LinkedIn business
-- [ ] เขียน 10 video scripts
-- [ ] อัด 5 video พร้อมลง
-- [ ] Email list capture page
-
-### Week 2: Distribution Burst
-- [ ] โพสต์ TikTok 1 คลิป/วัน (7 คลิป)
-- [ ] FB Group: 3 กลุ่ม/วัน × 7 = 21 โพสต์
-- [ ] Twitter thread 3 ครั้ง
-- [ ] Pantip 1 กระทู้ยาว
-- [ ] DM KOL 10 คน
-
-### Week 3: Optimize
-- [ ] วิเคราะห์ Vercel Analytics
-- [ ] A/B test pricing page
-- [ ] เพิ่ม content ตามที่ work
-- [ ] Email drip campaign launch
-
-### Week 4: Scale
-- [ ] ProductHunt launch
-- [ ] Affiliate program
-- [ ] Partnership outreach
-- [ ] Switch Omise live mode
+**Why Facebook works for Lumenfi:**
+- กลุ่มเป้าหมายอายุ 30+ ยังใช้ FB เป็นหลัก
+- FB Groups การเงิน/หนี้/ลงทุน มีคน active หลายแสน
+- Post แบบยาวเล่าเรื่อง = ตรง personal finance
+- Sharing + tagging เพื่อน drives organic reach
+- ไม่ต้องอัดวิดีโอเหมือน TikTok/Reels — content cost ต่ำ
 
 ---
 
-## 📸 Content Pillars (5 Types)
+## 🤖 การใช้ NotebookLM ช่วยสร้าง Content
 
-ทุก content ต้องเข้าหนึ่งใน 5 pillars นี้:
+**Setup ครั้งเดียว:**
+1. เข้า https://notebooklm.google.com
+2. กด "Create new notebook" ตั้งชื่อ "Lumenfi Marketing"
+3. Upload source: `docs/lumenfi-knowledge-base.txt` (1,382 บรรทัด — ครอบคลุม identity, features, pricing, FAQs, edge cases ทั้งหมด)
+4. Upload เพิ่ม (optional): `docs/marketing/PLAYBOOK.md` (ไฟล์นี้) + `docs/marketing/FACEBOOK_PAGE_POSTS.md`
 
-### Pillar 1: 💡 Education (40%)
-สอนการเงินที่คนอยากรู้ — drives organic traffic
+**Workflows ที่ใช้บ่อย (copy-paste prompt ได้):**
+
+### A) Generate post ideas ตาม pillar
+```
+ช่วยสร้าง 10 หัวข้อ Facebook post pillar "Education" สำหรับ Lumenfi
+- กลุ่มเป้าหมาย: Working parent อายุ 30-45 ในไทย
+- ความยาว 200-400 คำ
+- มี hook บรรทัดแรกที่น่าสนใจ
+- จบด้วย CTA ไปยัง lumenfi.app
+- อิงจากความสามารถจริงของ Lumenfi (ห้ามคิดฟีเจอร์ขึ้นเอง)
+```
+
+### B) Draft post จากหัวข้อ
+```
+ช่วยเขียน Facebook post 1 ครั้ง หัวข้อ "DTI คืออะไร ทำไม 36% ขึ้นไปอันตราย"
+- ใช้ tone ของ Lumenfi (warm, practical, ไทยเป็นหลัก)
+- มี hook + body + CTA
+- อ้างฟีเจอร์จริงของ Lumenfi ที่ช่วยคำนวณ DTI ได้
+- ใส่ hashtag 3-5 อัน
+- จบด้วยลิงก์ lumenfi.app
+```
+
+### C) สร้าง FAQ จาก objection ที่เคยได้ยิน
+```
+ช่วยตอบคำถามที่ user มักถามเกี่ยวกับ Lumenfi เป็น FAQ format
+ใช้เนื้อหาจาก knowledge base + tone friendly:
+1. ฟรีจริงไหม? Pro ฿149/เดือนได้อะไรเพิ่ม?
+2. ข้อมูลปลอดภัยไหม? เก็บไว้ที่ไหน?
+3. ต่างจาก Money Lover / 1Money / Excel ยังไง?
+4. iOS Safari ใช้ได้ไหม?
+5. AI ใช้ key ของใคร?
+```
+
+### D) สร้าง comparison content
+```
+ช่วยสร้าง comparison table:
+"Lumenfi vs Money Lover vs Excel"
+- เปรียบเทียบ 8 มิติ: tracking / debt / investment / tax / insurance / AI / privacy / cost
+- ใช้เนื้อหาจริงจาก Lumenfi knowledge base
+- จัด format ให้เหมาะลง FB post (markdown table หรือ text bullets)
+```
+
+### E) Repurpose blog → social
+```
+ช่วย convert บทความ Lumenfi ในหัวข้อ "RMF vs SSF" ให้เป็น:
+1. Facebook post 250 คำ
+2. TikTok script 30 วินาที (hook + body + CTA)
+3. FB Story 3 frames (poll/quiz format)
+4. Carousel 5 slides (caption แต่ละ slide)
+```
+
+### F) Find content gaps จาก knowledge base
+```
+อ่าน knowledge base ของ Lumenfi แล้วบอกว่ามีฟีเจอร์/feature อะไรที่ยัง
+ไม่เคยพูดถึงในไฟล์ FACEBOOK_PAGE_POSTS.md เลย — ฟีเจอร์ที่ underrated และ
+ควรเอามาเป็น post ใหม่ — เรียงลำดับความน่าสนใจสำหรับ FB audience
+```
+
+### G) Generate Reels script จาก post ที่ดี
+```
+จาก Facebook post นี้ [paste post] ช่วยแปลงเป็น TikTok/Reels script
+- ความยาว 30 วินาที
+- มี hook 3 วินาทีแรกแบบ pattern interrupt
+- มี text overlay timing
+- เสนอ shot list (talking head / screenshot / animation)
+```
+
+**Pro tip:** ทุกครั้งที่ NotebookLM ตอบ ให้กด "Show in source" ดูว่าอิงจาก knowledge base ข้อไหน — เผื่อ AI hallucinate ฟีเจอร์ที่ไม่มีจริง
+
+---
+
+## 📊 30-Day Facebook-First Launch Plan
+
+### Week 1: Foundation + 5 Hero Posts
+**Goal:** ตั้งเพจสมบูรณ์ + 5 โพสต์แรก + เริ่มเข้า FB Groups เพื่อ observe
+
+- [ ] **Day 1:** Page setup ครบ — Cover, About, CTA button (link lumenfi.app), pinned post
+- [ ] **Day 1:** Post #1 (Launch Story) + share จาก profile ส่วนตัว
+- [ ] **Day 2:** ใช้ NotebookLM generate 14-day content calendar (workflow A)
+- [ ] **Day 3:** Post #2 (Before/After persona AOM)
+- [ ] **Day 4:** Join 15 FB Groups (ดูรายชื่อด้านล่าง) — observe + comment เป็นประโยชน์ 7 วัน ห้ามโพสต์โปรโมท
+- [ ] **Day 5:** Post #3 (Education: DTI คืออะไร — ใช้ NotebookLM workflow B)
+- [ ] **Day 6:** Post #4 (Use case: หนี้บัตรเครดิตปลดยังไง)
+- [ ] **Day 7:** Post #5 (Quick tip + screenshot Lumenfi)
+
+### Week 2: Cadence + Engagement
+**Goal:** โพสต์ 5 ครั้ง/สัปดาห์ + เริ่มแชร์ใน Groups อย่างมีกลยุทธ์
+
+- [ ] **โพสต์ทุกวันจันทร์-ศุกร์** เวลา 19:30-20:30 (peak engagement)
+- [ ] **Reels 1 คลิป/สัปดาห์** — reuse จาก post ผ่าน NotebookLM workflow E/G
+- [ ] **FB Story 3-4 ครั้ง/สัปดาห์** — behind-the-scenes, polls, tips
+- [ ] **เข้า Groups** — comment เป็นประโยชน์ 5 ครั้ง/วัน
+- [ ] **แชร์ใน 3 Groups/สัปดาห์** — ที่อนุญาต value-add post
+
+### Week 3: Optimize + Scale
+**Goal:** วิเคราะห์โพสต์ไหน work เพิ่ม content type นั้น
+
+- [ ] เช็ค Page Insights — โพสต์ reach/engagement/link clicks สูงสุด
+- [ ] ใช้ NotebookLM workflow F หา content gap ที่ยังไม่ครอบคลุม
+- [ ] เพิ่ม content type ที่ work × 2
+- [ ] FB Live ครั้งแรก — Q&A 30 นาที
+- [ ] เริ่ม cross-post Reels ไป TikTok
+
+### Week 4: Community Building
+**Goal:** สร้าง community Lumenfi loyal
+
+- [ ] เปิด FB Group ของ Lumenfi เอง — "ชุมชน Lumenfi · คุยเรื่องการเงิน"
+- [ ] ทำ pinned post + เปิดให้ user share progress
+- [ ] เริ่ม weekly series (#จันทร์ออม #พฤหัสภาษี)
+- [ ] ProductHunt launch + cross-promote ใน FB
+
+---
+
+## 📅 Posting Cadence (FB Page + TikTok)
+
+| Day | FB Page | FB Story | FB Groups | TikTok |
+|-----|---------|----------|-----------|--------|
+| จันทร์ | 1 post (Education) | 1 (poll) | 1 share | 1 Reel (reuse) |
+| อังคาร | 1 post (Use case) | — | 1 share | — |
+| พุธ | 1 post (Demo) | 1 (tip) | — | 1 Reel (reuse) |
+| พฤหัส | 1 post (Education) | — | 1 share | — |
+| ศุกร์ | 1 post (Story) | 1 (behind-the-scenes) | — | 1 Reel (reuse) |
+| เสาร์ | 1 post (Q&A/poll) | 1 | — | — |
+| อาทิตย์ | rest หรือ FB Live | — | — | — |
+
+**Total:** 6 FB posts + 4 Stories + 3 Group shares + 3 TikTok = ~16 touchpoints/สัปดาห์
+**Time:** ~5-6 ชม./สัปดาห์ (Sunday batch + NotebookLM ช่วย draft)
+
+---
+
+## 🧱 Content Pillars (Facebook-Specific)
+
+### Pillar 1: 💡 Education (40%) — สอน, สร้าง authority
+**Format:** Text post 200-400 คำ + 1 รูป (Canva)
+**Goal:** Save + Share (organic reach)
+
+**ตัวอย่างหัวข้อ:**
+- "DTI คืออะไร — ทำไม 36% ขึ้นไปเริ่มอันตราย"
+- "เงินเดือน ฿30K vs ฿60K ออมเท่าไหร่ถึงพอ"
+- "Emergency Fund ที่ทุกคนพูดถึง — ต้องเก็บกี่เดือน"
 - "RMF กับ SSF ต่างกันยังไง"
-- "DTI 40% เริ่มเสี่ยง — แล้วทำไง"
-- "Emergency Fund ต้องเก็บเท่าไหร่"
+- "ดอกเบี้ยทบต้นแรงแค่ไหน"
 
-### Pillar 2: 🎬 Product Demo (25%)
-แสดง Lumenfi ใช้งานจริง — drives signup
-- "AI Advisor 30 วิ"
-- "Track ลงทุนใน 1 หน้าจอ"
-- "Tax Report สำหรับ ภ.ง.ด."
+### Pillar 2: 🎯 Use Case Story (25%) — relatable, emotional
+**Format:** Long-form 5-10 บรรทัด + รูป persona/before-after
 
-### Pillar 3: 🎯 Use Case Story (20%)
-Persona ใช้ Lumenfi อย่างไร — relatable
-- "TRIN 32 ปี ออม 50% ได้ยังไง"
-- "คุณ Pat ผ่อนบ้านยังลงทุนได้"
-- "คุณ Som ใกล้เกษียณ + Lumenfi"
+**ตัวอย่าง:**
+- "TRIN 32 ปี ออม 50% ของรายได้"
+- "คุณ AOM ปลดหนี้ ฿380K ใน 18 เดือน"
+- "คุณ PAT ผ่อนบ้านแล้วยังลงทุน DCA ได้ยังไง"
+- "ลูกค้าจ่ายดอกบัตร ฿35K/ปีโดยไม่รู้ตัว"
 
-### Pillar 4: 📊 Data/Research (10%)
-Industry insights — establish authority
-- "คนไทยอายุ 30 มีเงินเก็บเฉลี่ย ฿X"
-- "Top 5 หมวดที่คนไทยใช้เงินเยอะสุด"
+### Pillar 3: 🎬 Product Demo (20%) — แสดงของจริง
+**Format:** Screenshot/short video + caption explain feature
 
-### Pillar 5: 🎁 Promo (5%)
-Direct CTA — convert
-- "ฟรี 14 วัน Pro"
-- "Credit pack ลด 17% ครั้งแรก"
-- "Black Friday deal"
+**ตัวอย่าง:**
+- "30 วินาที AI Advisor วิเคราะห์ครบ 8 มิติ"
+- "หน้าจอเดียวเห็นหนี้ทั้งหมดและแผนปลด"
+- "อัปโหลด slip เดียว AI ลงให้ทุกอย่าง"
+- "Net Worth chart รายเดือนย้อนหลัง"
 
----
+### Pillar 4: 💬 Q&A / Poll / Engagement (10%)
+**Format:** สั้น ตั้งคำถาม → กระตุ้น comment
 
-## 🎬 TikTok / Reels Playbook
+**ตัวอย่าง:**
+- "เงินเดือนแรกของคุณจำได้ไหม?"
+- "ของที่อยากเลิกซื้อแต่เลิกไม่ได้?"
+- "บัตรเครดิตของคุณกี่ใบ?"
+- "ได้โบนัส ฿100K วันนี้ จะทำอะไรก่อน?"
 
-### Format Specs
-- **Aspect ratio:** 9:16 (1080×1920)
-- **Length:** 15-60 sec (sweet spot: 21-30 sec)
-- **First 3 sec:** Hook + visual change
-- **Caption:** Question or strong claim
-- **Hashtags:** 3-5 ที่ตรงกลุ่ม
+### Pillar 5: 🎁 Promo / CTA (5%)
+**Format:** ตรงประเด็น + แสดง offer
 
-### Hooks ที่ Work (เลือก 1)
+**ใช้น้อย — เก็บไว้ตอน:**
+- Year-end (ตุลาคม-ธันวาคม) — RMF/SSF
+- ขึ้นเดือนใหม่
+- ProductHunt launch
+- Black Friday
 
-**Curiosity Hook:**
-- "คนส่วนใหญ่ไม่รู้ว่าเรื่องนี้ลดภาษีได้"
-- "ทำไมเงินเดือน ฿50K ออมไม่ได้สักบาท"
-- "AI วิเคราะห์การเงินของฉัน 30 วินาที — ผลลัพธ์น่าตกใจ"
-
-**Pattern Interrupt:**
-- "หยุดออมเงินตอนนี้ ถ้ายังไม่ทำ 3 อย่างนี้"
-- "ทิ้งเงินใน Bualuang Save = ขาดทุนเฉยๆ"
-- "RMF ที่คุณคิดว่าคุ้ม จริงๆ อาจไม่ใช่"
-
-**FOMO/Loss Hook:**
-- "ปลายปีแล้ว — ลดหย่อนภาษียังไม่ใช้สิทธิ?"
-- "อีก 30 วันสิ้นปี เพดาน RMF/SSF ของคุณยังเหลือ ฿X"
-- "พลาดเงินภาษีคืน ฿15K ต่อปีโดยไม่รู้ตัว"
-
-**Story/Personal:**
-- "วันนี้รู้สึกผิดที่ไม่ออมตั้งแต่อายุ 22"
-- "ผมอายุ 32 มีเงินเก็บ ฿XK — ตามมาตรฐานไหม?"
-
-### 10 Video Scripts พร้อมใช้
-
-#### Script 1: "RMF vs SSF" 🎬
-**Hook (0-3 sec):**
-> "RMF กับ SSF ต่างกันยังไง — สับสนกันมาตลอด ใช่มะ"
-
-**Body (3-25 sec):**
-> "RMF = ถือ 5 ปี + อายุ 55 ขึ้นไป — เพดาน 30% ของรายได้ ไม่เกิน 500K"
-> "SSF = ถือ 10 ปีเต็ม — เพดาน 30% ไม่เกิน 200K"
-> "SSF ลดหย่อนได้น้อยกว่า แต่ปลดล็อกง่ายกว่า"
-> "ผมใช้ Lumenfi คำนวณว่ายังลดได้อีกกี่บาท — เพราะใส่รายได้แล้วระบบขึ้นเลย"
-
-**CTA (25-30 sec):**
-> "ลองได้ฟรีที่ลิงก์ใน bio — ไม่ต้องสมัครบัตรเครดิต"
-
-**Visual:**
-- 0-3s: คนพูดมุมเฉียง + text overlay "RMF vs SSF"
-- 3-15s: หน้าจอ Lumenfi /investments/tax-saving
-- 15-25s: hover ที่ตัวเลขเพดาน
-- 25-30s: หน้า Pricing พร้อม "Start Free"
-
-**Caption:**
-```
-RMF vs SSF ต่างกันยังไง 🤔
-
-ลดหย่อนภาษีได้ทั้งคู่ แต่เงื่อนไข lock-in คนละแบบ
-ผมใช้ Lumenfi คำนวณเพดาน + วันปลดล็อกให้อัตโนมัติ
-
-ลิงก์ในไบโอ → /investments/tax-saving
-ใช้ได้ฟรี ไม่ต้องสมัคร API key
-
-#ภาษี #RMF #SSF #ลดหย่อนภาษี #การเงินส่วนบุคคล #Lumenfi
-```
+**กฎ:** ห้าม promo ติดต่อกัน — เว้นอย่างน้อย 4 organic posts ระหว่าง promo
 
 ---
 
-#### Script 2: "AI วิเคราะห์การเงิน 30 วินาที" 🤖
-**Hook:**
-> "AI วิเคราะห์การเงินของฉัน 30 วินาที — ผลลัพธ์ที่ไม่คาดคิด"
-
-**Body:**
-> "กดปุ่มเดียว AI ตรวจครบ 8 มิติ"
-> "วิเคราะห์ cashflow → DTI → กองทุนฉุกเฉิน → ลงทุน → ภาษี → เกษียณ → ประกัน"
-> "ออกมาเป็นแผน 30/60/90 วันที่ทำได้จริง"
-> "ผมเจอว่า DTI ผมสูง 45% — ต้องเร่งปลดบัตรเครดิต"
-
-**CTA:**
-> "ฟรี 1 รายงาน/เดือน — ลิงก์ในไบโอ"
-
-**Visual:**
-- 0-3s: หน้าจอกดปุ่ม "วิเคราะห์ทันที"
-- 3-25s: scroll ผ่านรายงาน 8 มิติ
-- 25-30s: zoom ที่ recommendation
-
-**Caption:**
-```
-ลอง AI Advisor ใน Lumenfi 🤖
-
-วิเคราะห์ครบ 8 มิติใน 30 วิ
-- กระแสเงินสด · หนี้ · Emergency Fund
-- ลงทุน · ภาษี · เกษียณ · ประกัน · เป้าหมาย
-
-ฟรี 1 รายงาน/เดือน — ใช้ AI key ของตัวเองก็ได้
-ลิงก์ในไบโอ ⬇️
-
-#AIการเงิน #FinTech #ที่ปรึกษาการเงิน #Lumenfi #ออมเงิน
-```
-
----
-
-#### Script 3: "DTI สูงเกินทำไง" 💸
-**Hook:**
-> "DTI 50% = หนี้กินรายได้ครึ่ง — รู้ไหมต้องทำไง?"
-
-**Body:**
-> "Step 1: list หนี้ทั้งหมด เรียงตามดอกเบี้ย"
-> "Step 2: ใช้ Avalanche method — ปลดดอกสูงสุดก่อน"
-> "Step 3: Refinance ถ้าดอกใหม่ต่ำกว่า 0.5% และจะอยู่ต่อ 3+ ปี"
-> "Lumenfi เครื่องคำนวณ debt strategy ฟรี — ผมประหยัดดอกได้ ฿XK"
-
-**CTA:**
-> "ลองคำนวณที่ /tools/debt"
-
-**Caption:**
-```
-DTI สูงเกิน 40% = เริ่มอันตราย ⚠️
-
-3 step ปลดหนี้ที่ใช้จริง:
-1️⃣ Avalanche (ดอกสูงสุดก่อน) — ประหยัดที่สุด
-2️⃣ Snowball (ก้อนเล็กก่อน) — สร้าง momentum
-3️⃣ Refinance (ดอกใหม่ - เก่า ≥ 0.5%)
-
-Lumenfi คำนวณให้ฟรี → /tools/debt
-#ปลดหนี้ #DTI #Avalanche #การเงิน
-```
-
----
-
-#### Script 4: "Emergency Fund เท่าไหร่ดี" 🚨
-**Hook:**
-> "Emergency Fund ต้องมีกี่บาท? คนส่วนใหญ่ตอบผิด"
-
-**Body:**
-> "Rule of thumb: 3-6 เดือนของรายจ่ายจำเป็น"
-> "พนักงานประจำ → 3-6 เดือน"
-> "ฟรีแลนซ์/ธุรกิจ → 6-12 เดือน"
-> "เก็บที่ไหน: บัญชีดอกสูง / กองทุนตลาดเงิน"
-> "ห้ามเก็บในหุ้น — ตอนต้องใช้อาจขาดทุน"
-
-**CTA:**
-> "ตั้ง goal Emergency Fund ใน Lumenfi"
-
-**Caption:**
-```
-Emergency Fund ต้องมีกี่บาท? 🚨
-
-✅ 3-6 เดือนของรายจ่ายจำเป็น
-✅ เก็บที่ออมทรัพย์ดอกสูง / MMF
-❌ ห้ามเก็บใน หุ้น / กองทุนหุ้น
-
-ฟรีแลนซ์ขึ้นไป 6-12 เดือน
-รายได้สูงเก็บนานขึ้น = ปลอดภัยกว่า
-
-ตั้ง goal ใน Lumenfi → /goals/new
-เลือก mode "Emergency Fund" — ระบบ track ให้
-
-#EmergencyFund #ออมเงิน #การเงินส่วนบุคคล
-```
-
----
-
-#### Script 5: "ปลายปีลดภาษีเหลือกี่วัน" 🧾
-**Hook (ใช้ปลาย Q4 — Nov-Dec):**
-> "เหลือ 30 วันสิ้นปี — เพดานลดหย่อนภาษีของคุณยังเหลือเท่าไหร่?"
-
-**Body:**
-> "ส่วนใหญ่ลืมใช้สิทธิเต็ม — เสียโอกาสประหยัดภาษีปีละ ฿10-30K"
-> "Lumenfi คำนวณเพดานให้: ใส่รายได้ → ระบบขึ้น RMF/SSF/PVD ที่ยังลดได้"
-> "ของผมเหลือเพดาน ฿80K — ซื้อ SSF เพิ่มประหยัดภาษีได้ ฿8K-15K"
-
-**CTA:**
-> "ดู /investments/tax-saving — ใส่รายได้ปุ๊บได้คำตอบทันที"
-
-**Caption:**
-```
-ใกล้สิ้นปีแล้ว — ใช้สิทธิ์ลดหย่อนเต็มเพดานหรือยัง? 💰
-
-ส่วนใหญ่พลาด ฿10-30K ทุกปี เพราะไม่รู้เพดานตัวเอง
-
-Lumenfi คำนวณให้ใน 10 วิ:
-✅ RMF — 30% รายได้, ไม่เกิน 500K
-✅ SSF — 30%, ไม่เกิน 200K
-✅ PVD — 15% เงินเดือน
-
-ลิงก์ในไบโอ → /investments/tax-saving
-
-#ลดหย่อนภาษี #RMF #SSF #PVD #ภาษีบุคคลธรรมดา
-```
-
----
-
-#### Script 6: "ออมไม่ได้สักบาท" 💸
-**Hook:**
-> "เงินเดือน ฿50K ออมไม่ได้สักบาท — ปัญหาจริงคืออะไร?"
-
-**Body:**
-> "ไม่ใช่ว่ารายได้น้อย — แต่ไม่รู้ว่าเงินไหลไปไหน"
-> "ตั้ง budget แยกหมวด → ทันทีเห็น"
-> "'ของกินเล่น' กินไป ฿8K/เดือน หรือเปล่า?"
-> "Subscription ที่ไม่ได้ใช้กี่ตัว?"
-
-**CTA:**
-> "เริ่มจาก /budgets — ตั้ง 4-5 หมวดหลัก"
-
----
-
-#### Script 7: "ลงทุนแบบ DCA Auto" 🔁
-**Hook:**
-> "ขี้เกียจซื้อหุ้นทุกเดือน — ใช้ DCA Auto ของ Lumenfi"
-
-**Body:**
-> "ตั้งวันที่ + จำนวนเงิน ระบบบันทึกการซื้อให้อัตโนมัติทุกเดือน"
-> "Auto-update avg cost ไม่ต้องคำนวณเอง"
-> "ใช้กับ RMF/SSF เลย — ลดหย่อนภาษีไปด้วย"
-
-**CTA:**
-> "/investments/recurring — ตั้ง 1 ครั้งใช้ตลอด"
-
----
-
-#### Script 8: "ฉันใช้ Lumenfi 90 วัน" 📈
-**Hook:**
-> "90 วันที่แล้วผมเงินเก็บ 0 — วันนี้ออมได้ 25%"
-
-**Body:**
-> "Step 1: ตั้ง goal Emergency Fund"
-> "Step 2: ตั้ง budget 4 หมวดหลัก"
-> "Step 3: ใช้ AI Advisor วิเคราะห์เดือนละครั้ง"
-> "Step 4: ตัด subscription ที่ไม่ใช้ — เซฟ ฿1.5K/เดือน"
-
-**CTA:**
-> "Lumenfi ฟรีตลอด — ลิงก์ในไบโอ"
-
----
-
-#### Script 9: "ประกันสุขภาพต้องมีกี่ล้าน" 🛡️
-**Hook:**
-> "ประกันสุขภาพควรมีทุนกี่ล้าน — ตัวเลขที่หมอแนะนำ"
-
-**Body:**
-> "ขั้นต่ำ ฿500K-1M สำหรับห้องพัก IPD"
-> "ถ้าทำงานออฟฟิศ + รายได้ปานกลาง → ฿1-2M"
-> "Lumenfi คำนวณ gap: ทุนปัจจุบัน vs แนะนำตามรายได้"
-
----
-
-#### Script 10: "เกษียณต้องเก็บเท่าไหร่" 🌴
-**Hook:**
-> "เกษียณตอน 60 ต้องมีเงินกี่ล้าน — สูตร 4% Rule"
-
-**Body:**
-> "Magic number = รายจ่ายต่อปี × 25"
-> "รายจ่าย ฿40K/เดือน = ฿480K/ปี → ต้องมี ฿12M"
-> "เริ่มอายุ 30 → ออม ฿15K/เดือน 30 ปีที่ 7% = ฿18M ✅"
-> "เริ่มอายุ 40 → ออม ฿35K/เดือน 20 ปีที่ 7% = ฿18M"
-> "Lumenfi คำนวณให้ + แสดงกราฟ"
-
----
-
-## 📘 Facebook Group Posts
-
-### กลุ่มที่ควรโพสต์ (อย่างน้อย 10 กลุ่ม)
-- การเงินส่วนบุคคล Thailand (100K+ members)
-- ลงทุนหุ้นไทย — เริ่มต้น
-- Money Coach Thailand
-- RMF SSF กองทุนลดหย่อนภาษี
-- คนไทยรักการลงทุน
-- ออมเงินก่อนแก่
-- หาเงินใช้เอง
-- Personal Finance Thailand
-- คนไทยอยากเกษียณเร็ว (FIRE)
-- กลุ่มการเงินครอบครัว
-
-### Template โพสต์ (ใช้สลับกัน)
-
-**Template A: แชร์เครื่องมือ**
-```
-แชร์เครื่องมือฟรีที่ผมใช้อยู่ครับ 📊
-
-Lumenfi เป็นแอพการเงินส่วนตัวสัญชาติไทย — มี AI วิเคราะห์ครบ 8 มิติ
-จะวางแผนปลดหนี้ ลงทุน ภาษี เกษียณ AI ช่วยได้หมด
-
-จุดที่ชอบ:
-✅ ใช้ฟรีตลอด ไม่ใช่ trial
-✅ ออกแบบสำหรับคนไทย — รองรับ RMF/SSF/PVD เต็มระบบ
-✅ AI ใช้ key ของตัวเองได้ (ฟรี Gemini)
-✅ Track หุ้นไทย/Crypto/ทอง/REIT ได้ครบ
-
-ลิงก์: lumenfi.projectostech.com (ไม่มี ค่าใช้จ่ายในการสมัคร)
-```
-
-**Template B: ตอบคำถาม**
-```
-มีคนถามว่า DTI ของตัวเองเสี่ยงไหม
-แชร์ rule of thumb สั้นๆ:
-
-DTI < 30%: สบาย ✅
-30-40%: ปลอดภัย แต่ไม่ก่อหนี้เพิ่ม
-40-50%: เริ่มเสี่ยง ⚠️ ต้องวางแผนปลดหนี้
-> 50%: วิกฤต 🚨
-
-ผมใช้ Lumenfi คำนวณ DTI + แนะนำกลยุทธ์ปลดหนี้ฟรี
-ลิงก์: lumenfi.projectostech.com/tools/debt
-
-#คำถามการเงิน #DTI
-```
-
-**Template C: Case study**
-```
-เคสน่าสนใจครับ — แอดมินอายุ 32 ทำงาน SWE
-
-3 เดือนที่แล้ว: ออมได้ 5%
-วันนี้: ออมได้ 30%
-
-ทำอะไรเปลี่ยน?
-1. ตั้ง budget แยกหมวด (Lumenfi)
-2. เลิก subscription ที่ไม่ใช้
-3. DCA หุ้น/ETF ทุกเดือนอัตโนมัติ
-4. AI Advisor ตรวจสุขภาพการเงินเดือนละครั้ง
-
-ใครอยากลอง — ฟรีไม่มีค่าใช้จ่าย
-lumenfi.projectostech.com
-```
-
----
-
-## 🐦 Twitter/X Threads
-
-### Thread 1: "10 trick ออมเงิน"
-```
-1/ ออมเงินไม่ได้สักบาท ทั้งที่เงินเดือนพอใช้?
-
-ปัญหาไม่ใช่รายได้ — แต่เป็นเรื่องระบบ
-
-แชร์ 10 trick ที่ผมใช้แล้วออมได้ 30% ของรายได้ 👇
-
-2/ Trick 1: ออมก่อนใช้
-
-เมื่อเงินเดือนเข้า → โอนทันที 20% ไปบัญชีอีกที่
-อย่ารอ "เหลือแล้วค่อยออม" — มันจะไม่เหลือ
-
-3/ Trick 2: แยกบัญชี
-
-- บัญชีเงินเดือน → จ่ายค่าใช้จ่าย
-- บัญชีออม → ห้ามแตะ
-- บัญชีลงทุน → DCA
-
-ใน Lumenfi เห็นยอดทุกบัญชีรวมในหน้าเดียว
-
-4/ Trick 3: budget ก่อน spend
-
-ตั้ง budget เดือน อาหาร ฿8K, บันเทิง ฿2K, etc.
-Lumenfi แจ้งเตือนเมื่อใกล้เกิน
-
-5/ Trick 4: Subscription audit
-
-เปิดบัตรเครดิตดู subscription ทั้งหมด
-ตัดที่ไม่ใช้ใน 30 วันออก
-ผมตัด Spotify Family + Apple Music = เซฟ ฿500/เดือน
-
-6/ Trick 5: 24-hour rule
-
-อยากซื้อของไม่จำเป็น? รอ 24 ชม.
-80% จะหยุดอยาก — เซฟเงินมหาศาล
-
-7/ Trick 6: Cash diet
-
-1 สัปดาห์/เดือน ใช้แต่เงินสด
-จะเห็นชัดว่าเงินหายไปไหน
-
-8/ Trick 7: ลดดอกเบี้ย
-
-หนี้บัตรเครดิตดอก 18% = นรก
-ใช้ Lumenfi เครื่องคำนวณ debt — แนะนำ Avalanche/Snowball/Refinance
-
-9/ Trick 8: ใช้ภาษีให้คุ้ม
-
-RMF/SSF/PVD เพดาน 30% ของรายได้
-คนเงินเดือน ฿50K = ลดภาษีได้ ฿15K-25K/ปี ที่ไม่ใช้สิทธิ
-
-10/ Trick 9: DCA Auto
-
-ตั้งครั้งเดียว ลงทุนรายเดือนอัตโนมัติ
-Lumenfi ทำให้ฟรี — ระบบ track avg cost ให้
-
-11/ Trick 10: AI Advisor
-
-เดือนละครั้ง ขอ AI วิเคราะห์ portfolio
-ของผมเพิ่งรู้ว่า "หุ้น A กระจุกตัว 35%" — ต้อง rebalance
-
-ลองที่ลิงก์ — ฟรีตลอด
-🔗 lumenfi.projectostech.com
-
-#การเงินส่วนบุคคล #ออมเงิน #ลงทุน
-```
-
----
-
-## 💼 LinkedIn Post
-
-```
-After 3 months building Lumenfi (Thai personal finance app with AI), some lessons learned:
-
-🎯 Local + AI > Global apps for niche markets
-- Thai users care deeply about RMF/SSF/PVD/lock-in periods
-- International apps don't model these correctly
-- AI Advisor that knows Thai tax rules = unfair advantage
-
-⚡ Tech stack that just works:
-- Next.js 14 + Supabase + Vercel (sin1 region for Thai latency)
-- Tier-based AI: Gemini Flash for free users, Claude Haiku for Pro
-- BYO API key option keeps free tier sustainable
-
-💰 Pricing strategy: Freemium that actually delivers value
-- Free: full app + 1 AI advisor/month + 5 chats/day
-- Pay-as-you-go: ฿79-599 credit packs
-- Pro: ฿149/month (Spotify-tier) with 14-day trial
-
-📊 Numbers to share next month — currently in launch phase.
-
-If you build for Thai market, focus on:
-1. Native financial concepts (LTV/RMF/SSF)
-2. PromptPay integration
-3. Local payment provider (Omise > Stripe for THB volume)
-4. Thai-language UX with English option
-
-Building in public 🇹🇭
-
-#FinTech #StartupTH #BuildInPublic
-```
-
----
-
-## 📝 Pantip กระทู้ยาว
-
-**ห้องที่ควรโพสต์:** สวนลุมพินี (การเงิน), ห้องสมุด, สีลม
-
-**Title ตัวอย่าง:**
-- "[รีวิว] แอพการเงินที่มี AI Advisor — ใช้ฟรีตลอด"
-- "30 วันที่ผมใช้ Lumenfi แล้วออมได้ 25%"
-- "RMF/SSF/PVD แค่นี้ก็ลดภาษีไปแล้ว ฿20K"
-
-### Template Pantip (ปรับยาวๆ)
-```
-สวัสดีครับ วันนี้มาแชร์ประสบการณ์ใช้แอพการเงินตัวใหม่ที่ผมใช้มา 3 เดือน
-
-[สถานการณ์ก่อนใช้]
-ผมเป็น SWE อายุ 32 เงินเดือน ฿65K มีค่าใช้จ่ายผ่อนคอนโด ผ่อนรถ
-ก่อนใช้แอพออมไม่ได้สักบาท ใช้ Excel จดเองแต่ก็ขี้เกียจ
-
-[เจอ Lumenfi]
-เพื่อนแนะนำมา — เป็นแอพการเงินสัญชาติไทย ไม่ต้องสมัคร premium
-ฟีเจอร์ที่ใช้:
-- บันทึกรายรับ-รายจ่าย (สแกนสลิปด้วย AI ได้)
-- ตั้ง budget แยกหมวด
-- AI Advisor วิเคราะห์ portfolio
-- เครื่องคำนวณ RMF/SSF/PVD
-
-[ผลลัพธ์]
-1 เดือน: เห็นภาพชัดว่าเงินไหลไปไหน
-2 เดือน: ออมได้ 15%
-3 เดือน: ออมได้ 28% + ใช้ AI Advisor วางแผนภาษีปลายปี
-
-[ข้อดี]
-✅ ฟรีจริง — ไม่ใช่ trial
-✅ ออกแบบสำหรับคนไทย (RMF/SSF/PVD เต็มระบบ)
-✅ AI ทำงานได้ฉลาด
-✅ Privacy ดี — ไม่ขายข้อมูล (ใช้ key ของตัวเองได้)
-
-[ข้อเสีย]
-⚠️ ยังเป็น early stage — บาง edge case พบ bug บ้าง
-⚠️ Custom domain support ยังไม่ครบ
-⚠️ ต้องสร้าง account ก่อน (ใช้ Google ได้)
-
-[สรุป]
-แนะนำเลยครับ ใครอยากลอง — ลิงก์: lumenfi.projectostech.com
-ผมไม่ได้ค่าตอบแทน แค่อยากแชร์เครื่องมือดีๆ
-
-ขอบคุณครับ
-```
-
----
-
-## 📧 Email Drip Campaign (5 emails over 14 days)
-
-### Email 1 (Day 0): ยินดีต้อนรับ
-**Subject:** "ยินดีต้อนรับสู่ Lumenfi — เริ่มจากตรงนี้ก่อน"
-```
-สวัสดีครับ
-
-ขอบคุณที่สมัครใช้ Lumenfi! ก่อนเริ่ม แนะนำให้ทำ 3 อย่างนี้:
-
-1. ✅ ตั้ง Emergency Fund goal (สำคัญที่สุด)
-   → /goals/new
-
-2. ✅ บันทึกบัญชีหลัก (เงินเดือน + ออม)
-   → /accounts/new
-
-3. ✅ ลอง AI Advisor วิเคราะห์การเงินรวม
-   → /advisor
-
-ใช้เวลา ~3 นาที ผลลัพธ์คุ้มค่าตลอดไป
-
-— ทีม Lumenfi
-```
-
-### Email 2 (Day 3): กระตุ้นใช้ AI
-**Subject:** "ลอง AI Advisor 30 วินาที — ดูว่าการเงินคุณอยู่จุดไหน"
-```
-หลังบันทึกข้อมูลแล้ว ลอง AI Advisor ดูครับ
-
-วิเคราะห์ครบ 8 มิติ:
-💸 กระแสเงินสด
-🚨 Emergency Fund
-💳 หนี้สิน
-🎯 เป้าหมาย
-📊 การลงทุน
-🧾 ภาษี
-🛡️ ประกัน
-🌴 เกษียณ
-
-แต่ละมิติให้คะแนน 0-100 + คำแนะนำที่ทำได้จริง
-ทดลอง: /advisor
-
-ฟรี 1 รายงาน/เดือน
-```
-
-### Email 3 (Day 7): Story
-**Subject:** "TRIN ออมได้ 30% — ทำยังไง"
-```
-แชร์เคสจริงครับ
-
-TRIN เป็น SWE อายุ 32 — เงินเดือน ฿65K
-3 เดือนก่อน: ออม 5%
-วันนี้: ออม 30%
-
-วิธีการ:
-1. ตั้ง budget 4 หมวดหลัก (อาหาร เดินทาง บันเทิง อื่นๆ)
-2. ตัด subscription ที่ไม่ใช้
-3. DCA Auto กองทุน ETF ฿5K/เดือน
-4. ใช้สิทธิ SSF + RMF ลดภาษี
-
-อยากเลียนแบบ? เริ่มจาก /budgets
-```
-
-### Email 4 (Day 10): Pro upgrade
-**Subject:** "ใช้ Lumenfi ทุกวัน? ลอง Pro 14 วันฟรี"
-```
-จากที่เห็นการใช้งาน — คุณใช้ Lumenfi ค่อนข้างถี่
-
-ลอง Pro 14 วันฟรีไหม?
-- AI Chat ไม่จำกัด (vs 5/วัน)
-- AI Advisor ไม่จำกัด (vs 1/เดือน)
-- AI Secretary push เตือนทุกวัน
-- ฿149/เดือน หรือ ฿1,490/ปี (ประหยัด 17%)
-
-ยกเลิกได้ทุกเมื่อ — charge หลังครบ 14 วันถ้าไม่ยกเลิก
-ลิงก์: /pricing
-```
-
-### Email 5 (Day 14): Newsletter ongoing
-**Subject:** "[Newsletter] เคล็ดลับการเงินสัปดาห์นี้"
-```
-Tips of the week 💡
-
-เคยรู้ไหมว่าเก็บ Emergency Fund ใน MMF (กองทุนตลาดเงิน) ดอกเบี้ย ~2-3%/ปี
-ดีกว่าออมทรัพย์ทั่วไปที่ 0.25%
-
-ลองเช็คดูใน Lumenfi → /accounts → แก้ประเภทเป็น MMF ถ้าใช่
-
-— ทีม Lumenfi
-```
-
----
-
-## 👥 KOL Outreach Scripts
-
-### Tier 1: Big KOL (10K+ followers)
-**Offer:** Free Pro lifetime + ค่า creative ฿1,500-3,000/post
-
-**DM Template:**
-```
-สวัสดีครับ [ชื่อ KOL]
-
-ผมแฟนเพจของคุณครับ — ติดตามตลอด
-
-แนะนำตัว: ผมเป็นนักพัฒนา Lumenfi (lumenfi.projectostech.com)
-แอพการเงินส่วนตัวที่มี AI Advisor — ออกแบบเฉพาะสำหรับคนไทย
-
-อยากเสนอให้ทดลองใช้ + รีวิว 1 post/clip
-
-สิ่งที่ให้:
-✅ Pro lifetime (ปกติ ฿1,490/ปี) ฟรีตลอดชีพ
-✅ ค่า creative ฿X (negotiable)
-✅ Affiliate ค่า commission 30% ทุก signup ที่มาจากคุณ
-
-ถ้าสนใจ ส่งเลขบัญชี + ID ที่ใช้ logged-in ได้เลยครับ
-จะ activate Pro ให้ทดลองก่อน
-
-ขอบคุณครับ
-[ชื่อ]
-```
-
-### Tier 2: Mid KOL (1-10K followers)
-**Offer:** Free Pro 1 year + Affiliate
-
-```
-สวัสดีครับ — ติดตามคอนเทนท์ของคุณมาสักพัก
-
-อยากแนะนำเครื่องมือที่ผมพัฒนา: Lumenfi (แอพการเงินไทย + AI)
-อยากให้ลองใช้แล้วถ้าชอบ ช่วยรีวิว 1 post
-
-ให้:
-✅ Pro 1 ปี (฿1,490) ฟรี
-✅ Affiliate code 30% commission
-
-ถ้าสนใจ DM กลับเลยครับ
-```
-
-### KOLs ที่ควร reach out (เริ่ม 10-20 คน)
-**การเงินส่วนบุคคล:**
-- @aommoney
-- เพจ "ออมไว้ใช้ตอนแก่"
-- เพจ "การเงินส่วนบุคคล"
-- อ.ตันติพล (ฟินเทคไทย)
-- @piggyplanner
+## 🏘️ FB Groups Distribution Strategy
+
+### Target Groups (เริ่ม join 15 กลุ่ม):
+
+**การเงินทั่วไป:**
+1. การเงิน 101
+2. ออมเงิน · ลงทุน · มือใหม่
+3. Money Tips ไทย
+4. การเงินส่วนบุคคล
+
+**หนี้:**
+5. เลิกหนี้ ปลดหนี้ คุยกันตรงนี้
+6. หนี้บัตรเครดิต ปรึกษากันได้
+7. Debt-free ชีวิตไร้หนี้
 
 **ลงทุน:**
-- เพจ "Investrade Thailand"
-- เพจ "หุ้นไทยเริ่มต้น"
-- Finnomena
-- StockRadars
+8. DCA ลงทุนแบบสบายๆ
+9. RMF SSF ลดภาษี
+10. Index Fund Thailand
+11. มือใหม่หัดลงทุน
 
-**Lifestyle/SWE:**
-- @therealdevy
-- @notsmartdev
-- @somkiat
+**อาชีพ:**
+12. Freelance Thailand
+13. Programmer Thailand / Tech Worker
+14. พ่อแม่ยุคใหม่
+15. Pre-retirement / 40+
 
----
+### กลยุทธ์เข้า Groups (ห้ามรีบโพสต์โปรโมท!)
 
-## 🎨 Visual Assets ที่ต้องเตรียม
+**Phase 1 (Day 1-7) — Observe + Build trust:**
+- Join + read กฎกลุ่มทุกข้อ
+- Like + comment สั้น ๆ เป็นประโยชน์ 3-5 ครั้ง/วัน
+- ❌ ห้ามแชร์ link Lumenfi
+- จดประเด็นที่คนถามบ่อย → จะเป็น content
 
-### Screenshots (ใช้ demo accounts)
-1. Dashboard เต็ม (TRIN persona)
-2. AI Advisor 8 domain cards
-3. Investment portfolio donut chart
-4. Net Worth time-series chart
-5. Reports page (8 dimensions)
-6. Pricing page (3 tiers)
-7. /investments/tax-saving (RMF/SSF)
-8. /goals page (multiple goals progress)
-9. Mobile bottom nav
-10. AI Chat interface
+**Phase 2 (Day 8-14) — Add Value:**
+- ตอบคำถามคนอื่นด้วย expertise (เช่น "DTI คำนวณจาก...")
+- ลงคำตอบละเอียด ไม่ใส่ link Lumenfi
+- ถ้าจำเป็น mention "ผมใช้แอพการเงินตัวนึง" ไม่ใส่ชื่อ
 
-### Branded templates (Canva/Figma)
-สีหลัก: 
-- Primary: Purple gradient (#7C3AED → #A855F7)
-- Success: Emerald (#10B981)
-- Warning: Amber (#F59E0B)
-- Danger: Rose (#E11D48)
+**Phase 3 (Day 15+) — Soft Promote:**
+- ถ้าคนถาม "ใช้แอพไหน" → ตอบได้
+- ลงโพสต์ value-add (guide step-by-step) + จบด้วย "ผมทำ tool ฟรี ลองได้ที่ lumenfi.app"
+- ไม่เกิน 1 self-promote post/กลุ่ม/สัปดาห์
 
-Font: Sarabun (Google Fonts)
-
-### Video B-roll
-- Phone holding (iPhone หรือ Galaxy)
-- Typing on laptop
-- ATM/bank scene
-- Coffee + finance book
-- Crowd in BTS/Bangkok
+**กฎเหล็ก:**
+- ❌ ห้าม copy-paste post เดียวกันลงหลายกลุ่ม (algorithm shadow ban)
+- ❌ ห้ามโปรโมทวันแรก ๆ ที่ join
+- ✅ Customize ให้เข้ากับ tone ของแต่ละกลุ่ม (NotebookLM ช่วยได้)
+- ✅ Comment ก่อน post — สร้าง credibility
 
 ---
 
-## 📊 KPI Tracking (Weekly)
+## 📱 Facebook Page Tactics
 
-| Metric | Target W1 | Target W4 |
-|---|---|---|
-| Lumenfi signups | 50 | 500 |
-| Free → Pro conversion | 2% | 5% |
-| Avg sessions/user | 2 | 5 |
-| TikTok views | 5K | 50K |
-| FB post engagement | 50 likes | 500 |
-| Email open rate | 40% | 35% |
-| Pro MRR | ฿0 | ฿4,500 |
+### Page Setup Checklist
+- [ ] **Profile pic:** Logo gradient L (1080×1080)
+- [ ] **Cover:** Aurum Quietus L cover (1640×924)
+- [ ] **Username:** `@lumenfi` ✓
+- [ ] **Category:** Finance + App Page
+- [ ] **About:** Tagline + value prop + ลิงก์ lumenfi.app
+- [ ] **CTA button:** "Use App" → lumenfi.app
+- [ ] **Pinned post:** Launch story
+- [ ] **Tabs:** Posts/Reels/About/Reviews ON; ปิด Shop/Services
 
-ใช้ Vercel Analytics + Supabase queries ดูเอง
+### Posting Best Practices
+
+**Hook Engineering (บรรทัดแรก สำคัญ 80%):**
+- ❌ "Lumenfi คือแอพการเงิน..."
+- ✅ "ผมเคยจ่ายดอกบัตรเครดิตปีละ ฿35,000 โดยไม่รู้ตัว"
+- ✅ "อายุ 35 แล้วยังไม่มีเงินเก็บ — เริ่มยังไง"
+- ✅ "RMF vs SSF ใครซื้อตัวไหนผิดที่สุด"
+
+**Sweet spot ความยาว:**
+- Education: 200-400 คำ (3-7 ย่อหน้า)
+- Use case: 5-10 บรรทัด
+- Demo: 2-4 บรรทัด + รูป
+- Q&A: 1-2 บรรทัด
+
+**รูปประกอบ:**
+- Canva preset 1080×1080 (square — optimal FB display)
+- หรือ 1080×1350 (portrait — กินพื้นที่ feed)
+- ใส่ Lumenfi watermark มุม
+- สี brand: ทอง #C8A951 + ดำ #0A0A0A หรือขาว #FAFAF7
+
+**Hashtags:**
+- 3-5 ภาษาไทย (ห้ามเกิน 7)
+- ตัวอย่าง: #การเงินส่วนบุคคล #ออมเงิน #ปลดหนี้ #ภาษี #ลงทุน
+
+**CTA สุดท้าย:**
+- บอกชัดเจน ใช้ 👉 หรือ ⬇️ ก่อน link
+- ใส่ "ลองฟรี" / "ไม่ต้องใส่บัตรเครดิต" ลดแรงต้าน
+
+### เวลาโพสต์
+- **Peak:** 19:30-20:30 (หลังกินข้าวเย็น)
+- **Backup:** 12:00-13:00 (พักเที่ยง)
+- **อาทิตย์:** 21:00-22:00 (เตรียมตัวสัปดาห์)
+- ❌ ตี 2-7
+
+### Reels (FB) — สำคัญ!
+FB ดัน Reels หนัก ๆ — organic reach 3-5 เท่าของ static post
+
+**Format:**
+- 9:16 (1080×1920), 15-30 วินาที
+- มี captions ฝังในวิดีโอ (85% ปิดเสียง)
+- Hook 3 วินาทีแรก
+
+**Content reuse via NotebookLM workflow G:**
+- Education post → Reels (อ่านโพสต์ + รูป animate)
+- Demo → screen recording + voice over
+- Use case → talking head + screenshot
+
+### FB Stories — Daily presence
+- 1-2 stories/วัน
+- Format: poll, quiz, behind-the-scenes, tip, link sticker
+- ใช้ "@everyone" mention — push notification ถึง follower ทั้งหมด (limit 1/วัน)
+
+### FB Live (Week 3+)
+- 30-45 นาที
+- Q&A 1 ครั้ง/2 สัปดาห์
+- หัวข้อชัด: "Q&A หนี้บัตรเครดิต" / "ปลายปีลดภาษียังไง"
+- โปรโมท 3 วันก่อน + บันทึก reuse เป็น Reels
 
 ---
 
-## 🚀 Launch Day Checklist
+## 🎬 TikTok — Secondary Channel (30%)
 
-วันที่จะ launch (เลือก Sunday/Monday เช้า):
-- [ ] Apply ทุก migrations
-- [ ] LUMENFI_AI_KEY + LUMENFI_FREE_AI_KEY set
-- [ ] Omise live mode (ถ้า approved)
-- [ ] Posting คลิป TikTok 3 คลิปแรก (เช้า/เที่ยง/เย็น)
-- [ ] โพสต์ FB groups 5 กลุ่ม
-- [ ] Twitter thread launch
-- [ ] LinkedIn post
-- [ ] Pantip กระทู้
-- [ ] Email มี 100 คนใน list — ส่ง launch email
-- [ ] ProductHunt listing (optional)
-- [ ] DM KOLs 10 คน
+### Strategy: Reuse FB Content
+ใช้ NotebookLM workflow G แปลง FB post เป็น TikTok script
 
----
+**Format:**
+- 9:16 (1080×1920), 15-30 วินาที
+- มี caption ในวิดีโอ
+- Trending sound ถ้าเข้ากับ tone
 
-## 💡 Cost Optimization
+**Content type:**
+1. Talking head + screenshot (60%)
+2. Screen recording walkthrough (30%)
+3. Text-only animated tip (10%)
 
-ลด cost ตัวเอง:
-- ❌ Cancel Claude Cowork ฿6,000 (ใช้ Claude Pro ฿720 + Lumenfi AI ฟรี)
-- ❌ Cancel subscription ที่ไม่ใช้ (Spotify Family, Netflix Premium → Standard)
-- ✅ Apply Vercel Pro $20 เฉพาะตอนมี traffic จริง
-- ✅ Anthropic + Gemini ทั้งคู่มี free credit
+### Hooks ที่ work บน TikTok
+- "หยุดออมเงินตอนนี้ ถ้ายังไม่ทำ 3 อย่างนี้"
+- "AI วิเคราะห์การเงิน 30 วินาที — น่าตกใจ"
+- "พลาดเงินคืน ฿15K/ปี โดยไม่รู้ตัว"
+- "DTI 50% = หนี้กินรายได้ครึ่ง"
 
----
+**Cadence:** 3 คลิป/สัปดาห์ (จันทร์-พุธ-ศุกร์) cross-post ไป FB Reels
 
-## ☎️ Crisis Plan
-
-ถ้าเดือน 1 ทำ ฿8K ไม่ได้:
-1. **เพิ่ม conversion rate**: A/B test pricing copy
-2. **Lower ราคา**: ทดลอง ฿99/เดือน 1 เดือน
-3. **Lifetime deal launch**: ฿2,990 ตลอดชีวิต (limited 100)
-4. **Partnership**: หา Bank/Insurance broker เป็น affiliate
-5. **B2B pivot**: ขายให้บริษัทเป็น HR financial wellness tool
+**Hashtag:** #การเงินส่วนบุคคล #ออมเงิน #ปลดหนี้ #fintech #Lumenfi
 
 ---
 
-**สู้ๆ ครับ — แอพดี + marketing ดี = สำเร็จ 🚀**
+## 📊 KPIs / Metrics (Monthly Review)
 
-Last updated: 2569-05-09
+### Tier 1: Vanity (ดูประกอบ)
+- FB Page followers
+- Reach total
+- Avg post engagement
+
+### Tier 2: Real signal
+- **Link clicks → lumenfi.app**
+- **Signups attribution** (`utm_source=facebook`)
+- **% engagement rate** — engagement/reach > 5% = good
+- **Group share reach**
+
+### Tier 3: Business
+- **Signups/เดือน** จาก FB → target 100/เดือนภายในเดือนที่ 2
+- **Pro upgrade** → target 5/เดือนภายในเดือนที่ 3
+- **Revenue** → ฿745/เดือน ภายในเดือนที่ 3
+- **Long-term:** 500 signups/เดือน, 25 Pro/เดือน = ฿3,725/เดือน ภายในเดือนที่ 6
+
+### Setup tracking (UTM)
+1. FB Page CTA: `lumenfi.app?utm_source=facebook&utm_medium=page`
+2. FB Group: `lumenfi.app?utm_source=facebook&utm_medium=group&utm_campaign=<group>`
+3. TikTok bio: `lumenfi.app?utm_source=tiktok&utm_medium=bio`
+4. เช็ค Vercel Analytics → Source → Facebook %
+
+---
+
+## 📝 14-Day Content Calendar
+
+| Day | Pillar | Topic | Format |
+|-----|--------|-------|--------|
+| 1 Mon | Launch | "ทำไมผมสร้าง Lumenfi" — founder story | Text + cover |
+| 2 Tue | Use case | "AOM ปลดหนี้ ฿380K ใน 18 เดือน" | Long + before/after |
+| 3 Wed | Education | "DTI คืออะไร ทำไม 36%+ อันตราย" | Text + infographic |
+| 4 Thu | Demo | "AI วิเคราะห์ครบ 8 มิติใน 30 วินาที" | Screen recording 30s |
+| 5 Fri | Engagement | "เงินเดือนแรกของคุณกี่บาท?" | Short Q&A |
+| 6 Sat | Use case | "TRIN 32 ปี ออม 50%" | Long + screenshot |
+| 7 Sun | — | rest หรือ FB Live | — |
+| 8 Mon | Education | "Emergency Fund — เก็บกี่เดือน" | Text + infographic |
+| 9 Tue | Demo | "ลงรายจ่ายด้วย slip ใน 5 วิ" | Receipt scanner clip |
+| 10 Wed | Education | "RMF vs SSF ต่างกันยังไง" | Comparison table |
+| 11 Thu | Use case | "คุณ PAT ผ่อนบ้าน + DCA" | Long + screenshot |
+| 12 Fri | Demo | "Net Worth chart" | Snapshot screenshot |
+| 13 Sat | Engagement | "บัตรเครดิตของคุณกี่ใบ?" | Poll |
+| 14 Sun | — | rest | — |
+
+**Day 15+:** ดู Insights → เลือก format ที่ work → ใช้ NotebookLM workflow A generate ต่อ
+
+---
+
+## 🚀 ProductHunt Launch (Week 4)
+
+**Goal:** ใช้ FB community push PH ranking → 200+ signups วันเดียว
+
+**Pre-launch (Week 3):**
+- DM 50 FB followers แรก ขอ support วัน launch
+- Post teaser 3 วันก่อน
+- เตรียม PH listing สมบูรณ์ (gif demo, screenshots, taglines)
+
+**Launch day:**
+- FB Post #1 (07:00 BKK) — "Lumenfi launch on Product Hunt"
+- FB Story ทุก 2 ชม. — countdown, ranking
+- FB Group share (3 safe groups)
+- TikTok 1 คลิป
+
+**Target:** Top 5 of the day → 500+ signups burst
+
+---
+
+## 💡 Tactical Hacks (Free, Organic)
+
+1. **"@everyone" ใน FB Story** — push notification ถึง follower ทั้งหมด (1/วัน)
+2. **Edit post หลังโพสต์ 30 นาที** — algorithm boost ครั้งที่ 2
+3. **ตอบ comment ภายใน 1 ชม.** — เพิ่ม reach 2-3 เท่า
+4. **Ask ตอนท้าย post** ("คุณคิดยังไง?") — drives comment
+5. **แชร์ใน profile ส่วนตัว** ทุก post — ขยาย 1st-degree reach
+6. **Tag 1-2 คนใน comment** — ที่จะ engage แน่
+7. **Comment ในเพจการเงินใหญ่** — drive profile views
+8. **"Save" button ใน CTA** — Save = positive signal
+9. **Repost top post ทุก 30 วัน** — recycle
+10. **คุยกับ admin Group ก่อน promote** — ขออนุญาตเลย
+
+---
+
+## 🎨 Asset Inventory (พร้อมใช้)
+
+### Logo + Branding
+- `public/icons/logo-final.svg` — Aurum Quietus L
+- `public/icons/icon-512.png` — profile pic
+- Facebook cover (`public/marketing/`)
+
+### Screenshots
+- `public/marketing/dashboard.png`
+- `public/marketing/cashflow.png`
+- `public/marketing/debt-plan.png`
+- `public/marketing/budget.png`
+- `public/marketing/investment.png`
+- `public/marketing/networth-chart.png`
+- `public/marketing/advisor-home.png`
+- `public/marketing/health-report.png`
+- `public/marketing/insurance-gap.png`
+- `public/marketing/add-transaction.png`
+- `public/marketing/dashboard-notify.png`
+
+### Demo Accounts
+- TRIN (ออม 50%) — `/settings/admin/seed-demo`
+- AOM (ปลดหนี้) — `/settings/admin/seed-demo`
+- PAT (ผ่อนบ้าน + DCA) — `/settings/admin/seed-demo`
+
+### Canva Templates ที่ต้องทำ
+- [ ] Square post (1080×1080)
+- [ ] Portrait post (1080×1350)
+- [ ] Story (1080×1920)
+- [ ] Before/After comparison
+- [ ] Infographic (DTI, RMF/SSF, etc.)
+- [ ] Quote card
+
+### Knowledge Base for NotebookLM
+- `docs/lumenfi-knowledge-base.txt` — **1,382 บรรทัด** ครอบคลุม identity, features, pricing, FAQs, edge cases — upload ไป NotebookLM ใช้ generate content
+
+---
+
+## 📋 Sample Posts
+
+**Ready-to-copy-paste:** `docs/marketing/FACEBOOK_PAGE_POSTS.md` (7 โพสต์เก่า + จะเพิ่มอีก 14 ตาม calendar ข้างบน — ใช้ NotebookLM workflow B generate ทีละโพสต์)
+
+---
+
+## ❓ FAQ ก่อนเริ่ม
+
+**Q: โพสต์แล้ว reach 0 ทำไง?**
+A: ปกติช่วงแรก FB ทดสอบ audience — 1-2 อาทิตย์แรก reach อาจต่ำ แก้โดยแชร์ผ่าน profile + tag คนรู้จัก 2-3 คน
+
+**Q: ห้ามใส่ link ในโพสต์ FB?**
+A: ไม่ห้าม แต่ FB deprioritize external link — วิธีแก้: ใส่ link ใน comment แรกแทน หรือใส่ในโพสต์ก็ได้ — reach อาจตก 20-30%
+
+**Q: เริ่ม FB Reels ดีไหม?**
+A: ดีมาก! FB ดัน Reels — reach 3-5 เท่า static — ทำ 1-2 คลิป/สัปดาห์ reuse จาก post
+
+**Q: ไม่อยากแสดงหน้ากล้อง?**
+A: ได้ — text-only post + screen recording ก็ work
+
+**Q: เริ่ม FB Group เอง?**
+A: รอสัก 4-6 สัปดาห์ ให้ Page มี follower 500+ ก่อน
+
+**Q: โพสต์ติดเงียบไม่มี engagement?**
+A: ลอง 3 อย่าง: (1) เปลี่ยน hook, (2) เปลี่ยนเวลาโพสต์, (3) ใส่คำถามตอนจบ
+
+---
+
+## 🎯 Success Metrics — 90 Days
+
+| Month | FB Followers | Signups | Pro | Revenue |
+|-------|-------------|---------|-----|---------|
+| Month 1 | 500 | 50 | 1 | ฿149 |
+| Month 2 | 1,500 | 150 | 5 | ฿745 |
+| Month 3 | 3,500 | 300 | 15 | ฿2,235 |
+| Month 6 | 10,000 | 600/mo | 30/mo | ฿4,470/mo |
+
+**Break-even (cover Claude Cowork ฿6,000):**
+- ต้องการ 40 Pro subscribers
+- ~Month 4-5
+
+---
+
+## 🔗 Resources
+
+- **PLAYBOOK (this):** `docs/marketing/PLAYBOOK.md`
+- **Ready posts:** `docs/marketing/FACEBOOK_PAGE_POSTS.md`
+- **Design philosophy:** `docs/marketing/design-philosophy.md`
+- **Screenshots:** `public/marketing/`
+- **Knowledge base (NotebookLM):** `docs/lumenfi-knowledge-base.txt`
+- **Facebook Page:** https://www.facebook.com/lumenfi/
+- **NotebookLM:** https://notebooklm.google.com
+
+---
+
+*Last updated: 13 พฤษภาคม 2026 — Facebook-first edition. Review monthly.*
