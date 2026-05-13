@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 import { saveReminderSettings } from './actions';
 import { TestReminderButton } from '@/components/settings/test-reminder-button';
 import { ReminderFormAuto } from '@/components/settings/reminder-form-auto';
+import { ReminderDiagnose } from '@/components/settings/reminder-diagnose';
 
 export const dynamic = 'force-dynamic';
 
@@ -128,6 +129,9 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
         </Card>
       )}
 
+      {/* Diagnostic — auto-detects cron schedule mismatch and shows fix SQL */}
+      <ReminderDiagnose />
+
       <Card className="border-muted bg-muted/30">
         <CardContent className="space-y-2 p-4 text-xs">
           <p className="font-semibold">💡 ข้อมูล</p>
@@ -136,7 +140,7 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
             <li>"ข้ามถ้าวันนี้บันทึกแล้ว" — ไม่กวนถ้าคุณบันทึกไปแล้ว</li>
             <li>ใช้ได้บน mobile PWA + browser ที่อนุญาต push (Chrome, Edge, Safari iOS 16.4+)</li>
             <li>iOS Safari: ต้อง "Add to Home Screen" ก่อนถึงรับ push ได้</li>
-            <li>⚙️ Admin only: ต้องตั้ง Supabase pg_cron เพื่อให้เช็คทุกชั่วโมง — ดู supabase/one-time/setup-hourly-notify.sql</li>
+            <li>⚙️ Admin only: ต้องตั้ง Supabase pg_cron เพื่อให้เช็คทุกชั่วโมง — ดู supabase/one-time/setup-hourly-notify.sql (หรือใช้ปุ่ม “ตรวจสอบ” ด้านบนเพื่อ copy SQL พร้อมใช้)</li>
           </ul>
         </CardContent>
       </Card>

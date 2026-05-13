@@ -134,34 +134,23 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// === Push notifications ===
-self.addEventListener('push', (event) => {
-  let payload = { title: 'Lumenfi', body: 'รายการประจำใกล้ถึงกำหนด', url: '/recurring' };
-  try {
-    if (event.data) payload = { ...payload, ...event.data.json() };
-  } catch (e) {
-    // payload not JSON — keep defaults
-  }
-  const options = {
-    body: payload.body,
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
-    data: { url: payload.url || '/' },
-    tag: payload.tag || 'lumenfi-recurring',
-    requireInteraction: false,
-  };
-  event.waitUntil(self.registration.showNotification(payload.title, options));
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const url = event.notification.data?.url || '/';
+// === Resubscribe on expiry (Chrome may rotate endpoints) ===
+self.addEventListener('pushsubscriptionchange', (event) => {
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((wins) => {
-      for (const w of wins) {
-        if (w.url.includes(url) && 'focus' in w) return w.focus();
+    (async () => {
+      try {
+        const newSub = await self.registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: event.oldSubscription?.options?.applicationServerKey,
+        });
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newSub),
+        });
+      } catch (e) {
+        // Can't resubscribe silently — user must re-enable in /recurring
       }
-      if (clients.openWindow) return clients.openWindow(url);
-    })
+    })()
   );
 });
