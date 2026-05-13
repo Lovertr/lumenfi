@@ -49,9 +49,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     { href: '/settings/reminder', icon: Bell, label: 'แจ้งเตือนบันทึกค่าใช้จ่าย', desc: 'เตือนทุกวันให้บันทึกรายรับ-รายจ่าย', color: 'text-amber-600 bg-amber-50' },
     { href: '/settings/privacy', icon: Shield, label: t('privacy'), desc: '', color: 'text-emerald-600 bg-emerald-50' },
     { href: '/settings/billing', icon: CreditCard, label: 'การชำระเงิน + Subscription', desc: 'จัดการแพลน + ใบเสร็จ', color: 'text-violet-600 bg-violet-50' },
-    isAgent
-      ? { href: '/agents/dashboard', icon: Briefcase, label: '💼 Agent Dashboard', desc: 'ดู leads + จัดการโปรไฟล์ตัวแทน', color: 'text-rose-600 bg-rose-50' }
-      : { href: '/agents/signup', icon: Briefcase, label: '💼 สมัครใช้งานแบบตัวแทนประกัน', desc: 'รับ leads ผ่าน Lumenfi · ทดลองฟรี 14 วัน', color: 'text-rose-600 bg-rose-50' },
+    // Agent: show "สมัคร" only when not yet an agent — once signed up, the
+    // sidebar has "Agent Dashboard" already, no need to duplicate here
+    ...(isAgent ? [] : [{ href: '/agents/signup', icon: Briefcase, label: '💼 สมัครใช้งานแบบตัวแทนประกัน', desc: 'รับ leads ผ่าน Lumenfi · ทดลองฟรี 14 วัน', color: 'text-rose-600 bg-rose-50' }]),
     // Referral tile removed — already in sidebar as "ชวนเพื่อน · รับ Pro"
     { href: '/settings/export', icon: Download, label: t('exportData'), desc: '', color: 'text-cyan-600 bg-cyan-50' },
     { href: '/settings/admin', icon: Wrench, label: 'Admin · System Health', desc: 'ตรวจสถานะระบบ + เครื่องมือ admin', color: 'text-rose-600 bg-rose-50' },
