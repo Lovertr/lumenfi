@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ThaiDateInput } from '@/components/ui/thai-date-input';
 import { updateProfile } from '@/app/[locale]/(app)/settings/actions';
 import { CheckCircle2, ChevronDown, ChevronRight, Sparkles, Briefcase, MapPin, TrendingUp } from 'lucide-react';
 
@@ -164,7 +165,11 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label htmlFor="date_of_birth">วันเกิด</Label>
-            <Input id="date_of_birth" name="date_of_birth" type="date" defaultValue={profile.date_of_birth ?? ''} />
+            <ThaiDateInput
+              id="date_of_birth"
+              name="date_of_birth"
+              defaultValue={profile.date_of_birth ?? null}
+            />
             <p className="text-[11px] text-muted-foreground">ใช้คำนวณประกันสุขภาพ + เกษียณ</p>
           </div>
           <div className="space-y-2">
