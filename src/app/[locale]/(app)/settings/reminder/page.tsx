@@ -12,6 +12,14 @@ import { ReminderDiagnose } from '@/components/settings/reminder-diagnose';
 
 export const dynamic = 'force-dynamic';
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'tintanee.t@gmail.com';
+
+async function isAdminUser(): Promise<boolean> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return !!user && user.email === ADMIN_EMAIL;
+}
+
 async function getReminderProfile() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -60,6 +68,7 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
   const hour = profile?.reminder_hour ?? 21;
   const skipIfLogged = profile?.reminder_skip_if_logged ?? true;
   const pushCount = await getPushCount();
+  const isAdmin = await isAdminUser();
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4 pt-6 lg:pt-10">
@@ -129,8 +138,8 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
         </Card>
       )}
 
-      {/* Diagnostic — auto-detects cron schedule mismatch and shows fix SQL */}
-      <ReminderDiagnose />
+      {/* Diagnostic — admin-only: contains CRON_SECRET in the fix SQL */}
+      {isAdmin && <ReminderDiagnose />}
 
       <Card className="border-muted bg-muted/30">
         <CardContent className="space-y-2 p-4 text-xs">
@@ -140,7 +149,7 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
             <li>"ข้ามถ้าวันนี้บันทึกแล้ว" — ไม่กวนถ้าคุณบันทึกไปแล้ว</li>
             <li>ใช้ได้บน mobile PWA + browser ที่อนุญาต push (Chrome, Edge, Safari iOS 16.4+)</li>
             <li>iOS Safari: ต้อง "Add to Home Screen" ก่อนถึงรับ push ได้</li>
-            <li>⚙️ Admin only: ต้องตั้ง Supabase pg_cron เพื่อให้เช็คทุกชั่วโมง — ดู supabase/one-time/setup-hourly-notify.sql (หรือใช้ปุ่ม “ตรวจสอบ” ด้านบนเพื่อ copy SQL พร้อมใช้)</li>
+            <li>หากเตือนไม่มาตามเวลา ลองปิด-เปิดสิทธิ์ใหม่ที่ /recurring แล้วกด "ส่งทดสอบ" ด้านบน</li>
           </ul>
         </CardContent>
       </Card>

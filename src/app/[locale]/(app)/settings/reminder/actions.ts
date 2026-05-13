@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import webpush from 'web-push';
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'tintanee.t@gmail.com';
+
 export async function saveReminderSettings(formData: FormData) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -100,6 +102,9 @@ export async function diagnoseReminderHealth(): Promise<{
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, checks: [{ name: 'auth', ok: false, detail: 'not signed in' }] };
 
+  // Hard gate — diagnostic exposes CRON_SECRET in fixSql so admin-only
+  const isAdmin = user.email === ADMIN_EMAIL;
+
   const checks: { name: string; ok: boolean; detail: string }[] = [];
 
   // 1) VAPID env present
@@ -154,20 +159,50 @@ export async function diagnoseReminderHealth(): Promise<{
         : `ยิงล่าสุดเมื่อ ${lastSent}`,
   });
 
-  // 5) Cron schedule mismatch detection
+  // 5) Cron firing health — check notifications table for ANY recent push
+  //    (uses service role; this proves the cron endpoint is being called
+  //    regardless of whether it's Vercel-only @ 21:00 or hourly pg_cron)
   const reminderHour = profile?.reminder_hour ?? 21;
-  const vercelCronHourBkk = 21; // vercel.json "0 14 * * *" UTC = 21:00 BKK
-  const cronOk = reminderHour === vercelCronHourBkk;
+  let cronOk = false;
+  let cronDetail = '';
+  try {
+    const { createServiceClient } = await import('@/lib/supabase/admin');
+    const admin = createServiceClient();
+    const since = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+    const { data: recent } = await admin
+      .from('notifications')
+      .select('id, type, created_at')
+      .gte('created_at', since)
+      .in('type', ['reminder', 'recurring', 'budget', 'watchlist', 'secretary'])
+      .order('created_at', { ascending: false })
+      .limit(1);
+    if (recent && recent.length > 0) {
+      const ago = Math.round((Date.now() - new Date(recent[0].created_at).getTime()) / (60 * 1000));
+      cronOk = true;
+      cronDetail = `Cron ทำงานปกติ — มี notification ครั้งล่าสุดเมื่อ ${ago} นาทีที่แล้ว`;
+    } else {
+      // No notifications in last 25h — either no users qualify OR cron isn't firing
+      // Distinguish: if Vercel-only cron at 21:00 BKK and reminderHour ≠ 21, suspect mismatch
+      const vercelCronHourBkk = 21;
+      if (reminderHour !== vercelCronHourBkk) {
+        cronDetail = `❌ ไม่พบ notification ใน 25 ชั่วโมงที่ผ่านมา — Vercel cron ยิงแค่ ${vercelCronHourBkk}:00 BKK ต้องตั้ง Supabase pg_cron รายชั่วโมง`;
+      } else {
+        cronDetail = `⏳ ยังไม่มี notification ใน 25 ชั่วโมงที่ผ่านมา — รอถึงเวลา ${vercelCronHourBkk}:00 BKK ครั้งถัดไป`;
+        cronOk = true; // benefit of doubt — cron may simply not have fired yet
+      }
+    }
+  } catch {
+    cronDetail = 'ตรวจสอบไม่ได้ (ไม่มีสิทธิ์ service role)';
+    cronOk = true;
+  }
   checks.push({
-    name: 'Cron schedule ตรงกับเวลาเตือน',
+    name: 'Cron กำลังทำงาน',
     ok: cronOk,
-    detail: cronOk
-      ? `Vercel cron ยิงเวลา ${vercelCronHourBkk}:00 BKK ตรงกับเวลาที่ตั้ง — ใช้งานได้`
-      : `❌ Vercel cron ยิงแค่เวลา ${vercelCronHourBkk}:00 BKK เท่านั้น แต่คุณตั้งเตือน ${String(reminderHour).padStart(2, '0')}:00 — ต้องตั้ง Supabase pg_cron ให้ยิงรายชั่วโมง`,
+    detail: cronDetail,
   });
 
   let fixSql: string | undefined;
-  if (!cronOk) {
+  if (!cronOk && isAdmin) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lumenfi.vercel.app';
     const cronSecret = process.env.CRON_SECRET || 'PASTE_YOUR_CRON_SECRET_HERE';
     fixSql = `-- Run this in Supabase SQL Editor (Dashboard → SQL Editor)
