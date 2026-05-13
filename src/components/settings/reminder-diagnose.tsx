@@ -3,29 +3,30 @@
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Activity, CheckCircle2, XCircle, Copy, Check } from 'lucide-react';
-import { diagnoseReminderHealth } from '@/app/[locale]/(app)/settings/reminder/actions';
+import { Activity, CheckCircle2, XCircle, Zap } from 'lucide-react';
+import { diagnoseReminderHealth, fireCronNow } from '@/app/[locale]/(app)/settings/reminder/actions';
 
 type Report = Awaited<ReturnType<typeof diagnoseReminderHealth>>;
 type Check = { name: string; ok: boolean; detail: string };
+type FireResult = Awaited<ReturnType<typeof fireCronNow>>;
 
 export function ReminderDiagnose() {
   const [pending, start] = useTransition();
+  const [firing, startFire] = useTransition();
   const [report, setReport] = useState<Report | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [fire, setFire] = useState<FireResult | null>(null);
 
   function run() {
     start(async () => {
-      const r = await diagnoseReminderHealth();
-      setReport(r);
+      setReport(await diagnoseReminderHealth());
+      setFire(null);
     });
   }
 
-  async function copySql() {
-    if (!report?.fixSql) return;
-    await navigator.clipboard.writeText(report.fixSql);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  function trigger() {
+    startFire(async () => {
+      setFire(await fireCronNow());
+    });
   }
 
   return (
@@ -48,18 +49,6 @@ export function ReminderDiagnose() {
 
         {report && (
           <div className="space-y-2 pt-2">
-            <div
-              className={
-                report.ok
-                  ? 'rounded border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900'
-                  : 'rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900'
-              }
-            >
-              {report.ok
-                ? '✓ ทุกอย่างพร้อม — ถ้ายังไม่ได้รับ ลองกดปุ่ม "ส่งทดสอบ" ข้างบน'
-                : '⚠️ พบจุดที่ต้องแก้ — ดูรายการด้านล่าง'}
-            </div>
-
             <ul className="space-y-2 text-sm">
               {report.checks.map((c: Check, i: number) => (
                 <li key={i} className="flex items-start gap-2">
@@ -76,35 +65,28 @@ export function ReminderDiagnose() {
               ))}
             </ul>
 
-            {report.fixSql && (
-              <div className="mt-3 space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-blue-900">
-                    🔧 วิธีแก้: ตั้ง Supabase pg_cron (ฟรี, ใช้เวลา 30 วินาที)
-                  </p>
-                  <Button onClick={copySql} size="sm" variant="outline" className="h-7 gap-1">
-                    {copied ? (
-                      <>
-                        <Check className="h-3 w-3" /> คัดลอกแล้ว
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3 w-3" /> คัดลอก SQL
-                      </>
-                    )}
-                  </Button>
-                </div>
-                <ol className="ml-4 list-decimal space-y-1 text-xs text-blue-900">
-                  <li>เปิด Supabase Dashboard → SQL Editor</li>
-                  <li>วาง SQL ที่คัดลอกไปด้านล่าง แล้วกด Run</li>
-                  <li>กลับมาที่หน้านี้แล้วกดตรวจสอบใหม่ — ผลควรเป็น "ตรง" หมด</li>
-                  <li>รอถึงเวลาที่ตั้ง (top of the hour) — push ควรมาถึงเอง</li>
-                </ol>
-                <pre className="mt-2 max-h-48 overflow-auto rounded bg-white p-2 text-[10px] leading-tight text-slate-700">
-                  {report.fixSql}
-                </pre>
+            <div className="mt-3 rounded-lg border border-purple-200 bg-purple-50 p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-purple-900">⚡ ยิง cron ตอนนี้</p>
+                <Button onClick={trigger} disabled={firing} size="sm" variant="outline" className="h-7 gap-1">
+                  <Zap className="h-3 w-3" />
+                  {firing ? 'กำลังยิง...' : 'ยิงตอนนี้'}
+                </Button>
               </div>
-            )}
+              <p className="text-xs text-purple-800">
+                ทดสอบ pipeline จริงโดยไม่ต้องรอชั่วโมงถัดไป
+              </p>
+              {fire && (
+                <div className={fire.ok ? 'rounded border border-emerald-300 bg-white p-2 text-xs text-emerald-900' : 'rounded border border-red-300 bg-white p-2 text-xs text-red-900'}>
+                  <p className="font-medium">
+                    {fire.ok ? `✓ HTTP ${fire.status} — endpoint ตอบกลับ` : `✗ ${fire.error ?? 'failed'}`}
+                  </p>
+                  {fire.body && (
+                    <pre className="mt-1 overflow-auto text-[10px] leading-tight text-slate-700">{JSON.stringify(fire.body, null, 2)}</pre>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </CardContent>

@@ -96,9 +96,7 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
           <div>
             <p className="font-semibold">📱 อุปกรณ์ที่จะได้รับแจ้งเตือน</p>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {pushCount > 0
-                ? `เชื่อมต่อ ${pushCount} อุปกรณ์อยู่แล้ว · เปิด/ปิดสิทธิ์ของเครื่องนี้ด้านล่าง`
-                : 'ยังไม่มีอุปกรณ์ใดเชื่อมต่อ — กดปุ่มด้านล่างเพื่อเปิดสิทธิ์'}
+              เปิด/ปิดสิทธิ์ push บนเครื่องนี้ — สถานะอัปเดตทันทีที่กด
             </p>
           </div>
           <NotificationToggle />

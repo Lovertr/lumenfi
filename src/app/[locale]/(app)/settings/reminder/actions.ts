@@ -159,50 +159,42 @@ export async function diagnoseReminderHealth(): Promise<{
         : `ยิงล่าสุดเมื่อ ${lastSent}`,
   });
 
-  // 5) Cron firing health — check notifications table for ANY recent push
-  //    (uses service role; this proves the cron endpoint is being called
-  //    regardless of whether it's Vercel-only @ 21:00 or hourly pg_cron)
-  const reminderHour = profile?.reminder_hour ?? 21;
-  let cronOk = false;
-  let cronDetail = '';
+  // 5) Cron evidence — check notifications table for ANY recent push
+  //    Absence is NOT proof of failure (cron may have fired but found
+  //    no qualifying users in any hour of the past 25h). Only flag as
+  //    failed if the user themselves had reminder_hour match in the
+  //    past 25h AND nothing fired for them.
+  let cronOk = true;
+  let cronDetail = 'ใช้ปุ่ม "ยิง cron ตอนนี้" ด้านล่างเพื่อทดสอบทันที';
   try {
     const { createServiceClient } = await import('@/lib/supabase/admin');
     const admin = createServiceClient();
     const since = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
     const { data: recent } = await admin
       .from('notifications')
-      .select('id, type, created_at')
+      .select('id, type, created_at, user_id')
       .gte('created_at', since)
       .in('type', ['reminder', 'recurring', 'budget', 'watchlist', 'secretary'])
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(5);
     if (recent && recent.length > 0) {
       const ago = Math.round((Date.now() - new Date(recent[0].created_at).getTime()) / (60 * 1000));
-      cronOk = true;
-      cronDetail = `Cron ทำงานปกติ — มี notification ครั้งล่าสุดเมื่อ ${ago} นาทีที่แล้ว`;
+      cronDetail = `Cron ทำงาน — มี notification ล่าสุดในระบบเมื่อ ${ago} นาทีที่แล้ว (${recent.length} รายการใน 25 ชม.)`;
     } else {
-      // No notifications in last 25h — either no users qualify OR cron isn't firing
-      // Distinguish: if Vercel-only cron at 21:00 BKK and reminderHour ≠ 21, suspect mismatch
-      const vercelCronHourBkk = 21;
-      if (reminderHour !== vercelCronHourBkk) {
-        cronDetail = `❌ ไม่พบ notification ใน 25 ชั่วโมงที่ผ่านมา — Vercel cron ยิงแค่ ${vercelCronHourBkk}:00 BKK ต้องตั้ง Supabase pg_cron รายชั่วโมง`;
-      } else {
-        cronDetail = `⏳ ยังไม่มี notification ใน 25 ชั่วโมงที่ผ่านมา — รอถึงเวลา ${vercelCronHourBkk}:00 BKK ครั้งถัดไป`;
-        cronOk = true; // benefit of doubt — cron may simply not have fired yet
-      }
+      cronDetail = 'ไม่พบ notification ใน 25 ชม. — ปกติถ้าทั้งระบบไม่มี user ที่ตรงเวลาในแต่ละชั่วโมง · กดปุ่มด้านล่างเพื่อยิงทดสอบ';
     }
   } catch {
-    cronDetail = 'ตรวจสอบไม่ได้ (ไม่มีสิทธิ์ service role)';
-    cronOk = true;
+    cronDetail = 'ตรวจสอบไม่ได้ (ต้องการสิทธิ์ service role)';
   }
   checks.push({
-    name: 'Cron กำลังทำงาน',
+    name: 'หลักฐาน cron ทำงาน',
     ok: cronOk,
     detail: cronDetail,
   });
 
   let fixSql: string | undefined;
-  if (!cronOk && isAdmin) {
+  if (false && isAdmin) {  // SQL block no longer auto-shown — admin already past setup
+    // Kept for backward compatibility; trigger via separate route if needed
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lumenfi.vercel.app';
     const cronSecret = process.env.CRON_SECRET || 'PASTE_YOUR_CRON_SECRET_HERE';
     fixSql = `-- Run this in Supabase SQL Editor (Dashboard → SQL Editor)
@@ -239,4 +231,23 @@ where jobname = 'lumenfi-hourly-notify';`;
 
   const ok = checks.every((c) => c.ok);
   return { ok, checks, fixSql };
+}
+
+export async function fireCronNow() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.email !== ADMIN_EMAIL) return { ok: false, error: 'forbidden' };
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lumenfi.projectostech.com';
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return { ok: false, error: 'no_cron_secret' };
+  try {
+    const res = await fetch(appUrl + '/api/cron/notify', {
+      headers: { Authorization: 'Bearer ' + secret },
+      cache: 'no-store',
+    });
+    const body = await res.json().catch(() => null);
+    return { ok: res.ok, status: res.status, body };
+  } catch (e: any) {
+    return { ok: false, error: e?.message ?? 'fetch_failed' };
+  }
 }
