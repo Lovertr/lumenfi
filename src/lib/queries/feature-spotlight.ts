@@ -53,6 +53,20 @@ export async function getSpotlight(): Promise<Spotlight | null> {
     supabase.from('profiles').select('ai_provider, ai_api_key_encrypted').eq('id', user.id).maybeSingle(),
   ]);
 
+  // Check whether user has an active paid subscription (Pro/PAYG/trial).
+  // If yes, Lumenfi AI quota covers Advisor — don't push "set up your own key".
+  const { data: subRow } = await supabase
+    .from('user_subscriptions')
+    .select('plan_code, status, current_period_end')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  const nowIso = new Date().toISOString();
+  const hasPaidPlan =
+    !!subRow &&
+    subRow.plan_code !== 'free' &&
+    ['active', 'trial'].includes(subRow.status as string) &&
+    (!subRow.current_period_end || subRow.current_period_end > nowIso);
+
   const has = {
     accounts: (accountsRes.count ?? 0) > 0,
     investments: (investmentsRes.count ?? 0) > 0,
@@ -63,7 +77,9 @@ export async function getSpotlight(): Promise<Spotlight | null> {
     advisor: (advisorRes.count ?? 0) > 0,
     insurance: (insuranceRes.count ?? 0) > 0,
     budgets: (budgetsRes.count ?? 0) > 0,
-    aiKey: !!(aiKeyRes.data?.ai_provider && aiKeyRes.data?.ai_api_key_encrypted),
+    // aiKey is satisfied if user has BYO key OR an active paid plan
+    // (paid users get Lumenfi-provided AI — no need to set their own)
+    aiKey: !!(aiKeyRes.data?.ai_provider && aiKeyRes.data?.ai_api_key_encrypted) || hasPaidPlan,
   };
 
   // Build candidates list — order matters as fallback when priorities tie
@@ -164,7 +180,6 @@ export async function getSpotlight(): Promise<Spotlight | null> {
       priority: 40,
     });
   }
-
   // Filter out dismissed + pick highest priority
   const candidate = candidates
     .filter((c) => !dismissed.includes(c.id))
@@ -173,7 +188,7 @@ export async function getSpotlight(): Promise<Spotlight | null> {
   return candidate ?? null;
 }
 
-export async function dismissSpotlight(spotlightId: string) {
+export async function dismissSpotlight(spotlightId: string): Promise<void> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
