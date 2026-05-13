@@ -148,19 +148,25 @@ begin
   end loop;
 
   if has_id then
-    -- Pre-generate new UUIDs and capture mapping in the map temp table
+    -- Step 1: populate mapping temp table FIRST (separate statement so
+    -- the INSERT below can see the mapping rows; data-modifying CTEs
+    -- see only the snapshot from before the statement started)
+    execute format(
+      'insert into %I_map (old_id, new_id) '
+      'select id, gen_random_uuid() from %I where user_id = $1',
+      p_table, p_table
+    ) using p_src;
+
+    -- Step 2: insert actual rows using the mapping
     sql := format(
-      'with src as (select id as old_id, gen_random_uuid() as new_id from %I where user_id = $1), '
-      'mapped as (insert into %I_map select old_id, new_id from src returning *) '
       'insert into %I (id, user_id %s) '
       'select m.new_id, $2 %s '
       'from %I s join %I_map m on m.old_id = s.id '
       'where s.user_id = $1',
-      p_table, p_table, p_table, cols_insert, cols_select, p_table, p_table
+      p_table, cols_insert, cols_select, p_table, p_table
     );
   else
     -- Composite PK / no id column — just INSERT...SELECT, no mapping needed
-    -- (no other table can FK back to a composite PK anyway)
     sql := format(
       'insert into %I (user_id %s) select $2 %s from %I s where s.user_id = $1',
       p_table, cols_insert, cols_select, p_table
@@ -315,4 +321,4 @@ end $$;
 -- delete from net_worth_snapshots where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
 -- delete from portfolio_snapshots where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
 -- delete from insurance_policies where user_id = (select id from auth.users where email='trin_tintanee@hotmail.com');
--- delete from investment_watchlist where user_id = (select id from auth.users where email='trin_tintanee@hotmail
+-- delete from i
