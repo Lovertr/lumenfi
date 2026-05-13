@@ -2,7 +2,7 @@ import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Brain, Shield, Download, Trash2, ChevronRight, Bell, Wrench, CreditCard, Gift, Briefcase } from 'lucide-react';
+import { ArrowLeft, User, Brain, Shield, Download, Trash2, ChevronRight, Bell, Wrench, CreditCard, Briefcase } from 'lucide-react';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { createClient } from '@/lib/supabase/server';
@@ -52,7 +52,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     isAgent
       ? { href: '/agents/dashboard', icon: Briefcase, label: '💼 Agent Dashboard', desc: 'ดู leads + จัดการโปรไฟล์ตัวแทน', color: 'text-rose-600 bg-rose-50' }
       : { href: '/agents/signup', icon: Briefcase, label: '💼 สมัครใช้งานแบบตัวแทนประกัน', desc: 'รับ leads ผ่าน Lumenfi · ทดลองฟรี 14 วัน', color: 'text-rose-600 bg-rose-50' },
-    { href: '/settings/referral', icon: Gift, label: '🎁 ชวนเพื่อน — รับ Pro ฟรี', desc: 'ทั้งคุณและเพื่อนได้ Pro 30 วัน', color: 'text-amber-600 bg-amber-50' },
+    // Referral tile removed — already in sidebar as "ชวนเพื่อน · รับ Pro"
     { href: '/settings/export', icon: Download, label: t('exportData'), desc: '', color: 'text-cyan-600 bg-cyan-50' },
     { href: '/settings/admin', icon: Wrench, label: 'Admin · System Health', desc: 'ตรวจสถานะระบบ + เครื่องมือ admin', color: 'text-rose-600 bg-rose-50' },
   ];
