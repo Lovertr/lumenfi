@@ -6,7 +6,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { materializeDueRecurring, nextRunDate, getUpcomingNotifications } from '@/lib/recurring';
 import { UpcomingBanner } from '@/components/recurring/upcoming-banner';
-import { NotificationToggle } from '@/components/recurring/notification-toggle';
 import { RecurringRow } from '@/components/transactions/recurring-row';
 
 export const dynamic = 'force-dynamic';
@@ -83,7 +82,8 @@ export default async function RecurringPage({ params }: { params: Promise<{ loca
         </Button>
       </header>
 
-      <NotificationToggle />
+      {/* Notification toggle moved to /settings/reminder to centralize all
+          notification config in one place (was duplicated/confusing here) */}
       {upcoming.length > 0 && <UpcomingBanner items={upcoming as any} />}
 
       {rows.length === 0 ? (
@@ -131,4 +131,3 @@ export default async function RecurringPage({ params }: { params: Promise<{ loca
     </div>
   );
 }
-

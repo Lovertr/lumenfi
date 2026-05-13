@@ -9,6 +9,7 @@ import { saveReminderSettings } from './actions';
 import { TestReminderButton } from '@/components/settings/test-reminder-button';
 import { ReminderFormAuto } from '@/components/settings/reminder-form-auto';
 import { ReminderDiagnose } from '@/components/settings/reminder-diagnose';
+import { NotificationToggle } from '@/components/recurring/notification-toggle';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,21 +90,18 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
         </div>
       </header>
 
-      {/* Device status */}
-      <Card className={pushCount > 0 ? 'border-emerald-300 bg-emerald-50' : 'border-amber-300 bg-amber-50'}>
-        <CardContent className="p-4 text-sm">
-          {pushCount > 0 ? (
-            <p className="text-emerald-700">
-              ✓ เชื่อมต่อ {pushCount} อุปกรณ์ — พร้อมรับการแจ้งเตือน
+      {/* Device status + permission toggle — all-in-one */}
+      <Card>
+        <CardContent className="space-y-3 p-4 text-sm">
+          <div>
+            <p className="font-semibold">📱 อุปกรณ์ที่จะได้รับแจ้งเตือน</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {pushCount > 0
+                ? `เชื่อมต่อ ${pushCount} อุปกรณ์อยู่แล้ว · เปิด/ปิดสิทธิ์ของเครื่องนี้ด้านล่าง`
+                : 'ยังไม่มีอุปกรณ์ใดเชื่อมต่อ — กดปุ่มด้านล่างเพื่อเปิดสิทธิ์'}
             </p>
-          ) : (
-            <p className="text-amber-700">
-              ⚠️ ยังไม่ได้เปิดสิทธิ์แจ้งเตือนบนอุปกรณ์นี้ —{' '}
-              <Link href="/recurring" className="font-semibold underline">
-                ไปที่ /recurring แล้วกด Enable notifications
-              </Link>
-            </p>
-          )}
+          </div>
+          <NotificationToggle />
         </CardContent>
       </Card>
 
@@ -149,7 +147,7 @@ export default async function ReminderSettingsPage({ params }: { params: Promise
             <li>"ข้ามถ้าวันนี้บันทึกแล้ว" — ไม่กวนถ้าคุณบันทึกไปแล้ว</li>
             <li>ใช้ได้บน mobile PWA + browser ที่อนุญาต push (Chrome, Edge, Safari iOS 16.4+)</li>
             <li>iOS Safari: ต้อง "Add to Home Screen" ก่อนถึงรับ push ได้</li>
-            <li>หากเตือนไม่มาตามเวลา ลองปิด-เปิดสิทธิ์ใหม่ที่ /recurring แล้วกด "ส่งทดสอบ" ด้านบน</li>
+            <li>หากเตือนไม่มาตามเวลา ลองปิด-เปิดสิทธิ์ใหม่ในการ์ด "อุปกรณ์ที่จะได้รับแจ้งเตือน" ข้างบน แล้วกด "ส่งทดสอบ"</li>
           </ul>
         </CardContent>
       </Card>
