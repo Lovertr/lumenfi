@@ -237,7 +237,9 @@ export async function fireCronNow() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.email !== ADMIN_EMAIL) return { ok: false, error: 'forbidden' };
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lumenfi.projectostech.com';
+  let appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lumenfi.projectostech.com';
+  if (!/^https?:\/\//i.test(appUrl)) appUrl = 'https://' + appUrl;
+  appUrl = appUrl.replace(/\/+$/, ''); // strip trailing slash
   const secret = process.env.CRON_SECRET;
   if (!secret) return { ok: false, error: 'no_cron_secret' };
   try {
