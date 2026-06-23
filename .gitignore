@@ -44,3 +44,4 @@ next-env.d.ts
 
 # OAuth client secrets — never commit
 client_secret_*.json
+Key.txt
