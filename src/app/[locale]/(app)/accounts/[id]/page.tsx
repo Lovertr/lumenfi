@@ -9,6 +9,8 @@ import { getAccountBalanceMap } from '@/lib/queries/balances';
 import { formatTHB } from '@/lib/utils';
 import { accountTypeConfig, type AccountType } from '@/components/accounts/account-type-config';
 import { AccountMovementFilters } from '@/components/accounts/account-movement-filters';
+import { AdjustBalanceButton } from '@/components/accounts/adjust-balance-button';
+import { getAdjustmentHistory } from '../actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -114,11 +116,12 @@ export default async function AccountDetailPage({
   const [account, balances] = await Promise.all([getAccount(id), getAccountBalanceMap()]);
   if (!account) notFound();
 
-  const [t, tType, tForm, rows] = await Promise.all([
+  const [t, tType, tForm, rows, adjustments] = await Promise.all([
     getTranslations('Accounts'),
     getTranslations('Accounts.types'),
     getTranslations('Transactions'),
     getMovement(id, period),
+    getAdjustmentHistory(id),
   ]);
 
   const cfg = accountTypeConfig[account.type as AccountType] ?? accountTypeConfig.other;
@@ -154,6 +157,11 @@ export default async function AccountDetailPage({
               {t('edit')}
             </Link>
           </Button>
+          <AdjustBalanceButton
+            accountId={id}
+            currentBalance={balances[id] ?? Number(account.initial_balance)}
+            isLiability={isLiability}
+          />
           <Button asChild size="sm">
             <Link href="/transactions/new">
               <Plus className="h-4 w-4" />
@@ -187,6 +195,43 @@ export default async function AccountDetailPage({
           </div>
         </CardContent>
       </Card>
+
+      {/* Adjustment history */}
+      {adjustments.length > 0 && (
+        <Card className="border-amber-200 bg-amber-50/40">
+          <CardContent className="p-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-900">
+              ⚖️ ประวัติการปรับยอด
+            </p>
+            <ul className="space-y-1.5 text-xs">
+              {adjustments.slice(0, 5).map((adj) => {
+                const delta = Number(adj.delta);
+                return (
+                  <li key={adj.id} className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">
+                        ฿{Number(adj.previous_balance).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                        {' → '}
+                        ฿{Number(adj.new_balance).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                        <span className={delta < 0 ? 'ml-1.5 text-red-600' : 'ml-1.5 text-emerald-700'}>
+                          ({delta > 0 ? '+' : ''}{delta.toLocaleString('th-TH', { minimumFractionDigits: 2 })})
+                        </span>
+                      </p>
+                      {adj.reason && <p className="mt-0.5 text-muted-foreground">{adj.reason}</p>}
+                    </div>
+                    <span className="shrink-0 text-muted-foreground">{adj.effective_date}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            {adjustments.length > 5 && (
+              <p className="mt-2 text-[10px] text-muted-foreground">
+                + อีก {adjustments.length - 5} ครั้ง
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Period filter */}
       <AccountMovementFilters accountId={id} period={period} />

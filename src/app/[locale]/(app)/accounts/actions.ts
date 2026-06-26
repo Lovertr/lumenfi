@@ -128,3 +128,72 @@ export async function deleteAccount(formData: FormData) {
   revalidatePath('/dashboard');
   redirect('/accounts');
 }
+
+/**
+ * Reconcile an account's balance to a user-asserted number.
+ * Stores an entry in account_balance_adjustments which the balance
+ * computation treats as a snapshot — older transactions are absorbed,
+ * newer ones continue to accumulate.
+ */
+export async function adjustAccountBalance(formData: FormData): Promise<{ error?: string; ok?: boolean }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'unauthorized' };
+
+  const accountId = (formData.get('account_id') as string) ?? '';
+  const newBalanceStr = (formData.get('new_balance') as string) ?? '';
+  const reason = ((formData.get('reason') as string) ?? '').trim() || null;
+  const effectiveDateStr = (formData.get('effective_date') as string) ?? '';
+
+  if (!accountId) return { error: 'missing_account' };
+  const newBalance = Number(newBalanceStr.replace(/,/g, ''));
+  if (!Number.isFinite(newBalance)) return { error: 'invalid_balance' };
+
+  const effective_date = /^\d{4}-\d{2}-\d{2}$/.test(effectiveDateStr)
+    ? effectiveDateStr
+    : new Date().toISOString().slice(0, 10);
+
+  // Compute current balance via the same helper the UI uses so previous_balance
+  // is consistent with what the user just saw on screen.
+  const { getAccountBalanceMap } = await import('@/lib/queries/balances');
+  const map = await getAccountBalanceMap();
+  const previousBalance = Number(map[accountId] ?? 0);
+  const delta = newBalance - previousBalance;
+
+  const { error } = await supabase.from('account_balance_adjustments').insert({
+    user_id: user.id,
+    account_id: accountId,
+    new_balance: newBalance,
+    previous_balance: previousBalance,
+    delta,
+    reason,
+    effective_date,
+  });
+  if (error) {
+    console.error('adjust balance error', error);
+    return { error: 'db_error' };
+  }
+
+  revalidatePath('/accounts');
+  revalidatePath(`/accounts/${accountId}`);
+  revalidatePath('/dashboard');
+  return { ok: true };
+}
+
+/**
+ * Get adjustment history for one account (most recent first).
+ */
+export async function getAdjustmentHistory(accountId: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from('account_balance_adjustments')
+    .select('id, new_balance, previous_balance, delta, reason, effective_date, created_at')
+    .eq('user_id', user.id)
+    .eq('account_id', accountId)
+    .order('effective_date', { ascending: false })
+    .limit(20);
+  return data ?? [];
+}
