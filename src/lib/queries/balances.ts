@@ -37,43 +37,36 @@ export function computeAccountBalances(
   transactions: RawTx[]
 ): Record<string, number> {
   const balances: Record<string, number> = {};
-  const cutoff: Record<string, string> = {};
 
   for (const a of accounts) {
     balances[a.id] = Number(a.initial_balance ?? 0);
-    cutoff[a.id] = (a.created_at ?? '').slice(0, 10);
   }
 
   // Build account type lookup
   const accountType: Record<string, string> = {};
   for (const a of accounts) accountType[a.id] = a.type;
 
+  // Cutoff removed — backdated tx (e.g. user enters last month's spend
+  // after creating the card today) now count toward balance.
   for (const tx of transactions) {
-    const txDate = (tx.date ?? '').slice(0, 10);
     const amt = Number(tx.amount);
 
     // FROM-side
     if (tx.account_id && balances[tx.account_id] !== undefined) {
-      const c = cutoff[tx.account_id];
-      if (!c || txDate >= c) {
-        const isLiab = LIABILITY_TYPES.has(accountType[tx.account_id]);
-        if (tx.type === 'income') {
-          balances[tx.account_id] += isLiab ? -amt : amt;
-        } else if (tx.type === 'expense') {
-          balances[tx.account_id] += isLiab ? amt : -amt;
-        } else if (tx.type === 'transfer') {
-          balances[tx.account_id] += isLiab ? amt : -amt;
-        }
+      const isLiab = LIABILITY_TYPES.has(accountType[tx.account_id]);
+      if (tx.type === 'income') {
+        balances[tx.account_id] += isLiab ? -amt : amt;
+      } else if (tx.type === 'expense') {
+        balances[tx.account_id] += isLiab ? amt : -amt;
+      } else if (tx.type === 'transfer') {
+        balances[tx.account_id] += isLiab ? amt : -amt;
       }
     }
 
     // TO-side (transfer in)
     if (tx.type === 'transfer' && tx.to_account_id && balances[tx.to_account_id] !== undefined) {
-      const c = cutoff[tx.to_account_id];
-      if (!c || txDate >= c) {
-        const isLiab = LIABILITY_TYPES.has(accountType[tx.to_account_id]);
-        balances[tx.to_account_id] += isLiab ? -amt : amt;
-      }
+      const isLiab = LIABILITY_TYPES.has(accountType[tx.to_account_id]);
+      balances[tx.to_account_id] += isLiab ? -amt : amt;
     }
   }
 
