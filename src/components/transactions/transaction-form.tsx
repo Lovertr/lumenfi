@@ -313,6 +313,11 @@ export function TransactionForm({
   const [installmentEnabled, setInstallmentEnabled] = useState(false);
   const [installmentMonths, setInstallmentMonths] = useState(6);
   const [installmentRate, setInstallmentRate] = useState(0);
+  // Cash advance (transfer FROM credit card TO bank account)
+  const [cashAdvanceEnabled, setCashAdvanceEnabled] = useState(true);
+  const [cashAdvanceMode, setCashAdvanceMode] = useState<'revolving' | 'installment'>('revolving');
+  const [cashAdvanceMonths, setCashAdvanceMonths] = useState(6);
+  const [cashAdvanceRate, setCashAdvanceRate] = useState(18);
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [notifyDays, setNotifyDays] = useState(1);
 
@@ -394,6 +399,13 @@ export function TransactionForm({
   const isCreditCard = selectedAccount?.type === 'credit_card';
   const showInstallmentToggle =
     type === 'expense' && isCreditCard && !isDebtPaymentCat;
+
+  // Cash advance toggle — transfer FROM credit card TO non-credit-card account
+  const toAcc = accounts.find((a) => a.id === toAccountId);
+  const isFromCreditCard = isCreditCard;
+  const isToNonCreditCard = !!toAcc && toAcc.type !== 'credit_card';
+  const showCashAdvanceToggle =
+    type === 'transfer' && isFromCreditCard && isToNonCreditCard;
 
   // Calculate installment preview — read amount via DOM (ref is declared later)
   function getCurrentAmount(): number {
@@ -863,6 +875,85 @@ export function TransactionForm({
                   </p>
                 </div>
               )}
+            </>
+          )}
+        </div>
+      )}
+
+      {showCashAdvanceToggle && (
+        <div className="space-y-3 rounded-lg border-2 border-rose-200 bg-rose-50/40 p-3 dark:border-rose-800/40 dark:bg-rose-950/20">
+          <label className="flex items-center justify-between gap-2 text-sm font-medium text-rose-900 dark:text-rose-200">
+            <span className="flex items-center gap-1.5">
+              <Layers className="h-4 w-4" />
+              บันทึกเป็นหนี้บัตร (Cash advance)
+            </span>
+            <input
+              type="checkbox"
+              checked={cashAdvanceEnabled}
+              onChange={(e) => setCashAdvanceEnabled(e.target.checked)}
+              className="h-4 w-4 rounded"
+            />
+          </label>
+          {cashAdvanceEnabled && (
+            <>
+              <input type="hidden" name="cash_advance_enabled" value="1" />
+              <input type="hidden" name="cash_advance_mode" value={cashAdvanceMode} />
+              <input type="hidden" name="cash_advance_months" value={cashAdvanceMode === 'installment' ? cashAdvanceMonths : 0} />
+              <input type="hidden" name="cash_advance_rate" value={cashAdvanceRate} />
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setCashAdvanceMode('revolving')}
+                  className={`rounded-md border p-2 text-left transition ${cashAdvanceMode === 'revolving' ? 'border-rose-400 bg-white shadow-sm' : 'border-muted bg-white/50'}`}
+                >
+                  <p className="font-semibold">🔁 จ่ายขั้นต่ำ (Revolving)</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">จ่ายขั้นต่ำรายเดือน ดอกเบี้ยทบจนกว่าจะหมด</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCashAdvanceMode('installment')}
+                  className={`rounded-md border p-2 text-left transition ${cashAdvanceMode === 'installment' ? 'border-rose-400 bg-white shadow-sm' : 'border-muted bg-white/50'}`}
+                >
+                  <p className="font-semibold">📅 ผ่อนเป็นงวด</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">แบ่งจ่ายเท่ากันทุกเดือน</p>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {cashAdvanceMode === 'installment' && (
+                  <div className="space-y-1">
+                    <Label className="text-xs">จำนวนงวด</Label>
+                    <select
+                      value={cashAdvanceMonths}
+                      onChange={(e) => setCashAdvanceMonths(parseInt(e.target.value, 10))}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      {[3, 4, 6, 9, 10, 12, 18, 24, 36, 48].map((m) => (
+                        <option key={m} value={m}>{m} เดือน</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <Label className="text-xs">อัตราดอกเบี้ย (% ต่อปี)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="30"
+                    value={cashAdvanceRate}
+                    onChange={(e) => setCashAdvanceRate(parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-md bg-background/60 p-2 text-[10px] text-muted-foreground">
+                💡 หลังบันทึก ระบบจะสร้างหนี้ใน <strong>/debts</strong> ผูกกับบัตร {selectedAccount?.name ?? ''} —
+                {cashAdvanceMode === 'installment'
+                  ? ` ผ่อน ${cashAdvanceMonths} งวด ดอกเบี้ย ${cashAdvanceRate}%`
+                  : ` จ่ายขั้นต่ำ ดอกเบี้ย ${cashAdvanceRate}%`}
+              </div>
             </>
           )}
         </div>

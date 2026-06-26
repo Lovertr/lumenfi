@@ -28,9 +28,10 @@ async function createInstallmentDebt(
     note: string | null;
     txId?: string | null;
     date: string;
+    isCashAdvance?: boolean;
   }
 ): Promise<string | null> {
-  const { months, rate, amount, accountId, note, txId, date } = args;
+  const { months, rate, amount, accountId, note, txId, date, isCashAdvance } = args;
   if (!Number.isFinite(months) || months < 2 || months > 60) return null;
   if (!Number.isFinite(amount) || amount <= 0) return null;
 
@@ -44,12 +45,16 @@ async function createInstallmentDebt(
   }
 
   const debtType = rate <= 0 ? 'installment_zero' : 'credit_card';
+  const prefix = isCashAdvance ? 'Cash advance' : 'ผ่อน';
+  const nameStr = note
+    ? `${note.slice(0, 60)} (${prefix} ${months} งวด)`
+    : `${prefix} ${months} งวด`;
 
   const { data: created } = await supabase
     .from('debts')
     .insert({
       user_id: userId,
-      name: note ? note.slice(0, 80) + ' (ผ่อน ' + months + ' เดือน)' : 'ผ่อน ' + months + ' เดือน',
+      name: nameStr,
       type: debtType,
       original_principal: amount,
       current_balance: amount,
@@ -61,6 +66,55 @@ async function createInstallmentDebt(
       status: 'active',
       linked_account_id: accountId,
       installment_origin_tx_id: txId ?? null,
+      is_cash_advance: !!isCashAdvance,
+    })
+    .select('id')
+    .single();
+
+  return created?.id ?? null;
+}
+
+/**
+ * Create a revolving (minimum-payment) cash advance debt linked to the card.
+ * No fixed installment plan — just a debt with interest rate and balance
+ * that grows/shrinks based on payments made via /debts.
+ */
+async function createRevolvingCashAdvanceDebt(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  args: {
+    amount: number;
+    rate: number;
+    accountId: string;
+    note: string | null;
+    txId?: string | null;
+    date: string;
+  }
+): Promise<string | null> {
+  const { amount, rate, accountId, note, txId, date } = args;
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+
+  const nameStr = note
+    ? `${note.slice(0, 60)} (Cash advance · จ่ายขั้นต่ำ)`
+    : 'Cash advance · จ่ายขั้นต่ำ';
+
+  const { data: created } = await supabase
+    .from('debts')
+    .insert({
+      user_id: userId,
+      name: nameStr,
+      type: 'credit_card',
+      original_principal: amount,
+      current_balance: amount,
+      interest_rate: rate,
+      monthly_payment: null,
+      total_term: null,
+      remaining_term: null,
+      start_date: date,
+      status: 'active',
+      linked_account_id: accountId,
+      installment_origin_tx_id: txId ?? null,
+      is_cash_advance: true,
     })
     .select('id')
     .single();
@@ -360,6 +414,34 @@ export async function createTransaction(_prev: unknown, formData: FormData) {
       note,
       date,
     });
+    revalidatePath('/debts');
+  }
+
+  // Cash advance: transfer FROM credit card TO bank account → create debt
+  const cashAdvanceEnabled = (formData.get('cash_advance_enabled') as string) === '1';
+  const cashAdvanceMode = (formData.get('cash_advance_mode') as string) ?? 'revolving';
+  const cashAdvanceMonths = parseInt((formData.get('cash_advance_months') as string) ?? '0', 10) || 0;
+  const cashAdvanceRate = parseFloat((formData.get('cash_advance_rate') as string) ?? '0') || 0;
+  if (type === 'transfer' && cashAdvanceEnabled && account_id) {
+    if (cashAdvanceMode === 'installment' && cashAdvanceMonths >= 2 && cashAdvanceMonths <= 60) {
+      await createInstallmentDebt(supabase, user.id, {
+        amount,
+        months: cashAdvanceMonths,
+        rate: cashAdvanceRate,
+        accountId: account_id,
+        note,
+        date,
+        isCashAdvance: true,
+      });
+    } else {
+      await createRevolvingCashAdvanceDebt(supabase, user.id, {
+        amount,
+        rate: cashAdvanceRate,
+        accountId: account_id,
+        note,
+        date,
+      });
+    }
     revalidatePath('/debts');
   }
 
