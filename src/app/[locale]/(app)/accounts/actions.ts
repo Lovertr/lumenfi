@@ -146,8 +146,11 @@ export async function adjustAccountBalance(formData: FormData): Promise<{ error?
   const effectiveDateStr = (formData.get('effective_date') as string) ?? '';
 
   if (!accountId) return { error: 'missing_account' };
-  const newBalance = Number(newBalanceStr.replace(/,/g, ''));
-  if (!Number.isFinite(newBalance)) return { error: 'invalid_balance' };
+  const parsed = Number(newBalanceStr.replace(/,/g, ''));
+  if (!Number.isFinite(parsed)) return { error: 'invalid_balance' };
+  // Liability accounts display debt as a positive number ("คงค้าง ฿X").
+  // Strip any sign — stored balance is always the absolute value.
+  const newBalance = Math.abs(parsed);
 
   const effective_date = /^\d{4}-\d{2}-\d{2}$/.test(effectiveDateStr)
     ? effectiveDateStr

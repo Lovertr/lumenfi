@@ -67,7 +67,9 @@ export function AdjustBalanceButton({ accountId, currentBalance, isLiability }: 
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="new_balance">{isLiability ? 'ยอดคงค้างใหม่' : 'ยอดเงินใหม่'}</Label>
+              <Label htmlFor="new_balance">
+                {isLiability ? 'ยอดคงค้างใหม่ (ใส่ตัวเลขบวก)' : 'ยอดเงินใหม่'}
+              </Label>
               <div className="relative">
                 <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">฿</span>
                 <Input
@@ -75,12 +77,18 @@ export function AdjustBalanceButton({ accountId, currentBalance, isLiability }: 
                   name="new_balance"
                   type="text"
                   inputMode="decimal"
-                  defaultValue={currentBalance.toFixed(2)}
+                  defaultValue={Math.abs(currentBalance).toFixed(2)}
                   required
                   className="pl-7 text-lg font-semibold"
                   autoFocus
+                  pattern="[0-9]*\.?[0-9]*"
                 />
               </div>
+              {isLiability && (
+                <p className="text-[10px] text-muted-foreground">
+                  ⚠️ บัตรเครดิตเป็นหนี้ — ใส่ยอดที่ติดอยู่กับธนาคาร (ตัวเลขบวก) เช่น 24990.18 ไม่ใช่ -24990.18
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -91,7 +99,7 @@ export function AdjustBalanceButton({ accountId, currentBalance, isLiability }: 
                 type="date"
                 defaultValue={new Date().toISOString().slice(0, 10)}
               />
-              <p className="text-[10px] text-muted-foreground">รายการในวันเดียวกันหรือก่อนหน้าจะถูกถือว่ารวมในยอดนี้แล้ว</p>
+              <p className="text-[10px] text-muted-foreground">บันทึกประวัติ — ใช้แสดงในประวัติการปรับยอด</p>
             </div>
 
             <div className="space-y-1.5">
@@ -99,7 +107,7 @@ export function AdjustBalanceButton({ accountId, currentBalance, isLiability }: 
               <Textarea
                 id="reason"
                 name="reason"
-                placeholder="เช่น ตรวจกับ Bank app แล้วยอดไม่ตรง / ปรับตามไฟแนนซ์จริง / เบี้ยตะวันลบผิด"
+                placeholder="เช่น ตรวจกับ Bank app แล้วยอดไม่ตรง / ปรับตามไฟแนนซ์จริง / เบี้ยปรับ"
                 rows={2}
               />
             </div>

@@ -12,6 +12,7 @@ interface RawTx {
   type: 'income' | 'expense' | 'transfer';
   amount: number;
   date: string;
+  created_at: string;
   account_id: string;
   to_account_id: string | null;
 }
@@ -20,6 +21,7 @@ interface RawAdjustment {
   account_id: string;
   new_balance: number;
   effective_date: string;
+  created_at: string;
 }
 
 const LIABILITY_TYPES = new Set(['credit_card']);
@@ -55,11 +57,14 @@ export function computeAccountBalances(
   const accountType: Record<string, string> = {};
   for (const a of accounts) accountType[a.id] = a.type;
 
-  // Find latest adjustment per account
+  // Find latest adjustment per account (by created_at — the actual moment
+  // user set the balance, not the date they typed). This way every tx that
+  // existed at the time of the adjustment is absorbed into it, including
+  // any future-dated tx.
   const latestByAccount: Record<string, RawAdjustment> = {};
   for (const adj of adjustments) {
     const prev = latestByAccount[adj.account_id];
-    if (!prev || adj.effective_date > prev.effective_date) {
+    if (!prev || adj.created_at > prev.created_at) {
       latestByAccount[adj.account_id] = adj;
     }
   }
@@ -67,10 +72,11 @@ export function computeAccountBalances(
   for (const a of accounts) {
     const adj = latestByAccount[a.id];
     if (adj) {
-      // Liability balance is stored positive but represents debt — keep sign
-      // consistent with how we display it (credit card shows +outstanding).
-      balances[a.id] = Number(adj.new_balance);
-      snapshotCutoff[a.id] = adj.effective_date;
+      // Treat absolute value as the asserted balance — for liability
+      // accounts the displayed value is positive ("คงค้าง ฿X"), users
+      // sometimes type it with a minus because the UI shows it in red.
+      balances[a.id] = Math.abs(Number(adj.new_balance));
+      snapshotCutoff[a.id] = adj.created_at;
     } else {
       balances[a.id] = Number(a.initial_balance ?? 0);
     }
@@ -78,12 +84,14 @@ export function computeAccountBalances(
 
   for (const tx of transactions) {
     const amt = Number(tx.amount);
-    const txDate = (tx.date ?? '').slice(0, 10);
 
     // FROM-side
     if (tx.account_id && balances[tx.account_id] !== undefined) {
       const cutoff = snapshotCutoff[tx.account_id];
-      if (!cutoff || txDate > cutoff) {
+      // Use the tx's created_at — every tx that existed before the
+      // adjustment is absorbed regardless of its (possibly backdated
+      // or future-dated) date field.
+      if (!cutoff || tx.created_at > cutoff) {
         const isLiab = LIABILITY_TYPES.has(accountType[tx.account_id]);
         if (tx.type === 'income') {
           balances[tx.account_id] += isLiab ? -amt : amt;
@@ -98,7 +106,7 @@ export function computeAccountBalances(
     // TO-side (transfer in)
     if (tx.type === 'transfer' && tx.to_account_id && balances[tx.to_account_id] !== undefined) {
       const cutoff = snapshotCutoff[tx.to_account_id];
-      if (!cutoff || txDate > cutoff) {
+      if (!cutoff || tx.created_at > cutoff) {
         const isLiab = LIABILITY_TYPES.has(accountType[tx.to_account_id]);
         balances[tx.to_account_id] += isLiab ? -amt : amt;
       }
@@ -123,11 +131,11 @@ export async function getAccountBalanceMap(): Promise<Record<string, number>> {
       .eq('archived', false),
     supabase
       .from('transactions')
-      .select('type, amount, date, account_id, to_account_id')
+      .select('type, amount, date, created_at, account_id, to_account_id')
       .eq('user_id', user.id),
     supabase
       .from('account_balance_adjustments')
-      .select('account_id, new_balance, effective_date')
+      .select('account_id, new_balance, effective_date, created_at')
       .eq('user_id', user.id),
   ]);
 
