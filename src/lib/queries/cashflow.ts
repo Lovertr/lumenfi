@@ -182,11 +182,18 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
     const avgMonthlyNet = avgMonthlyIncome - avgMonthlyExpense;
 
     // Cash on hand from accounts (exclude credit cards)
-    // Cash on hand: use computed balances (initial + all-time tx, cutoff respected)
-    const { data: allTxData } = await supabase
-      .from('transactions')
-      .select('type, amount, date, account_id, to_account_id')
-      .eq('user_id', user.id);
+    // Honour the latest balance adjustment as snapshot, then accumulate
+    // transactions created after it.
+    const [{ data: allTxData }, { data: adjData }] = await Promise.all([
+      supabase
+        .from('transactions')
+        .select('type, amount, date, created_at, account_id, to_account_id')
+        .eq('user_id', user.id),
+      supabase
+        .from('account_balance_adjustments')
+        .select('account_id, new_balance, effective_date, created_at')
+        .eq('user_id', user.id),
+    ]);
     const balanceMap = computeAccountBalances(
       ((accRes.data ?? []) as any[]).map((a: any) => ({
         id: a.id,
@@ -194,7 +201,8 @@ export async function getCashFlowAnalysis(): Promise<CashFlowAnalysis> {
         initial_balance: a.initial_balance,
         created_at: a.created_at,
       })),
-      (allTxData ?? []) as any[]
+      (allTxData ?? []) as any[],
+      (adjData ?? []) as any[]
     );
     let totalCashOnHand = 0;
     for (const a of (accRes.data ?? []) as any[]) {

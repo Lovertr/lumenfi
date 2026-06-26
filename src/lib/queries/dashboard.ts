@@ -65,7 +65,7 @@ async function _getDashboardData(cycleStart?: string, cycleEnd?: string): Promis
     const startStrIn = cycleStart ?? defaultStart.toISOString().slice(0, 10);
     const endStrIn = cycleEnd ?? defaultEnd.toISOString().slice(0, 10);
 
-    const [accountsRes, debtsRes, txRes, goalsRes, investmentsRes] = await Promise.all([
+    const [accountsRes, debtsRes, txRes, goalsRes, investmentsRes, adjRes] = await Promise.all([
       supabase
         .from('accounts')
         .select('id, type, initial_balance, include_in_net_worth, created_at')
@@ -76,21 +76,25 @@ async function _getDashboardData(cycleStart?: string, cycleEnd?: string): Promis
         .eq('status', 'active'),
       supabase
         .from('transactions')
-        .select('type, amount, date, account_id, to_account_id, category:categories(name, icon, color)'),
+        .select('type, amount, date, created_at, account_id, to_account_id, category:categories(name, icon, color)'),
       supabase.from('goals').select('id, name, current_amount, target_amount, is_emergency_fund, icon, color, deadline').eq('status', 'active').order('created_at'),
       supabase
         .from('investments')
         .select('quantity, avg_cost, current_price')
         .eq('archived', false),
+      supabase
+        .from('account_balance_adjustments')
+        .select('account_id, new_balance, effective_date, created_at'),
     ]);
 
-    // Assets / Liabilities from accounts (computed from initial + transactions)
+    // Assets / Liabilities from accounts (computed from initial + tx + adjustments)
     const allAccounts = ((accountsRes.data ?? []) as any[]);
     const allTx = ((txRes.data ?? []) as any[]);
-    // Need full tx for balance compute (date, account_id, to_account_id)
+    const allAdj = ((adjRes.data ?? []) as any[]);
     const balanceMap = computeAccountBalances(
       allAccounts.map((a: any) => ({ id: a.id, type: a.type, initial_balance: a.initial_balance, created_at: a.created_at })),
-      allTx
+      allTx,
+      allAdj
     );
     let totalAssets = 0;
     let totalLiabilitiesAcc = 0;
@@ -216,8 +220,6 @@ async function _getDashboardData(cycleStart?: string, cycleEnd?: string): Promis
     return empty;
   }
 }
-
-
 export const getDashboardData = cache(_getDashboardData);
 /** Same as getDashboardData but accepts an explicit cycle window. */
 export const getDashboardDataForCycle = cache(
