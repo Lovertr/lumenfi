@@ -346,6 +346,7 @@
     "movementOut": "จ่ายออก",
     "movementNet": "สุทธิ",
     "outstanding": "คงค้าง",
+    "balance": "ยอดเงิน",
     "transferFrom": "รับโอนจาก",
     "transferTo": "โอนไปยัง",
     "noMovement": "ยังไม่มี Movement ในช่วงนี้",

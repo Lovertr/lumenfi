@@ -346,6 +346,7 @@
     "movementOut": "Money Out",
     "movementNet": "Net",
     "outstanding": "Outstanding",
+    "balance": "Balance",
     "transferFrom": "Transfer from",
     "transferTo": "Transfer to",
     "noMovement": "No movement in this period",
