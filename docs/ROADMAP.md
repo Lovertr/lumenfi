@@ -2,7 +2,7 @@
 
 Living document tracking what's done, what's queued, and what's parked.
 
-Last updated: May 2026
+Last updated: 26 June 2026
 
 ---
 
@@ -88,6 +88,51 @@ Last updated: May 2026
 - Share link (`?ref=CODE`)
 - Both referrer + referred get +30 days Pro
 - `/settings/referral` page with stats + claim form
+
+---
+
+## ✅ Shipped (Jun 2026 — late month sprint)
+
+### Notifications — daily reminder pipeline fixed end-to-end
+- Test push button + diagnostic checklist on `/settings/reminder`
+- Admin-only "⚡ ยิงตอนนี้" manually invokes `/api/cron/notify` and shows HTTP status + JSON
+- Centralized notification toggle on `/settings/reminder` (was duplicated on `/recurring`)
+- Auto-resubscribe `pushsubscriptionchange` handler in sw.js
+- **Critical bug fix**: `/api/cron/notify` had an early-return guard that skipped the daily reminder / budget / watchlist / secretary sections when no recurring tx was due
+- Supabase pg_cron `setup-hourly-notify.sql` + admin diagnostic generates the SQL with `CRON_SECRET` pre-filled
+- HTTPS auto-prepend for `NEXT_PUBLIC_APP_URL` when admin sets it without scheme
+
+### Debt strategy & advisor flow
+- Debt plan AI accepts pay-cycle data first, falls back to monthly avg
+- Returns 1-3 plan options as structured JSON (strategy/extra/months/interest/steps/pros/cons/recommended)
+- Plan picker UI with "เลือกแผนนี้" per card
+- Dedicated `/tools/debt/plans/[id]` detail page + history list with delete
+- Objection feedback loop — user submits constraints, AI refines plan
+- Hardened against suggesting "หยุดจ่าย" (legal risk → NCB/lawsuits); standardised to "โปะเพิ่ม"
+- AI gateway `chat()` accepts `maxTokens` to prevent Thai-text truncation (was 8192 hardcoded; debt advisor uses 16000)
+- 2-decimal min payment + default value bug fixes
+
+### Settings page cleanup
+- Removed redundant referral tile (sidebar entry already exists)
+- Hidden Agent Dashboard tile once user is already an agent
+- Thai date picker (วัน/เดือน/ปี พ.ศ.) replacing native `<input type=date>`
+- "Set up AI Key" spotlight hidden for Pro/PAYG subscribers
+- Marketing playbook rewritten **Facebook-first organic-only** edition + NotebookLM workflow with 7 copy-paste prompts
+
+### Account balance accuracy
+- Migration 34 — `account_balance_adjustments` (mirror of debt adjustments) + `debts.is_cash_advance` flag
+- Cutoff removed from `computeAccountBalances` so backdated tx count
+- **Phase 1**: "⚖️ ปรับยอด" modal on `/accounts/[id]` + history card (previous → new → delta + effective_date + reason)
+- Snapshot semantics — latest adjustment is the starting balance; cutoff compares `adj.created_at` vs `tx.created_at`
+- `Math.abs()` on liability balances both client + server — fixes user entering "-24990" because UI displayed it in red
+- **Phase 2**: Cash advance auto-create debt on transfer FROM credit card → bank — choose installment (months + rate) or revolving
+- Dashboard + cashflow now propagate adjustments to balance compute (was missing — caused "เงินใช้ได้ ฿83K" vs ฿43K mismatch)
+- i18n: added `Accounts.balance` (ยอดเงิน / Balance) — was rendering raw key "ACCOUNTS.BALANCE"
+
+### Cross-account data tooling
+- One-time SQL script `supabase/one-time/copy-user-data.sql` — clones all user data from one auth user to another with FK remapping via `information_schema` introspection (skips debts per use case)
+- Handled composite-PK tables (`portfolio_snapshots`), split CTE into two EXECUTE statements so INSERT can see the mapping rows
+- Cleaned up tracked `Key.txt` (3 secrets stored plain-text) — gitignored + flagged for rotation (Resend / CRON_SECRET / GitHub PAT)
 
 ---
 
