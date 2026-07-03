@@ -170,4 +170,19 @@ export async function POST(req: Request) {
       status: body.status === 'comment_replied' ? 'published' : body.status,
       external_post_id: body.external_post_id ?? null,
       published_at: body.published_at ?? null,
-      content_pillar: body.content_pillar ?? null
+      content_pillar: body.content_pillar ?? null,
+      hashtags: body.hashtags ?? null,
+      ai_generated: body.ai_generated ?? true,
+      ai_prompt: body.ai_prompt ?? null,
+      error: body.error ?? null,
+    })
+    .select('id')
+    .single();
+
+  if (insertErr) {
+    console.error('[n8n-marketing] insert failed:', insertErr);
+    return NextResponse.json({ error: 'db' }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, action: 'inserted', id: inserted?.id });
+}
