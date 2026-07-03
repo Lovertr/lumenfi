@@ -83,7 +83,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
   }
 
-  const provided = body.secret ?? req.headers.get('x-n8n-secret') ?? '';
+  // Accept secret via body.secret OR common header names so n8n Header Auth
+  // credentials (Lumenfi Webhook Secret / Bearer / custom) all work.
+  const authHeader = req.headers.get('authorization') ?? '';
+  const bearerToken = authHeader.toLowerCase().startsWith('bearer ')
+    ? authHeader.slice(7).trim()
+    : '';
+  const provided =
+    body.secret ??
+    req.headers.get('x-lumenfi-secret') ??
+    req.headers.get('x-n8n-secret') ??
+    req.headers.get('x-webhook-secret') ??
+    bearerToken ??
+    '';
   if (!safeEqual(String(provided), secret)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
@@ -158,19 +170,4 @@ export async function POST(req: Request) {
       status: body.status === 'comment_replied' ? 'published' : body.status,
       external_post_id: body.external_post_id ?? null,
       published_at: body.published_at ?? null,
-      content_pillar: body.content_pillar ?? null,
-      hashtags: body.hashtags ?? null,
-      ai_generated: body.ai_generated ?? true,
-      ai_prompt: body.ai_prompt ?? null,
-      error: body.error ?? null,
-    })
-    .select('id')
-    .single();
-
-  if (insertErr) {
-    console.error('[n8n-marketing] insert failed:', insertErr);
-    return NextResponse.json({ error: 'db' }, { status: 500 });
-  }
-
-  return NextResponse.json({ ok: true, action: 'inserted', id: inserted?.id });
-}
+      content_pillar: body.content_pillar ?? null
