@@ -6,6 +6,59 @@
 
 ---
 
+## 🌅 Morning Checklist — พร้อม Activate MVP (~15 นาที)
+
+**✅ สิ่งที่ผมสร้างไว้แล้ว (ตอน 03/07 กลางดึก):**
+
+| # | ทำอะไร | สถานะ |
+|---|---|---|
+| 1 | Supabase migration 34 (adjustments) | ✅ user รันแล้ว |
+| 2 | Supabase migration 35 (marketing_posts) | ✅ user รันแล้ว |
+| 3 | Vercel env: FB_PAGE_ACCESS_TOKEN + FB_PAGE_ID + N8N_WEBHOOK_SECRET | ✅ user set แล้ว |
+| 4 | Lumenfi webhook receiver + admin UI + stats cron | ✅ deployed |
+| 5 | n8n MVP workflow **"Lumenfi — MVP Auto-post Daily"** | ✅ **ID: `1tGkVRxO4eR5ASs8`** — draft (ยังไม่ active) |
+
+**🔨 ที่ต้องทำ 3 ขั้นตอนตอนเช้า:**
+
+### ขั้น 1: สร้าง n8n Credential "FB Lumenfi Page Token" (2 นาที)
+1. เปิด n8n → Credentials → **+ Create new credential**
+2. เลือก type: **Query Auth** (ไม่ใช่ Header Auth)
+3. Credential Name: `FB Lumenfi Page Token` (ต้องตรงตัว — MVP workflow reference ชื่อนี้)
+4. Fields:
+   - **Name**: `access_token`
+   - **Value**: `<FB_PAGE_ACCESS_TOKEN ที่ set ใน Vercel — ก๊อปมาใส่>`
+5. Save
+
+### ขั้น 2: เพิ่ม n8n Variable "LUMENFI_WEBHOOK_SECRET" (1 นาที)
+1. n8n → Settings → **Variables**
+2. + Add Variable
+   - Key: `LUMENFI_WEBHOOK_SECRET`
+   - Value: `<N8N_WEBHOOK_SECRET ที่ set ใน Vercel — ก๊อปมาใส่>`
+3. Save
+
+### ขั้น 3: Test + Activate (5 นาที)
+1. เปิด workflow: https://horakomapp.app.n8n.cloud/workflow/1tGkVRxO4eR5ASs8
+2. ตรวจ node **"Post to Facebook"** → panel Credentials → เลือก `FB Lumenfi Page Token` (ที่เพิ่งสร้าง)
+3. กด **Execute Workflow** (มุมขวาล่าง)
+4. ดูผลใน canvas:
+   - ✅ ทุก node เขียว → check FB Page ควรมีโพสใหม่
+   - ✅ check https://lumenfi.projectostech.com/settings/admin/marketing → row ใหม่โผล่มา
+   - ❌ ถ้าล้มที่ Gemini node → เช็ค Google Gemini credential
+   - ❌ ถ้าล้มที่ FB node → เช็ค FB token + Page ID
+5. ถ้าโอเค → toggle **Active** มุมขวาบน (จะรันทุกวัน 12:30 UTC = 19:30 BKK)
+
+**เสร็จ! MVP ก็จะรันเองทุกวัน + Lumenfi log ทุกครั้ง + FB stats poll ทุก 04:00 UTC**
+
+---
+
+## 🚧 Phase B/C (ทำครั้งหน้าเมื่อมีคุณ input)
+
+- **Phase B (Image posts)** — ต้องรู้ Google Drive folder ID สำหรับเก็บภาพ + confirm Gemini Image API quota
+- **Phase C (Video Reel)** — clone จาก `LqjpUCAq5uMwNj2w` (Daily AUTO Video Reel) — ต้อง swap avatar + voice + Lumenfi tone
+- **Weekly Report** — adapt จาก `blOGJDUgCv5priA0` (Weekly Marketing Report) — ส่ง KPI ผ่าน email/LINE
+
+---
+
 ## 0. Prereq — ทำก่อนเริ่ม
 
 1. รัน migration ใน Supabase SQL Editor:
@@ -254,61 +307,4 @@ Output JSON:
 
 | Day | Time (BKK) | Post type |
 |---|---|---|
-| จันทร์ | 19:30-20:30 | Education (DTI, ภาษี, RMF/SSF) |
-| อังคาร | 19:30-20:30 | Use case (persona story) |
-| พุธ | 19:30-20:30 | Demo (product feature) |
-| พฤหัส | 19:30-20:30 | Education (deeper topic) |
-| ศุกร์ | 19:30-20:30 | Engagement (poll, Q&A) |
-| เสาร์ | 20:00-21:00 | Story / Reel |
-| อาทิตย์ | pause (WF pipeline สร้างล่วงหน้าวันจันทร์) |
-
-**Reel** — เพิ่มพิเศษ จันทร์/พุธ/ศุกร์ ช่วง 12:00 pm (พักเที่ยง = peak Reel)
-
----
-
-## 6. Checklist วันเริ่มใช้จริง
-
-- [ ] Migration 34 + 35 รันบน Supabase แล้ว
-- [ ] Vercel env `FB_PAGE_ACCESS_TOKEN`, `FB_PAGE_ID`, `N8N_WEBHOOK_SECRET` set ครบ
-- [ ] Test webhook curl ได้ 200 (ดูข้อ 0)
-- [ ] n8n workflows import จาก Horakom + rename ให้ชัด (`Lumenfi-WF1..`)
-- [ ] Google Sheet "PostQueue-Lumenfi" สร้าง + share ให้ n8n service account
-- [ ] Swap: FB Page ID + Token + Sheet ID + Pillars + CTAs + Prompts
-- [ ] HeyGen avatar + voice เลือกและ save credentials
-- [ ] Activate (Publish) workflows ทุกตัว — ไม่ใช่ save draft!
-- [ ] เข้า `/settings/admin/marketing` เช็คว่าโพสแรกเข้ามา
-- [ ] Rotate FB token หลัง session นี้จบ + update ใน n8n + Vercel
-
----
-
-## 7. Debug playbook
-
-**"โพสไม่ออกเลย":**
-1. เช็ค n8n Executions view → ดู error message
-2. Error 190/460 = token หมดอายุ → refresh long-lived token
-3. Error #200 = scope ไม่ครบ → ต้องมี `pages_manage_posts`
-
-**"Lumenfi ไม่แสดงโพส":**
-1. เช็ค Vercel Logs `/api/webhooks/n8n-marketing`
-2. `401 unauthorized` = secret ไม่ตรง — เช็ค N8N_WEBHOOK_SECRET ทั้ง 2 ฝั่ง
-3. `500 admin_not_found` = ADMIN_EMAIL profile ยังไม่มีใน profiles table — signup ก่อน
-
-**"Stats เป็น 0 หมด":**
-1. Cron `/api/cron/marketing-stats` รันวันละครั้ง 04:00 UTC = 11:00 BKK
-2. Insights มีเฉพาะโพสที่ published ≥ 1 ชม.แล้ว
-3. Text-only posts ไม่ค่อยมี insights จาก FB — ปกติ
-
-**"n8n execution quota หมด":**
-1. เช็ค n8n Cloud usage → ตั้ง schedule ให้ห่าง (วันละครั้งพอ)
-2. ปิด workflow ที่ทดสอบเสร็จแล้ว
-
----
-
-## 8. เอกสารอ้างอิง
-
-- `HANDOFF-AUTOPOST-SYSTEM.md` — ต้นทาง (Horakom architecture)
-- `docs/marketing/PLAYBOOK.md` — Facebook-first playbook
-- `docs/marketing/FACEBOOK_PAGE_POSTS.md` — 7 template posts พร้อมใช้
-- `docs/lumenfi-knowledge-base.txt` — ใช้ผูกกับ NotebookLM / Gemini context
-- `supabase/migrations/35_marketing_posts.sql` — schema
-- `scripts/fb-post.mjs` — manual/backup posting CLI
+| จั
