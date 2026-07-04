@@ -184,5 +184,48 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'db' }, { status: 500 });
   }
 
+  // Fire-and-forget: send email alert on failed status
+  // Fire-and-forget: send email alert on failed status
+  if (body.status === 'failed' && process.env.RESEND_API_KEY) {
+    void sendFailureAlert(body).catch((e) =>
+      console.warn('[n8n-marketing] alert email failed:', e)
+    );
+  }
+
   return NextResponse.json({ ok: true, action: 'inserted', id: inserted?.id });
+}
+
+async function sendFailureAlert(body: WebhookBody) {
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) return;
+  const emailFrom = process.env.RESEND_FROM ?? 'noreply@lumenfi.projectostech.com';
+  const subject = `⚠️ Lumenfi Marketing Post Failed — ${body.platform ?? 'unknown'}`;
+  const lines = [
+    `Marketing workflow failed to publish.`,
+    ``,
+    `Platform: ${body.platform ?? '?'}`,
+    `Media type: ${body.media_type ?? '?'}`,
+    `Content pillar: ${body.content_pillar ?? '?'}`,
+    ``,
+    `Error: ${body.error ?? '(no error message provided)'}`,
+    ``,
+    `Message preview: ${(body.message ?? '').slice(0, 300)}`,
+    ``,
+    `n8n execution: ${body.n8n_execution_id ?? '?'}`,
+    ``,
+    `Check admin dashboard: https://lumenfi.projectostech.com/settings/admin/marketing`,
+  ];
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${resendKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: emailFrom,
+      to: [ADMIN_EMAIL],
+      subject,
+      text: lines.join('\n'),
+    }),
+  });
 }

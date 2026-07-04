@@ -24,6 +24,5 @@
     {
       "path": "/api/cron/weekly-marketing-report",
       "schedule": "0 2 * * 1"
-    }
-  ]
-}
+    },
+    {
