@@ -30,7 +30,7 @@ export default async function CheckoutPage({
   const billingCycle = cycle === 'yearly' ? 'yearly' : 'monthly';
   const key = `${planCode}_${billingCycle}`;
   const pkg = PACKAGES[key];
-  if (!pkg) redirect(`/${locale}/pricing`);
+  if (!pkg) redirect(`/${locale}/pricing?error=invalid_package&plan=${planCode}`);
 
   const { data: existingPending } = await supabase
     .from('subscription_orders')
@@ -69,7 +69,10 @@ export default async function CheckoutPage({
 
   if (error || !inserted) {
     console.error('[checkout] create failed:', error);
-    redirect(`/${locale}/pricing?error=create_failed`);
+    // Surface actual error code so user knows what's wrong
+    const code = error?.code ?? 'unknown';
+    const msg = error?.message ? encodeURIComponent(error.message.slice(0, 100)) : '';
+    redirect(`/${locale}/pricing?error=create_failed&code=${code}&msg=${msg}`);
   }
 
   redirect(`/${locale}/subscription/payment/${inserted.id}`);
