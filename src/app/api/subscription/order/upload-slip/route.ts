@@ -67,6 +67,34 @@ export async function POST(req: Request) {
 
   const nowIso = new Date().toISOString();
 
+  // Duplicate slip detection: if Slip2Go returned transRef, block reuse
+  if (verify.transRef) {
+    const { data: dup } = await admin
+      .from('subscription_orders')
+      .select('id, order_ref')
+      .filter('slip_verify_meta->>transRef', 'eq', verify.transRef)
+      .eq('status', 'approved')
+      .neq('id', orderId)
+      .maybeSingle();
+    if (dup) {
+      await admin.from('subscription_orders').update({
+        slip_url: path,
+        slip_uploaded_at: nowIso,
+        slip_auto_verified: false,
+        slip_verify_meta: { ...verify, duplicate_of: dup.order_ref } as unknown as object,
+        status: 'rejected',
+        admin_notes: `duplicate_slip: transRef ${verify.transRef} already used by order ${dup.order_ref}`,
+        rejected_at: nowIso,
+      }).eq('id', orderId);
+      return NextResponse.json({
+        ok: false,
+        error: 'duplicate_slip',
+        duplicate_of: dup.order_ref,
+        status: 'rejected',
+      }, { status: 409 });
+    }
+  }
+
   if (verify.autoApprove) {
     const result = await activateApprovedOrder(admin, order, nowIso);
 
@@ -140,7 +168,7 @@ async function sendAdminAlert(x: {
     headers: { Authorization: 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       from: emailFrom,
-      to: [ADMIN_EMAIL],
+      to: [process.env.ADMIN_EMAIL ?? 'tintanee.t@gmail.com'],
       subject: 'Lumenfi payment - ' + x.userEmail + ' THB ' + x.amount,
       text: lines.join('\n'),
     }),
