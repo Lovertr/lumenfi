@@ -30,6 +30,10 @@
     {
       "path": "/api/cron/expire-subscriptions",
       "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/cron/subscription-renewal-reminder",
+      "schedule": "0 5 * * *"
     }
   ]
 }
