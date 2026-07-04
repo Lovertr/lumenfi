@@ -4,10 +4,14 @@ import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Server action page — creates the order then redirects to payment page.
- * Handles both existing pending orders (reuse) and new orders.
- */
+const PACKAGES: Record<string, { amount: number; duration: number }> = {
+  pro_monthly: { amount: 149, duration: 30 },
+  pro_yearly: { amount: 1490, duration: 365 },
+  credits_10_monthly: { amount: 79, duration: 0 },
+  credits_50_monthly: { amount: 349, duration: 0 },
+  credits_100_monthly: { amount: 599, duration: 0 },
+};
+
 export default async function CheckoutPage({
   params,
   searchParams,
@@ -24,18 +28,13 @@ export default async function CheckoutPage({
   if (!user) redirect(`/${locale}/login?next=/subscription/checkout/${planCode}`);
 
   const billingCycle = cycle === 'yearly' ? 'yearly' : 'monthly';
+  const key = `${planCode}_${billingCycle}`;
+  const pkg = PACKAGES[key];
+  if (!pkg) redirect(`/${locale}/pricing`);
 
-  // Call create-order API (server-to-server via cookie forwarding is auto for same-origin)
-  const url = new URL(
-    '/api/subscription/order/create',
-    process.env.NEXT_PUBLIC_APP_URL ?? 'https://lumenfi.projectostech.com'
-  );
-
-  // Server-side fetch with auth headers requires cookie forwarding.
-  // Simplest: do the DB write here directly.
   const { data: existingPending } = await supabase
     .from('subscription_orders')
-    .select('id, status')
+    .select('id')
     .eq('user_id', user.id)
     .eq('plan_code', planCode)
     .eq('billing_cycle', billingCycle)
@@ -48,17 +47,11 @@ export default async function CheckoutPage({
     redirect(`/${locale}/subscription/payment/${existingPending.id}`);
   }
 
-  const PACKAGES: Record<string, { amount: number; duration: number }> = {
-    pro_monthly: { amount: 149, duration: 30 },
-    pro_yearly: { amount: 1490, duration: 365 },
-  };
-  const pkg = PACKAGES[`${planCode}_${billingCycle}`];
-  if (!pkg) redirect(`/${locale}/pricing`);
-
-  const orderRef = `LMN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random()
-    .toString(36)
-    .slice(2, 6)
-    .toUpperCase()}`;
+  const orderRef =
+    'LMN-' +
+    new Date().toISOString().slice(0, 10).replace(/-/g, '') +
+    '-' +
+    Math.random().toString(36).slice(2, 6).toUpperCase();
 
   const { data: inserted, error } = await supabase
     .from('subscription_orders')

@@ -32,9 +32,10 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   }
 
   const nowIso = new Date().toISOString();
-  const expiresAt = new Date(
-    Date.now() + Number(order.duration_days) * 24 * 3600 * 1000
-  ).toISOString();
+  const isCredits = order.plan_code.startsWith('credits_');
+  const expiresAt = isCredits
+    ? null
+    : new Date(Date.now() + Number(order.duration_days) * 24 * 3600 * 1000).toISOString();
 
   await admin.from('subscription_orders').update({
     status: 'approved',
@@ -44,68 +45,70 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     expires_at: expiresAt,
   }).eq('id', id);
 
-  await admin.from('user_subscriptions').upsert({
-    user_id: order.user_id,
-    plan_code: order.plan_code,
-    status: 'active',
-    billing_cycle: order.billing_cycle,
-    started_at: nowIso,
-    current_period_start: nowIso,
-    current_period_end: expiresAt,
-    payment_provider: 'promptpay_manual',
-    provider_subscription_id: order.order_ref,
-  }, { onConflict: 'user_id' });
+  if (isCredits) {
+    const packSize = parseInt(order.plan_code.replace('credits_', ''), 10) || 0;
+    const { data: existing } = await admin
+      .from('ai_credits')
+      .select('user_id, advisor_report_balance, total_purchased')
+      .eq('user_id', order.user_id)
+      .maybeSingle();
+    if (existing) {
+      await admin.from('ai_credits').update({
+        advisor_report_balance: Number(existing.advisor_report_balance) + packSize,
+        total_purchased: Number(existing.total_purchased) + packSize,
+        updated_at: nowIso,
+      }).eq('user_id', order.user_id);
+    } else {
+      await admin.from('ai_credits').insert({
+        user_id: order.user_id,
+        advisor_report_balance: packSize,
+        total_purchased: packSize,
+        total_used: 0,
+      });
+    }
+  } else {
+    await admin.from('user_subscriptions').upsert({
+      user_id: order.user_id,
+      plan_code: order.plan_code,
+      status: 'active',
+      billing_cycle: order.billing_cycle,
+      started_at: nowIso,
+      current_period_start: nowIso,
+      current_period_end: expiresAt,
+      payment_provider: 'promptpay_manual',
+      provider_subscription_id: order.order_ref,
+    }, { onConflict: 'user_id' });
+  }
 
-  // Notify user via email
   if (process.env.RESEND_API_KEY) {
     const { data: profile } = await admin
       .from('profiles')
-      .select('email, display_name')
+      .select('email')
       .eq('id', order.user_id)
       .maybeSingle();
     if (profile?.email) {
-      void notifyUser(profile.email, 'approved', {
-        orderRef: order.order_ref,
-        amount: Number(order.amount_thb),
-        expiresAt,
+      const resendKey = process.env.RESEND_API_KEY;
+      const emailFrom = process.env.RESEND_FROM ?? 'noreply@lumenfi.projectostech.com';
+      void fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: emailFrom,
+          to: [profile.email],
+          subject: 'Lumenfi payment approved - ' + order.order_ref,
+          text: [
+            isCredits ? 'Credits added successfully!' : 'Welcome to Lumenfi Pro!',
+            '',
+            'Order: ' + order.order_ref,
+            'Amount: THB ' + Number(order.amount_thb).toLocaleString(),
+            expiresAt ? 'Pro expires: ' + new Date(expiresAt).toLocaleDateString('th-TH') : '',
+            '',
+            'Use Lumenfi at https://lumenfi.projectostech.com',
+          ].filter(Boolean).join('\n'),
+        }),
       }).catch((e) => console.warn('[approve] notify failed:', e));
     }
   }
 
-  return NextResponse.json({ ok: true, expires_at: expiresAt });
-}
-
-async function notifyUser(
-  toEmail: string,
-  kind: 'approved' | 'rejected',
-  x: { orderRef: string; amount?: number; expiresAt?: string; reason?: string }
-) {
-  const resendKey = process.env.RESEND_API_KEY!;
-  const emailFrom = process.env.RESEND_FROM ?? 'noreply@lumenfi.projectostech.com';
-  const subject = kind === 'approved'
-    ? `✅ Lumenfi Pro activated — ${x.orderRef}`
-    : `❌ Payment verification failed — ${x.orderRef}`;
-  const lines = kind === 'approved'
-    ? [
-        `ยินดีต้อนรับสู่ Lumenfi Pro! 🎉`,
-        ``,
-        `Order: ${x.orderRef}`,
-        `จำนวน: ฿${x.amount?.toLocaleString()}`,
-        `Pro หมดอายุ: ${x.expiresAt ? new Date(x.expiresAt).toLocaleDateString('th-TH') : '?'}`,
-        ``,
-        `ใช้งาน Lumenfi Pro ได้เลยที่ https://lumenfi.projectostech.com`,
-      ]
-    : [
-        `ขออภัย การยืนยันการชำระเงินไม่สำเร็จ`,
-        ``,
-        `Order: ${x.orderRef}`,
-        `เหตุผล: ${x.reason ?? '(ไม่ระบุ)'}`,
-        ``,
-        `หากมีข้อสงสัย ติดต่อ tintanee.t@gmail.com`,
-      ];
-  await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: emailFrom, to: [toEmail], subject, text: lines.join('\n') }),
-  });
+  return NextResponse.json({ ok: true, expires_at: expiresAt, kind: isCredits ? 'credits' : 'subscription' });
 }
