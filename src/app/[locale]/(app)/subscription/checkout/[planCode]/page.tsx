@@ -44,6 +44,17 @@ export default async function CheckoutPage({
   const pkg = PACKAGES[key];
   if (!pkg) redirect(`/${locale}/pricing?error=invalid_package&plan=${planCode}`);
 
+  // Rate limit: max 3 orders per user per hour
+  const oneHourAgo = new Date(Date.now() - 3600 * 1000).toISOString();
+  const { count: recentCount } = await supabase
+    .from('subscription_orders')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .gte('created_at', oneHourAgo);
+  if ((recentCount ?? 0) >= 3) {
+    redirect(`/${locale}/pricing?error=rate_limit&msg=${encodeURIComponent('สร้าง order เกิน 3 ครั้งใน 1 ชม. ลองใหม่ในภายหลัง')}`);
+  }
+
   const { data: existingPending } = await supabase
     .from('subscription_orders')
     .select('id')
