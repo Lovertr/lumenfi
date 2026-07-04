@@ -126,7 +126,48 @@ export async function activateApprovedOrder(
   }
 
   // Default: user Pro subscription
-  const expiresAt = new Date(Date.now() + duration).toISOString();
+  // Referral bonus: if this is the referred user's first Pro payment,
+  // extend both parties' Pro by reward_days (default 30 days)
+  let referralBonusDays = 0;
+  try {
+    const { data: referral } = await admin
+      .from('referrals')
+      .select('id, referrer_id, reward_days')
+      .eq('referred_user_id', order.user_id)
+      .eq('reward_granted', false)
+      .maybeSingle();
+    if (referral) {
+      referralBonusDays = Number(referral.reward_days ?? 30);
+      // Extend referrer's Pro subscription (or start one if not exists)
+      const { data: refSub } = await admin
+        .from('user_subscriptions')
+        .select('user_id, current_period_end, status')
+        .eq('user_id', referral.referrer_id)
+        .maybeSingle();
+      const refBase = refSub?.current_period_end
+        && new Date(refSub.current_period_end).getTime() > Date.now()
+        ? new Date(refSub.current_period_end).getTime()
+        : Date.now();
+      const refNewEnd = new Date(refBase + referralBonusDays * 24 * 3600 * 1000).toISOString();
+      await admin.from('user_subscriptions').upsert({
+        user_id: referral.referrer_id,
+        plan_code: 'pro',
+        status: 'active',
+        billing_cycle: 'monthly',
+        current_period_end: refNewEnd,
+      }, { onConflict: 'user_id' });
+      // Mark referral as granted
+      await admin.from('referrals').update({
+        reward_granted: true,
+        reward_granted_at: nowIso,
+      }).eq('id', referral.id);
+    }
+  } catch (e) {
+    console.warn('[activate] referral bonus skipped:', e);
+  }
+
+  const totalMs = duration + referralBonusDays * 24 * 3600 * 1000;
+  const expiresAt = new Date(Date.now() + totalMs).toISOString();
   await admin.from('user_subscriptions').upsert({
     user_id: order.user_id,
     plan_code: order.plan_code,
@@ -142,6 +183,8 @@ export async function activateApprovedOrder(
   return {
     kind: 'subscription',
     expiresAt,
-    detail: `Pro ${order.billing_cycle} activated`,
+    detail: referralBonusDays > 0
+      ? `Pro ${order.billing_cycle} activated (+${referralBonusDays} bonus days from referral)`
+      : `Pro ${order.billing_cycle} activated`,
   };
 }
