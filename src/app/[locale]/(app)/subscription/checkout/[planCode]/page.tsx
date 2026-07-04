@@ -86,5 +86,46 @@ export default async function CheckoutPage({
     redirect(`/${locale}/pricing?error=create_failed&code=${code}&msg=${msg}`);
   }
 
+  // Fire-and-forget user email — non-blocking (won't slow redirect)
+  if (process.env.RESEND_API_KEY && user.email) {
+    void sendOrderCreatedEmail(user.email, {
+      orderRef,
+      amount: pkg.amount,
+      planCode,
+      billingCycle,
+      paymentUrl: `https://lumenfi.projectostech.com/${locale}/subscription/payment/${inserted.id}`,
+    }).catch((e) => console.warn('[checkout] confirmation email failed:', e));
+  }
+
   redirect(`/${locale}/subscription/payment/${inserted.id}`);
+}
+
+async function sendOrderCreatedEmail(
+  toEmail: string,
+  x: { orderRef: string; amount: number; planCode: string; billingCycle: string; paymentUrl: string }
+) {
+  const resendKey = process.env.RESEND_API_KEY!;
+  const emailFrom = process.env.RESEND_FROM ?? 'noreply@lumenfi.projectostech.com';
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: emailFrom,
+      to: [toEmail],
+      subject: 'Lumenfi order created - ' + x.orderRef,
+      text: [
+        'ขอบคุณสำหรับการสั่งซื้อ Lumenfi',
+        '',
+        'Order: ' + x.orderRef,
+        'แพลน: ' + x.planCode + ' (' + x.billingCycle + ')',
+        'ยอดชำระ: THB ' + x.amount.toLocaleString(),
+        '',
+        'ทำการชำระเงินได้ที่:',
+        x.paymentUrl,
+        '',
+        'สแกน QR PromptPay -> อัพโหลดสลิป -> auto-verify',
+        'ปกติได้ Pro ทันที (หรือ admin ตรวจสอบไม่เกิน 2 ชม.)',
+      ].join('\n'),
+    }),
+  });
 }

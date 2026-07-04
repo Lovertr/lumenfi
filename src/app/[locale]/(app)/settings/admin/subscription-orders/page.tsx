@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { createClient as createSb } from '@supabase/supabase-js';
 import OrderRow from './order-row';
+import RecentOrderRow from './recent-row';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +40,7 @@ export default async function SubscriptionOrdersPage({
   const { data: recentApproved } = await admin
     .from('subscription_orders')
     .select('id, user_id, order_ref, amount_thb, status, activated_at, expires_at, slip_auto_verified')
-    .in('status', ['approved', 'rejected'])
+    .in('status', ['approved', 'rejected', 'refunded'])
     .order('updated_at', { ascending: false })
     .limit(20);
 
@@ -121,26 +122,11 @@ export default async function SubscriptionOrdersPage({
                 {(recentApproved ?? []).map((o) => {
                   const p = profileMap.get(o.user_id);
                   return (
-                    <li key={o.id} className="flex items-center justify-between p-3 text-sm">
-                      <div>
-                        <p className="font-medium">
-                          {o.order_ref}
-                          {o.slip_auto_verified && <span className="ml-2 text-[10px] text-emerald-600">🤖 auto</span>}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {p?.email ?? '?'} · ฿{Number(o.amount_thb).toLocaleString()}
-                        </p>
-                      </div>
-                      <span
-                        className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
-                          o.status === 'approved'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {o.status === 'approved' ? '✅ approved' : '❌ rejected'}
-                      </span>
-                    </li>
+                    <RecentOrderRow
+                      key={o.id}
+                      order={o}
+                      userEmail={p?.email ?? '?'}
+                    />
                   );
                 })}
               </ul>
