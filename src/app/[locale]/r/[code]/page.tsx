@@ -77,8 +77,10 @@ export default async function ReferralLandingPage({
     if ((err as any)?.digest?.startsWith?.('NEXT_REDIRECT')) throw err;
   }
 
-  const signupHref = `/${locale}/signup?invite=${encodeURIComponent(normalizedCode)}`;
-  const loginHref = `/${locale}/login?invite=${encodeURIComponent(normalizedCode)}`;
+  // This code was validated as a USER referral_code (not agent invite),
+  // so pass ref= so the signup action creates a referrals row + reward.
+  const signupHref = `/${locale}/signup?ref=${encodeURIComponent(normalizedCode)}`;
+  const loginHref = `/${locale}/login?ref=${encodeURIComponent(normalizedCode)}`;
 
   return (
     <main className="min-h-screen bg-[#FAFAF7] text-[#0F172A]">
