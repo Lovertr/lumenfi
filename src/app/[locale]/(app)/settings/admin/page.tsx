@@ -1,6 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, Briefcase, Activity, CheckCircle2, AlertCircle, Database, Megaphone, Wrench, Sparkles, Globe, BarChart3 } from "lucide-react";
+import { ArrowLeft, Briefcase, Activity, CheckCircle2, AlertCircle, Database, Megaphone, Wrench, Sparkles, Globe, BarChart3, DollarSign } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { checkMigrations } from '@/lib/queries/migration-health';
@@ -247,6 +247,16 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
               <div>
                 <p className="font-medium">Marketing · Auto-post</p>
                 <p className="text-[11px] text-muted-foreground">โพส n8n + สถิติ FB reach/likes/clicks</p>
+              </div>
+            </Link>
+            <Link
+              href="/settings/admin/subscription-orders"
+              className="flex items-start gap-2 rounded-md border bg-background/50 p-3 text-sm transition-colors hover:bg-muted/40"
+            >
+              <DollarSign className="mt-0.5 h-4 w-4 text-primary" />
+              <div>
+                <p className="font-medium">Subscription Orders</p>
+                <p className="text-[11px] text-muted-foreground">อนุมัติ PromptPay + slip verification</p>
               </div>
             </Link>
             <Link
