@@ -6,9 +6,46 @@
 
 ---
 
-## 🌅 Morning Checklist — พร้อม Activate MVP (~15 นาที)
+## 🎉 Status ณ 04/07 เที่ยง
 
-**✅ สิ่งที่ผมสร้างไว้แล้ว (ตอน 03/07 กลางดึก):**
+**✅ Phase A + B + Weekly Report — LIVE:**
+
+| # | ทำอะไร | สถานะ |
+|---|---|---|
+| 1 | Supabase migrations 34 + 35 | ✅ live |
+| 2 | Vercel env ครบ + webhook receiver ยืดหยุ่น (รับ 4 header names + Bearer) | ✅ live |
+| 3 | Lumenfi admin UI (`/settings/admin/marketing`) + stats cron (04:00 UTC daily) | ✅ live |
+| 4 | **Image Autopost workflow** `1tGkVRxO4eR5ASs8` — 15 nodes | ✅ **ACTIVE** (daily 19:30 BKK) |
+| 5 | **Reel workflow** `jtYaJ2Jiqy14u3uJ` — 17 nodes | ⚠️ draft (ต้องผูก credentials 3 อัน) |
+| 6 | Weekly KPI Report cron (Mon 09:00 BKK) via email | ✅ deployed (คอย RESEND_API_KEY) |
+
+## 🚧 Reel Workflow — ต้อง config 3 อย่างก่อน activate
+
+Workflow: https://horakomapp.app.n8n.cloud/workflow/jtYaJ2Jiqy14u3uJ
+
+**เปิด n8n → workflow → เข้าไปใน node ที่เป็น HTTP Request แล้ว attach credential:**
+
+1. **Claude Script** — Header Auth: `x-api-key: <ANTHROPIC_API_KEY>` (สร้าง cred ใหม่ชื่อ "Anthropic API")
+2. **HeyGen Generate** + **HeyGen Status** — attach **Heygen** (มีแล้ว)
+3. **Reel Start** + **Reel Upload** + **Reel Finish Publish** + **Post Comment** — attach **FB Lumenfi Page** (มีแล้ว)
+4. **Webhook Lumenfi** — attach **Lumenfi Webhook Secret** (มีแล้ว)
+
+**เพิ่มเติม (แนะนำ):**
+- ใน **Build Script** node → edit jsCode → เปลี่ยน `avatarId = 'Jinwoo_public_3'` เป็น avatar ผู้หญิงไทย ID ที่คุณอยากใช้
+- `voice_id` เดิม `pOSbTFPdyN1uu7ubeBTj` (Thai voice) — เก็บไว้ได้หรือเปลี่ยนตาม preference
+
+**ต้องรัน SQL migration `35_marketing_posts` เพิ่ม status enum `comment_replied` ถ้ายังไม่ครบ (มีอยู่แล้วปกติ)**
+
+## 🚧 Phase D — Best Time (deferred)
+
+รอ data 2 สัปดาห์ (14 posts) ก่อน — ตอนนั้นจะสร้าง workflow ที่:
+- อ่านสถิติ FB posts จาก marketing_post_stats
+- คำนวณ time slot ที่ engagement สูงสุด (day-of-week × hour)
+- Update schedule ของ Image + Reel workflow อัตโนมัติ
+
+---
+
+## 🌅 Morning Checklist เดิม (สำหรับ reference)
 
 | # | ทำอะไร | สถานะ |
 |---|---|---|
@@ -16,7 +53,7 @@
 | 2 | Supabase migration 35 (marketing_posts) | ✅ user รันแล้ว |
 | 3 | Vercel env: FB_PAGE_ACCESS_TOKEN + FB_PAGE_ID + N8N_WEBHOOK_SECRET | ✅ user set แล้ว |
 | 4 | Lumenfi webhook receiver + admin UI + stats cron | ✅ deployed |
-| 5 | n8n MVP workflow **"Lumenfi — MVP Auto-post Daily"** | ✅ **ID: `1tGkVRxO4eR5ASs8`** — draft (ยังไม่ active) |
+| 5 | n8n MVP workflow **"Lumenfi — MVP Auto-post Daily"** | ✅ **ID: `1tGkVRxO4eR5ASs8`** — LIVE |
 
 **🔨 ที่ต้องทำ 3 ขั้นตอนตอนเช้า:**
 
@@ -226,85 +263,4 @@ Output JSON:
   "script": "spoken text — สั้น ๆ ประโยคๆ พูดเป็นธรรมชาติ",
   "hook_text_overlay": "text ขนาด 6 คำ ให้ HeyGen แสดงหน้าคลิป",
   "caption": "FB Reels caption 100-200 คำ",
-  "comment_link_template": "CTA พร้อมลิงก์ Lumenfi",
-  "tone": "friendly | urgent | curious | inspiring"
-}
-```
-
----
-
-## 3. Webhook payload — n8n → Lumenfi
-
-**Endpoint:** `POST https://lumenfi.projectostech.com/api/webhooks/n8n-marketing`
-
-**Header:** `Content-Type: application/json`
-
-**Body (WF5 หลังโพสสำเร็จ):**
-```json
-{
-  "secret": "<N8N_WEBHOOK_SECRET>",
-  "status": "published",
-  "platform": "facebook_page",
-  "message": "<caption จาก sheet>",
-  "media_type": "image",
-  "media_urls": ["<Google Drive image URL>"],
-  "external_post_id": "153033261562809_1064016609286287",
-  "scheduled_at": "2026-06-26T12:00:00Z",
-  "published_at": "2026-06-26T12:00:15Z",
-  "content_pillar": "education",
-  "hashtags": ["การเงินส่วนบุคคล", "ปลดหนี้"],
-  "ai_generated": true,
-  "ai_prompt": "<image_prompt จาก WF2>",
-  "n8n_execution_id": "<n8n exec id>"
-}
-```
-
-**Body (Reel หลังโพสสำเร็จ):**
-```json
-{
-  "secret": "<N8N_WEBHOOK_SECRET>",
-  "status": "published",
-  "platform": "facebook_reels",
-  "message": "<caption>",
-  "media_type": "reel",
-  "media_urls": ["<HeyGen video URL>"],
-  "video_title": "AI Advisor 30 วิ",
-  "external_post_id": "<Reels id>",
-  "content_pillar": "demo",
-  "ai_generated": true
-}
-```
-
-**Body (failed):**
-```json
-{
-  "secret": "<N8N_WEBHOOK_SECRET>",
-  "status": "failed",
-  "message": "<caption>",
-  "error": "HeyGen API 429 rate limit exceeded",
-  "content_pillar": "demo"
-}
-```
-
-**Response:** `{"ok":true,"action":"inserted"|"updated","id":"<uuid>"}`
-
-**Idempotent:** ถ้าส่ง external_post_id เดิมซ้ำ → update row เดิม (retry-safe)
-
----
-
-## 4. HeyGen configuration
-
-- Avatar recommendations: **female 25-30, Thai** — ทดสอบดู 3-5 avatars ก่อนจ่ายเงิน สายฟรี
-- Voice: **TH female neutral**
-- Sample script: ใน `docs/marketing/FACEBOOK_PAGE_POSTS.md` เอา demo posts มาปรับเป็น script 30 วิ
-- Cost warning: HeyGen ใช้ credit ต่อ minute — ตั้ง MAX 30 วิ/คลิป กันงบ
-
----
-
-## 5. Best Time schedule (สำหรับ Lumenfi audience)
-
-จาก playbook (Facebook-first edition):
-
-| Day | Time (BKK) | Post type |
-|---|---|---|
-| จั
+  "comment_link_template": "CTA พร้�
