@@ -1,5 +1,7 @@
 {
-  "regions": ["sin1"],
+  "regions": [
+    "sin1"
+  ],
   "crons": [
     {
       "path": "/api/cron/notify",
@@ -8,10 +10,6 @@
     {
       "path": "/api/cron/snapshot",
       "schedule": "0 15 * * *"
-    },
-    {
-      "path": "/api/cron/agent-billing",
-      "schedule": "0 19 * * *"
     },
     {
       "path": "/api/cron/sync-products",
