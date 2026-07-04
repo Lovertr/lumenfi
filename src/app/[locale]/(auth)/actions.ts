@@ -109,6 +109,35 @@ export async function signUpWithEmail(_prev: unknown, formData: FormData) {
     }
   }
 
+  // If signed up via a user referral link (?ref=CODE), create referrals row
+  // + mark profiles.referred_by. Reward is granted when they buy Pro.
+  const refCode = (formData.get('ref') as string | null)?.trim().toUpperCase();
+  if (data.user && refCode && !inviteCode) {
+    try {
+      const { data: referrer } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('referral_code', refCode)
+        .maybeSingle();
+      const referrerId = (referrer as any)?.id as string | undefined;
+      if (referrerId && referrerId !== data.user.id) {
+        await supabase
+          .from('profiles')
+          .update({ referred_by: referrerId })
+          .eq('id', data.user.id);
+        await supabase.from('referrals').insert({
+          referrer_id: referrerId,
+          referred_user_id: data.user.id,
+          code_used: refCode,
+          reward_granted: false,
+          reward_days: 30,
+        });
+      }
+    } catch (e: any) {
+      console.warn('[signUp] referral bind failed:', e?.message ?? e);
+    }
+  }
+
   revalidatePath('/', 'layout');
   redirect('/dashboard');
 }
@@ -226,7 +255,7 @@ export async function signInWithMagicLink(
     email,
     options: {
       emailRedirectTo: `${origin}/auth/callback`,
-      shouldCreateUser: false, // only existing users — sign-up should use signUpWithEmail
+      shouldCreateUser: false,
     },
   });
   if (error) {

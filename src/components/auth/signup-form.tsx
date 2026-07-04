@@ -23,7 +23,7 @@ function SubmitButton() {
   );
 }
 
-export function SignupForm({ inviteCode }: { inviteCode?: string }) {
+export function SignupForm({ inviteCode, referralCode }: { inviteCode?: string; referralCode?: string }) {
   const t = useTranslations('Auth');
   const [state, formAction] = useFormState<State, FormData>(signUpWithEmail, null);
 
@@ -57,6 +57,7 @@ export function SignupForm({ inviteCode }: { inviteCode?: string }) {
 
       <form action={formAction} className="space-y-4">
         {inviteCode ? <input type="hidden" name="invite" value={inviteCode} /> : null}
+        {referralCode ? <input type="hidden" name="ref" value={referralCode} /> : null}
         <div className="space-y-2">
           <Label htmlFor="fullName">{t('fullName')}</Label>
           <div className="relative">

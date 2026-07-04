@@ -260,12 +260,22 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
               </div>
             </Link>
             <Link
+              href="/settings/admin/revenue"
+              className="flex items-start gap-2 rounded-md border bg-background/50 p-3 text-sm transition-colors hover:bg-muted/40"
+            >
+              <BarChart3 className="mt-0.5 h-4 w-4 text-primary" />
+              <div>
+                <p className="font-medium">Revenue Dashboard</p>
+                <p className="text-[11px] text-muted-foreground">MRR / ARR / SKU breakdown / referral count</p>
+              </div>
+            </Link>
+            <Link
               href="/whats-new"
               className="flex items-start gap-2 rounded-md border bg-background/50 p-3 text-sm transition-colors hover:bg-muted/40"
             >
               <Database className="mt-0.5 h-4 w-4 text-primary" />
               <div>
-                <p className="font-medium">What's New</p>
+                <p className="font-medium">What&apos;s New</p>
                 <p className="text-[11px] text-muted-foreground">ดูรายการอัพเดต</p>
               </div>
             </Link>
