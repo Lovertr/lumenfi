@@ -61,6 +61,21 @@ export default function PaymentClient({
     }
   }
 
+  async function handleCancel() {
+    if (!confirm('ยืนยันยกเลิก order นี้? หลังยกเลิกจะต้องสร้าง order ใหม่')) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/subscription/order/${order.id}/cancel`, { method: 'POST' });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? 'cancel_failed');
+      router.push('/settings/billing');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setUploading(false);
+    }
+  }
+
   function copyId() {
     navigator.clipboard.writeText(promptpayId);
     setCopied(true);
@@ -206,6 +221,15 @@ export default function PaymentClient({
               )}
             </CardContent>
           </Card>
+
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={uploading}
+            className="w-full py-2 text-xs text-muted-foreground hover:text-destructive"
+          >
+            ↩ ยกเลิก order นี้
+          </button>
         </>
       )}
 
