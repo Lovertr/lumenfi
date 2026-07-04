@@ -320,13 +320,13 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
               <details className="rounded-md border border-black/10 bg-white p-3">
                 <summary className="cursor-pointer font-medium">ยกเลิก Pro ได้ไหม?</summary>
                 <p className="mt-2 text-xs text-[#0F172A]/65">
-                  ได้ทุกเมื่อที่ /settings/billing — ใช้งานได้จนถึงสิ้นรอบ billing แล้ว downgrade เป็น Free อัตโนมัติ
+                  ได้ — Pro หมดอายุตามรอบที่จ่ายไว้ (30 วัน / 365 วัน) แล้ว downgrade เป็น Free อัตโนมัติ ไม่มี auto-renew
                 </p>
               </details>
               <details className="rounded-md border border-black/10 bg-white p-3">
-                <summary className="cursor-pointer font-medium">Trial 14 วันต้องใส่บัตรไหม?</summary>
+                <summary className="cursor-pointer font-medium">ชำระเงินยังไง?</summary>
                 <p className="mt-2 text-xs text-[#0F172A]/65">
-                  ใส่ — Omise charge ครั้งแรกอัตโนมัติเมื่อครบ trial หากไม่ยกเลิกก่อน คุณจะได้รับการแจ้งเตือน 3 วันก่อนหมด trial
+                  โอนผ่าน PromptPay (สแกน QR หรือใส่เบอร์) → อัพโหลดสลิป → ระบบตรวจสอบอัตโนมัติ ปกติได้ Pro ทันที (ถ้าไม่ผ่าน admin จะยืนยันไม่เกิน 2 ชม.)
                 </p>
               </details>
               <details className="rounded-md border border-black/10 bg-white p-3">
