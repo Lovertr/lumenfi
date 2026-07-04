@@ -4,12 +4,22 @@ import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
+// All supported checkout packages. Plan code convention:
+//   pro_*                       -> user Pro subscription (user_subscriptions)
+//   credits_10/50/100_monthly   -> one-off credit packs (ai_credits.advisor_report_balance)
+//   agent_starter/pro/team_*    -> agent plan subscription (agent_subscriptions)
 const PACKAGES: Record<string, { amount: number; duration: number }> = {
   pro_monthly: { amount: 149, duration: 30 },
   pro_yearly: { amount: 1490, duration: 365 },
   credits_10_monthly: { amount: 79, duration: 0 },
   credits_50_monthly: { amount: 349, duration: 0 },
   credits_100_monthly: { amount: 599, duration: 0 },
+  agent_starter_monthly: { amount: 299, duration: 30 },
+  agent_starter_yearly: { amount: 2990, duration: 365 },
+  agent_pro_monthly: { amount: 699, duration: 30 },
+  agent_pro_yearly: { amount: 6990, duration: 365 },
+  agent_team_monthly: { amount: 1990, duration: 30 },
+  agent_team_yearly: { amount: 19900, duration: 365 },
 };
 
 export default async function CheckoutPage({
@@ -27,7 +37,9 @@ export default async function CheckoutPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/${locale}/login?next=/subscription/checkout/${planCode}`);
 
-  const billingCycle = cycle === 'yearly' ? 'yearly' : 'monthly';
+  // Normalize: agent billing UI passes 'annual', schema uses 'yearly'
+  const rawCycle = cycle === 'annual' ? 'yearly' : cycle;
+  const billingCycle = rawCycle === 'yearly' ? 'yearly' : 'monthly';
   const key = `${planCode}_${billingCycle}`;
   const pkg = PACKAGES[key];
   if (!pkg) redirect(`/${locale}/pricing?error=invalid_package&plan=${planCode}`);
@@ -69,7 +81,6 @@ export default async function CheckoutPage({
 
   if (error || !inserted) {
     console.error('[checkout] create failed:', error);
-    // Surface actual error code so user knows what's wrong
     const code = error?.code ?? 'unknown';
     const msg = error?.message ? encodeURIComponent(error.message.slice(0, 100)) : '';
     redirect(`/${locale}/pricing?error=create_failed&code=${code}&msg=${msg}`);

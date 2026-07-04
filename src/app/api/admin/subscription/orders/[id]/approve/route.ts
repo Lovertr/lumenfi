@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSb } from '@supabase/supabase-js';
+import { activateApprovedOrder } from '@/lib/payment/activate-order';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -32,53 +33,15 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   }
 
   const nowIso = new Date().toISOString();
-  const isCredits = order.plan_code.startsWith('credits_');
-  const expiresAt = isCredits
-    ? null
-    : new Date(Date.now() + Number(order.duration_days) * 24 * 3600 * 1000).toISOString();
+  const result = await activateApprovedOrder(admin, order, nowIso);
 
   await admin.from('subscription_orders').update({
     status: 'approved',
     approved_by: adminUser.id,
     approved_at: nowIso,
     activated_at: nowIso,
-    expires_at: expiresAt,
+    expires_at: result.expiresAt,
   }).eq('id', id);
-
-  if (isCredits) {
-    const packSize = parseInt(order.plan_code.replace('credits_', ''), 10) || 0;
-    const { data: existing } = await admin
-      .from('ai_credits')
-      .select('user_id, advisor_report_balance, total_purchased')
-      .eq('user_id', order.user_id)
-      .maybeSingle();
-    if (existing) {
-      await admin.from('ai_credits').update({
-        advisor_report_balance: Number(existing.advisor_report_balance) + packSize,
-        total_purchased: Number(existing.total_purchased) + packSize,
-        updated_at: nowIso,
-      }).eq('user_id', order.user_id);
-    } else {
-      await admin.from('ai_credits').insert({
-        user_id: order.user_id,
-        advisor_report_balance: packSize,
-        total_purchased: packSize,
-        total_used: 0,
-      });
-    }
-  } else {
-    await admin.from('user_subscriptions').upsert({
-      user_id: order.user_id,
-      plan_code: order.plan_code,
-      status: 'active',
-      billing_cycle: order.billing_cycle,
-      started_at: nowIso,
-      current_period_start: nowIso,
-      current_period_end: expiresAt,
-      payment_provider: 'promptpay_manual',
-      provider_subscription_id: order.order_ref,
-    }, { onConflict: 'user_id' });
-  }
 
   if (process.env.RESEND_API_KEY) {
     const { data: profile } = await admin
@@ -97,18 +60,23 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
           to: [profile.email],
           subject: 'Lumenfi payment approved - ' + order.order_ref,
           text: [
-            isCredits ? 'Credits added successfully!' : 'Welcome to Lumenfi Pro!',
+            result.detail,
             '',
             'Order: ' + order.order_ref,
             'Amount: THB ' + Number(order.amount_thb).toLocaleString(),
-            expiresAt ? 'Pro expires: ' + new Date(expiresAt).toLocaleDateString('th-TH') : '',
+            result.expiresAt ? 'Valid until: ' + new Date(result.expiresAt).toLocaleDateString('th-TH') : '',
             '',
-            'Use Lumenfi at https://lumenfi.projectostech.com',
+            'https://lumenfi.projectostech.com',
           ].filter(Boolean).join('\n'),
         }),
       }).catch((e) => console.warn('[approve] notify failed:', e));
     }
   }
 
-  return NextResponse.json({ ok: true, expires_at: expiresAt, kind: isCredits ? 'credits' : 'subscription' });
+  return NextResponse.json({
+    ok: true,
+    kind: result.kind,
+    expires_at: result.expiresAt,
+    detail: result.detail,
+  });
 }

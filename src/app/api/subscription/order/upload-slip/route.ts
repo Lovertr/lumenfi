@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSb } from '@supabase/supabase-js';
 import { verifySlipWithSlip2Go } from '@/lib/payment/slip2go';
+import { activateApprovedOrder } from '@/lib/payment/activate-order';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -65,11 +66,9 @@ export async function POST(req: Request) {
   });
 
   const nowIso = new Date().toISOString();
-  const durationMs = Number(order.duration_days) * 24 * 3600 * 1000;
 
   if (verify.autoApprove) {
-    const isCredits = order.plan_code.startsWith('credits_');
-    const expiresAt = isCredits ? null : new Date(Date.now() + durationMs).toISOString();
+    const result = await activateApprovedOrder(admin, order, nowIso);
 
     await admin.from('subscription_orders').update({
       slip_url: path,
@@ -79,50 +78,16 @@ export async function POST(req: Request) {
       status: 'approved',
       approved_at: nowIso,
       activated_at: nowIso,
-      expires_at: expiresAt,
+      expires_at: result.expiresAt,
     }).eq('id', orderId);
-
-    if (isCredits) {
-      const packSize = parseInt(order.plan_code.replace('credits_', ''), 10) || 0;
-      const { data: existing } = await admin
-        .from('ai_credits')
-        .select('user_id, advisor_report_balance, total_purchased')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (existing) {
-        await admin.from('ai_credits').update({
-          advisor_report_balance: Number(existing.advisor_report_balance) + packSize,
-          total_purchased: Number(existing.total_purchased) + packSize,
-          updated_at: nowIso,
-        }).eq('user_id', user.id);
-      } else {
-        await admin.from('ai_credits').insert({
-          user_id: user.id,
-          advisor_report_balance: packSize,
-          total_purchased: packSize,
-          total_used: 0,
-        });
-      }
-    } else {
-      await admin.from('user_subscriptions').upsert({
-        user_id: user.id,
-        plan_code: order.plan_code,
-        status: 'active',
-        billing_cycle: order.billing_cycle,
-        started_at: nowIso,
-        current_period_start: nowIso,
-        current_period_end: expiresAt,
-        payment_provider: 'promptpay_manual',
-        provider_subscription_id: order.order_ref,
-      }, { onConflict: 'user_id' });
-    }
 
     return NextResponse.json({
       ok: true,
       auto_approved: true,
       status: 'approved',
-      expires_at: expiresAt,
-      kind: isCredits ? 'credits' : 'subscription',
+      kind: result.kind,
+      expires_at: result.expiresAt,
+      detail: result.detail,
     });
   }
 
