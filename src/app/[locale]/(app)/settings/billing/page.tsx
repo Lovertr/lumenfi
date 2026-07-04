@@ -16,7 +16,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: sub }, { data: credits }, { data: payments }] = await Promise.all([
+  const [{ data: sub }, { data: credits }, { data: payments }, { data: orders }] = await Promise.all([
     supabase
       .from('user_subscriptions')
       .select('plan_code, status, billing_cycle, current_period_end, trial_ends_at, cancel_at_period_end, plan:subscription_plans(name_th, price_thb_monthly, price_thb_yearly, has_lumenfi_ai)')
@@ -30,6 +30,12 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
     supabase
       .from('payment_transactions')
       .select('id, type, amount_thb, status, created_at, plan_code, credits_pack_size, receipt_url')
+      .eq('user_id', user?.id ?? '')
+      .order('created_at', { ascending: false })
+      .limit(20),
+    supabase
+      .from('subscription_orders')
+      .select('id, order_ref, plan_code, billing_cycle, amount_thb, status, admin_notes, activated_at, expires_at, created_at, slip_auto_verified')
       .eq('user_id', user?.id ?? '')
       .order('created_at', { ascending: false })
       .limit(20),
@@ -202,6 +208,62 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
           )}
         </CardContent>
       </Card>
+
+      {/* PromptPay Order History */}
+      {orders && orders.length > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <p className="mb-3 text-sm font-semibold flex items-center gap-2">
+              <Receipt className="h-4 w-4" />
+              คำสั่งซื้อ PromptPay
+            </p>
+            <div className="space-y-2">
+              {orders.map((o: any) => (
+                <Link
+                  key={o.id}
+                  href={`/subscription/payment/${o.id}` as any}
+                  className="flex items-start justify-between gap-3 rounded-md border bg-background/60 p-3 text-sm hover:bg-muted/40"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">
+                      {o.order_ref}
+                      {o.slip_auto_verified && <span className="ml-1 text-[10px] text-emerald-600">🤖</span>}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {o.plan_code} · {o.billing_cycle}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {new Date(o.created_at).toLocaleString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    {o.admin_notes && (
+                      <p className="mt-1 text-[10px] text-red-700">⚠️ {o.admin_notes}</p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold">฿{Number(o.amount_thb).toLocaleString()}</p>
+                    <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                      o.status === 'approved'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : o.status === 'pending_upload' || o.status === 'pending_review'
+                        ? 'bg-amber-100 text-amber-800'
+                        : o.status === 'rejected'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {o.status === 'approved' && '✅ อนุมัติแล้ว'}
+                      {o.status === 'pending_upload' && '📤 รออัพโหลด'}
+                      {o.status === 'pending_review' && '⏳ รอตรวจสอบ'}
+                      {o.status === 'rejected' && '❌ ปฏิเสธ'}
+                      {o.status === 'expired' && '⏱ หมดอายุ'}
+                      {o.status === 'cancelled' && '↩ ยกเลิก'}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
