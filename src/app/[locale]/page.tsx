@@ -113,7 +113,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <Sparkles className="h-3 w-3" />
               {t('eyebrow')}
             </div>
-            <h1 className="mb-5 text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl lg:text-6xl">
+            <h1 className="mb-5 max-w-full break-words text-[clamp(1.5rem,6vw,3rem)] font-bold leading-[1.15] tracking-tight md:text-5xl lg:text-6xl">
               {t('heroTitle1')}
               <br />
               <span className="bg-gradient-to-r from-[#E4C789] via-[#C9A45A] to-[#8A6932] bg-clip-text text-transparent">

@@ -263,4 +263,85 @@ Output JSON:
   "script": "spoken text — สั้น ๆ ประโยคๆ พูดเป็นธรรมชาติ",
   "hook_text_overlay": "text ขนาด 6 คำ ให้ HeyGen แสดงหน้าคลิป",
   "caption": "FB Reels caption 100-200 คำ",
-  "comment_link_template": "CTA พร้�
+  "comment_link_template": "CTA พร้อมลิงก์ Lumenfi",
+  "tone": "friendly | urgent | curious | inspiring"
+}
+```
+
+---
+
+## 3. Webhook payload — n8n → Lumenfi
+
+**Endpoint:** `POST https://lumenfi.projectostech.com/api/webhooks/n8n-marketing`
+
+**Header:** `Content-Type: application/json`
+
+**Body (WF5 หลังโพสสำเร็จ):**
+```json
+{
+  "secret": "<N8N_WEBHOOK_SECRET>",
+  "status": "published",
+  "platform": "facebook_page",
+  "message": "<caption จาก sheet>",
+  "media_type": "image",
+  "media_urls": ["<Google Drive image URL>"],
+  "external_post_id": "153033261562809_1064016609286287",
+  "scheduled_at": "2026-06-26T12:00:00Z",
+  "published_at": "2026-06-26T12:00:15Z",
+  "content_pillar": "education",
+  "hashtags": ["การเงินส่วนบุคคล", "ปลดหนี้"],
+  "ai_generated": true,
+  "ai_prompt": "<image_prompt จาก WF2>",
+  "n8n_execution_id": "<n8n exec id>"
+}
+```
+
+**Body (Reel หลังโพสสำเร็จ):**
+```json
+{
+  "secret": "<N8N_WEBHOOK_SECRET>",
+  "status": "published",
+  "platform": "facebook_reels",
+  "message": "<caption>",
+  "media_type": "reel",
+  "media_urls": ["<HeyGen video URL>"],
+  "video_title": "AI Advisor 30 วิ",
+  "external_post_id": "<Reels id>",
+  "content_pillar": "demo",
+  "ai_generated": true
+}
+```
+
+**Body (failed):**
+```json
+{
+  "secret": "<N8N_WEBHOOK_SECRET>",
+  "status": "failed",
+  "message": "<caption>",
+  "error": "HeyGen API 429 rate limit exceeded",
+  "content_pillar": "demo"
+}
+```
+
+**Response:** `{"ok":true,"action":"inserted"|"updated","id":"<uuid>"}`
+
+**Idempotent:** ถ้าส่ง external_post_id เดิมซ้ำ → update row เดิม (retry-safe)
+
+---
+
+## 4. HeyGen configuration
+
+- Avatar recommendations: **female 25-30, Thai** — ทดสอบดู 3-5 avatars ก่อนจ่ายเงิน สายฟรี
+- Voice: **TH female neutral**
+- Sample script: ใน `docs/marketing/FACEBOOK_PAGE_POSTS.md` เอา demo posts มาปรับเป็น script 30 วิ
+- Cost warning: HeyGen ใช้ credit ต่อ minute — ตั้ง MAX 30 วิ/คลิป กันงบ
+
+---
+
+## 5. Best Time schedule (สำหรับ Lumenfi audience)
+
+จาก playbook (Facebook-first edition):
+
+| Day | Time (BKK) | Post type |
+|---|---|---|
+| จั
