@@ -8,6 +8,8 @@ import { ThemeScript } from '@/components/layout/theme-toggle';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { GA4 } from '@/components/analytics/ga4';
+import { Tracker } from '@/components/analytics/tracker';
+import { Suspense } from 'react';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -76,6 +78,7 @@ export default async function LocaleLayout({
         <Analytics />
         <SpeedInsights />
         <GA4 />
+        <Suspense fallback={null}><Tracker /></Suspense>
       </body>
     </html>
   );

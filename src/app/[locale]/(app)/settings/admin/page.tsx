@@ -270,6 +270,16 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
               </div>
             </Link>
             <Link
+              href="/settings/admin/analytics"
+              className="flex items-start gap-2 rounded-md border bg-background/50 p-3 text-sm transition-colors hover:bg-muted/40"
+            >
+              <Activity className="mt-0.5 h-4 w-4 text-primary" />
+              <div>
+                <p className="font-medium">User Analytics</p>
+                <p className="text-[11px] text-muted-foreground">Funnel / drop-off / traffic sources / FB page stats</p>
+              </div>
+            </Link>
+            <Link
               href="/whats-new"
               className="flex items-start gap-2 rounded-md border bg-background/50 p-3 text-sm transition-colors hover:bg-muted/40"
             >

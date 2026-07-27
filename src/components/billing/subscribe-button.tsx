@@ -5,6 +5,7 @@ import { useRouter } from '@/i18n/routing';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { startSubscriptionCheckout } from '@/app/[locale]/pricing/actions';
+import { trackEvent } from '@/components/analytics/tracker';
 
 export function SubscribeButton() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export function SubscribeButton() {
 
   const onSubscribe = () => {
     setError(null);
+    trackEvent('checkout_start', { plan: 'pro', cycle });
     startTransition(async () => {
       const r = await startSubscriptionCheckout(cycle);
       if (r.ok && r.checkoutUrl) {
