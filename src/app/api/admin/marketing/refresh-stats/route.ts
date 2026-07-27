@@ -33,18 +33,41 @@ async function tryMetric(postId: string, metric: string, token: string): Promise
   return null;
 }
 
+// Try a single field on the post detail endpoint — returns null if unsupported
+async function tryField(postId: string, field: string, token: string): Promise<Record<string, unknown> | null> {
+  const url = `https://graph.facebook.com/v19.0/${postId}?fields=${field}&access_token=${token}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) return null;
+  const body = await res.json();
+  return body as Record<string, unknown>;
+}
+
 async function fetchInsights(postId: string, token: string) {
   const out: Record<string, number> = {};
 
-  // Post detail — reactions.summary is universal, works for image + reel + video
-  const detailUrl = `https://graph.facebook.com/v19.0/${postId}?fields=reactions.summary(true).limit(0),comments.summary(true).limit(0),shares&access_token=${token}`;
-  const dRes = await fetch(detailUrl, { cache: 'no-store' });
-  const dBody = await dRes.json();
-  if (!dRes.ok) throw new Error(JSON.stringify(dBody?.error ?? dBody));
+  // Query each engagement field INDEPENDENTLY — different post types support different fields:
+  //   - Photos/link posts: reactions, comments, shares
+  //   - Reels/videos:      likes (not reactions), comments, no shares
+  const [reactionsRes, likesRes, commentsRes, sharesRes] = await Promise.all([
+    tryField(postId, 'reactions.summary(true).limit(0)', token),
+    tryField(postId, 'likes.summary(true).limit(0)', token),
+    tryField(postId, 'comments.summary(true).limit(0)', token),
+    tryField(postId, 'shares', token),
+  ]);
 
-  out.likes = Number(dBody?.reactions?.summary?.total_count ?? 0);
-  out.comments = Number(dBody?.comments?.summary?.total_count ?? 0);
-  out.shares = Number(dBody?.shares?.count ?? 0);
+  // Nothing loaded at all → real permission/ID problem, throw so it counts as failed
+  if (!reactionsRes && !likesRes && !commentsRes && !sharesRes) {
+    throw new Error('all_fields_unavailable — check FB_PAGE_ACCESS_TOKEN or post ID');
+  }
+
+  const reactionsCount = (reactionsRes as { reactions?: { summary?: { total_count?: number } } })?.reactions?.summary?.total_count;
+  const likesCount = (likesRes as { likes?: { summary?: { total_count?: number } } })?.likes?.summary?.total_count;
+  const commentsCount = (commentsRes as { comments?: { summary?: { total_count?: number } } })?.comments?.summary?.total_count;
+  const sharesCount = (sharesRes as { shares?: { count?: number } })?.shares?.count;
+
+  out.likes = Number(reactionsCount ?? likesCount ?? 0);
+  out.comments = Number(commentsCount ?? 0);
+  out.shares = Number(sharesCount ?? 0);
 
   // Insights — try each metric individually, tolerate failures
   const results = await Promise.all(SAFE_METRICS.map((m) => tryMetric(postId, m, token)));
