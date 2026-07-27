@@ -25,9 +25,22 @@ export const dynamic = 'force-dynamic';
 const METRICS = [
   'post_impressions_unique', // reach
   'post_impressions',        // impressions
-  'post_reactions_by_type_total',
   'post_clicks',
 ].join(',');
+
+// Safe per-metric fetch — some metrics are deprecated in FB v19+ per post type
+async function tryMetric(postId: string, metric: string, token: string): Promise<number | null> {
+  const url = `https://graph.facebook.com/v19.0/${postId}/insights?metric=${metric}&access_token=${token}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) return null;
+  const body = await res.json();
+  const val = body?.data?.[0]?.values?.[0]?.value;
+  if (typeof val === 'number') return val;
+  if (typeof val === 'object' && val !== null) {
+    return Object.values(val).reduce((s: number, v: unknown) => s + Number(v ?? 0), 0);
+  }
+  return null;
+}
 
 interface Row {
   id: string;
@@ -36,35 +49,27 @@ interface Row {
 }
 
 async function fetchInsights(postId: string, token: string) {
-  const url = `https://graph.facebook.com/v19.0/${postId}/insights?metric=${METRICS}&access_token=${token}`;
-  const res = await fetch(url, { cache: 'no-store' });
-  const body = await res.json();
-  if (!res.ok) throw new Error(JSON.stringify(body?.error ?? body));
-
   const out: Record<string, number> = {};
-  for (const item of body.data ?? []) {
-    const val = item.values?.[0]?.value;
-    if (item.name === 'post_impressions_unique') out.reach = Number(val ?? 0);
-    else if (item.name === 'post_impressions') out.impressions = Number(val ?? 0);
-    else if (item.name === 'post_clicks') out.link_clicks = Number(val ?? 0);
-    else if (item.name === 'post_reactions_by_type_total') {
-      const total = Object.values(val ?? {}).reduce(
-        (s: number, v: unknown) => s + Number(v ?? 0),
-        0
-      );
-      out.likes = total;
-    }
-  }
 
-  // Fetch counts for comments and shares separately — they aren't in the
-  // insights endpoint, but are on the post object.
-  const detailUrl = `https://graph.facebook.com/v19.0/${postId}?fields=comments.summary(true).limit(0),shares&access_token=${token}`;
+  // Post detail — reactions/comments/shares (universal across media types)
+  const detailUrl = `https://graph.facebook.com/v19.0/${postId}?fields=reactions.summary(true).limit(0),comments.summary(true).limit(0),shares&access_token=${token}`;
   const dRes = await fetch(detailUrl, { cache: 'no-store' });
   const dBody = await dRes.json();
-  if (dRes.ok) {
-    out.comments = Number(dBody.comments?.summary?.total_count ?? 0);
-    out.shares = Number(dBody.shares?.count ?? 0);
-  }
+  if (!dRes.ok) throw new Error(JSON.stringify(dBody?.error ?? dBody));
+  out.likes = Number(dBody?.reactions?.summary?.total_count ?? 0);
+  out.comments = Number(dBody?.comments?.summary?.total_count ?? 0);
+  out.shares = Number(dBody?.shares?.count ?? 0);
+
+  // Insights — try each metric independently (tolerate per-metric failures)
+  const [imp, reach, clicks] = await Promise.all([
+    tryMetric(postId, 'post_impressions', token),
+    tryMetric(postId, 'post_impressions_unique', token),
+    tryMetric(postId, 'post_clicks', token),
+  ]);
+  if (imp !== null) out.impressions = imp;
+  if (reach !== null) out.reach = reach;
+  if (clicks !== null) out.link_clicks = clicks;
+
   return out;
 }
 
@@ -92,6 +97,8 @@ export async function GET(req: Request) {
     .select('id, external_post_id, media_type')
     .eq('status', 'published')
     .not('external_post_id', 'is', null)
+    .not('external_post_id', 'like', 'test-%')
+    .not('external_post_id', 'like', 'LUM-%')
     .gte('published_at', since);
 
   const list = (rows ?? []) as Row[];

@@ -7,40 +7,52 @@ export const dynamic = 'force-dynamic';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'tintanee.t@gmail.com';
 
-const METRICS = [
-  'post_impressions_unique',
-  'post_impressions',
-  'post_reactions_by_type_total',
-  'post_clicks',
-].join(',');
+// Fetch post-level FB insights.
+// Strategy: use the post DETAIL endpoint with reactions/comments/shares summaries,
+// which works across image + reel + video without version-sensitive metric names.
+// Insights endpoint is called SEPARATELY per-metric with try/catch so one bad
+// metric name doesn't kill the whole request. FB v19+ changes metric availability
+// by post type — this graceful approach is robust to that.
+
+const SAFE_METRICS = [
+  'post_impressions',       // total views
+  'post_impressions_unique', // reach (falls back if unsupported)
+  'post_clicks',            // link clicks
+];
+
+async function tryMetric(postId: string, metric: string, token: string): Promise<number | null> {
+  const url = `https://graph.facebook.com/v19.0/${postId}/insights?metric=${metric}&access_token=${token}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) return null;
+  const body = await res.json();
+  const val = body?.data?.[0]?.values?.[0]?.value;
+  if (typeof val === 'number') return val;
+  if (typeof val === 'object' && val !== null) {
+    return Object.values(val).reduce((s: number, v: unknown) => s + Number(v ?? 0), 0);
+  }
+  return null;
+}
 
 async function fetchInsights(postId: string, token: string) {
-  const url = `https://graph.facebook.com/v19.0/${postId}/insights?metric=${METRICS}&access_token=${token}`;
-  const res = await fetch(url, { cache: 'no-store' });
-  const body = await res.json();
-  if (!res.ok) throw new Error(JSON.stringify(body?.error ?? body));
-
   const out: Record<string, number> = {};
-  for (const item of body.data ?? []) {
-    const val = item.values?.[0]?.value;
-    if (item.name === 'post_impressions_unique') out.reach = Number(val ?? 0);
-    else if (item.name === 'post_impressions') out.impressions = Number(val ?? 0);
-    else if (item.name === 'post_clicks') out.link_clicks = Number(val ?? 0);
-    else if (item.name === 'post_reactions_by_type_total') {
-      const total = Object.values(val ?? {}).reduce(
-        (s: number, v: unknown) => s + Number(v ?? 0),
-        0
-      );
-      out.likes = total;
-    }
-  }
-  const detailUrl = `https://graph.facebook.com/v19.0/${postId}?fields=comments.summary(true).limit(0),shares&access_token=${token}`;
+
+  // Post detail — reactions.summary is universal, works for image + reel + video
+  const detailUrl = `https://graph.facebook.com/v19.0/${postId}?fields=reactions.summary(true).limit(0),comments.summary(true).limit(0),shares&access_token=${token}`;
   const dRes = await fetch(detailUrl, { cache: 'no-store' });
   const dBody = await dRes.json();
-  if (dRes.ok) {
-    out.comments = Number(dBody?.comments?.summary?.total_count ?? 0);
-    out.shares = Number(dBody?.shares?.count ?? 0);
-  }
+  if (!dRes.ok) throw new Error(JSON.stringify(dBody?.error ?? dBody));
+
+  out.likes = Number(dBody?.reactions?.summary?.total_count ?? 0);
+  out.comments = Number(dBody?.comments?.summary?.total_count ?? 0);
+  out.shares = Number(dBody?.shares?.count ?? 0);
+
+  // Insights — try each metric individually, tolerate failures
+  const results = await Promise.all(SAFE_METRICS.map((m) => tryMetric(postId, m, token)));
+  const [imp, reach, clicks] = results;
+  if (imp !== null) out.impressions = imp;
+  if (reach !== null) out.reach = reach;
+  if (clicks !== null) out.link_clicks = clicks;
+
   return out;
 }
 
@@ -88,6 +100,8 @@ export async function POST(req: Request) {
     .select('id, external_post_id, media_type')
     .eq('status', 'published')
     .not('external_post_id', 'is', null)
+    .not('external_post_id', 'like', 'test-%')  // skip test rows
+    .not('external_post_id', 'like', 'LUM-%')   // skip our internal LUM- refs (not real FB IDs)
     .order('published_at', { ascending: false })
     .limit(50);
 
