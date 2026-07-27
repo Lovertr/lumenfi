@@ -57,7 +57,10 @@ export async function POST(req: Request) {
 
   const token = process.env.FB_PAGE_ACCESS_TOKEN;
   if (!token) {
-    return NextResponse.json({ error: 'no_token', message: 'FB_PAGE_ACCESS_TOKEN not set in Vercel env' }, { status: 500 });
+    return NextResponse.json({
+      error: 'no_token',
+      message: 'FB_PAGE_ACCESS_TOKEN not set in Vercel env. Go to Vercel → Settings → Environment Variables and add it.',
+    }, { status: 500 });
   }
 
   const admin = createSbClient(
@@ -65,6 +68,20 @@ export async function POST(req: Request) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false, autoRefreshToken: false } }
   );
+
+  // Diagnostic: count all posts + published posts
+  const { count: totalPosts } = await admin
+    .from('marketing_posts')
+    .select('id', { count: 'exact', head: true });
+  const { count: publishedPosts } = await admin
+    .from('marketing_posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'published');
+  const { count: postsWithId } = await admin
+    .from('marketing_posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'published')
+    .not('external_post_id', 'is', null);
 
   const { data: posts } = await admin
     .from('marketing_posts')
@@ -76,6 +93,7 @@ export async function POST(req: Request) {
 
   let updated = 0;
   const errors: string[] = [];
+  const samples: { post_id: string; reach?: number; likes?: number; note?: string }[] = [];
 
   for (const p of posts ?? []) {
     try {
@@ -94,10 +112,26 @@ export async function POST(req: Request) {
         { onConflict: 'post_id' }
       );
       updated++;
+      if (samples.length < 3) {
+        samples.push({ post_id: p.external_post_id!, reach: stats.reach, likes: stats.likes });
+      }
     } catch (e: unknown) {
-      errors.push(String(e).slice(0, 200));
+      errors.push(String(e).slice(0, 300));
     }
   }
 
-  return NextResponse.json({ ok: true, updated, errors: errors.slice(0, 5) });
+  return NextResponse.json({
+    ok: true,
+    updated,
+    diagnostic: {
+      total_posts_in_db: totalPosts ?? 0,
+      published_posts: publishedPosts ?? 0,
+      published_with_fb_id: postsWithId ?? 0,
+      attempted: (posts ?? []).length,
+      succeeded: updated,
+      failed: errors.length,
+    },
+    samples,
+    errors: errors.slice(0, 5),
+  });
 }
