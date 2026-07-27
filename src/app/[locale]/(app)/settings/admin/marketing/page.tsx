@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
+import { RefreshStatsButton } from './refresh-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -109,13 +110,14 @@ export default async function MarketingAdminPage({ params }: { params: Promise<{
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div>
+        <div className="flex-1">
           <h1 className="flex items-center gap-2 text-xl font-bold">
             <BarChart3 className="h-5 w-5 text-blue-600" />
             Marketing · Auto-post
           </h1>
           <p className="text-xs text-muted-foreground">n8n workflows publish → Lumenfi logs + stats</p>
         </div>
+        <RefreshStatsButton />
       </header>
 
       {/* 7-day summary */}

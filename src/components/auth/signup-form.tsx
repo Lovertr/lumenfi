@@ -9,7 +9,9 @@ import { Label } from '@/components/ui/label';
 import { GoogleButton } from './google-button';
 import { ResendConfirmation } from './resend-confirmation';
 import { signUpWithEmail } from '@/app/[locale]/(auth)/actions';
+import { trackEvent } from '@/components/analytics/tracker';
 import { Mail, Lock, User, CheckCircle2 } from 'lucide-react';
+import { useEffect } from 'react';
 
 type State = { error?: string; success?: string } | null;
 
@@ -26,6 +28,10 @@ function SubmitButton() {
 export function SignupForm({ inviteCode, referralCode }: { inviteCode?: string; referralCode?: string }) {
   const t = useTranslations('Auth');
   const [state, formAction] = useFormState<State, FormData>(signUpWithEmail, null);
+
+  useEffect(() => {
+    if (state?.success === 'check_email') trackEvent('signup_success');
+  }, [state?.success]);
 
   if (state?.success === 'check_email') {
     return (

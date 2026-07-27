@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Upload, CheckCircle2, Clock, AlertCircle, Copy } from 'lucide-react';
+import { trackEvent } from '@/components/analytics/tracker';
 
 interface Order {
   id: string;
@@ -34,6 +35,19 @@ export default function PaymentClient({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // Fire checkout_paid once when order transitions to approved
+  useEffect(() => {
+    if (order.status === 'approved') {
+      trackEvent('checkout_paid', {
+        order_ref: order.order_ref,
+        plan: order.plan_code,
+        cycle: order.billing_cycle,
+        amount: order.amount_thb,
+        auto_verified: order.slip_auto_verified,
+      });
+    }
+  }, [order.status, order.order_ref, order.plan_code, order.billing_cycle, order.amount_thb, order.slip_auto_verified]);
+
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -53,6 +67,11 @@ export default function PaymentClient({
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? 'upload_failed');
+      trackEvent('slip_uploaded', {
+        order_ref: order.order_ref,
+        auto_approved: body.auto_approved ?? false,
+        plan: order.plan_code,
+      });
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

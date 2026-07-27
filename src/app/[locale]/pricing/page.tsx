@@ -8,6 +8,7 @@ import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { createClient } from '@/lib/supabase/server';
 import { CreditPackButtons } from '@/components/billing/credit-pack-buttons';
 import { SubscribeButton } from '@/components/billing/subscribe-button';
+import { PageTracker } from '@/components/analytics/page-tracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
 
   return (
     <main className="min-h-screen bg-[#FAFAF7] text-[#0F172A]">
+      <PageTracker event="pricing_view" />
       {/* Public marketing header */}
       <header className="sticky top-0 z-30 border-b border-black/5 bg-[#FAFAF7]/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
