@@ -129,7 +129,9 @@ export async function POST(req: Request) {
     .limit(50);
 
   let updated = 0;
+  let markedDeleted = 0;
   const errors: string[] = [];
+  const failedIds: string[] = [];
   const samples: { post_id: string; reach?: number; likes?: number; note?: string }[] = [];
 
   for (const p of posts ?? []) {
@@ -153,7 +155,18 @@ export async function POST(req: Request) {
         samples.push({ post_id: p.external_post_id!, reach: stats.reach, likes: stats.likes });
       }
     } catch (e: unknown) {
-      errors.push(String(e).slice(0, 300));
+      const msg = String(e).slice(0, 300);
+      errors.push(msg);
+      failedIds.push(p.external_post_id!);
+      // If ALL fields returned unavailable, the post was likely deleted from FB —
+      // mark it as such in our DB so we stop retrying every hour
+      if (msg.includes('all_fields_unavailable')) {
+        await admin
+          .from('marketing_posts')
+          .update({ status: 'deleted', error: 'post not found on FB (likely deleted)' })
+          .eq('id', p.id);
+        markedDeleted++;
+      }
     }
   }
 
@@ -167,8 +180,10 @@ export async function POST(req: Request) {
       attempted: (posts ?? []).length,
       succeeded: updated,
       failed: errors.length,
+      marked_deleted: markedDeleted,
     },
     samples,
     errors: errors.slice(0, 5),
+    failed_ids: failedIds.slice(0, 5),
   });
 }

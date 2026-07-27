@@ -12,6 +12,7 @@ interface Diagnostic {
   attempted: number;
   succeeded: number;
   failed: number;
+  marked_deleted?: number;
 }
 
 interface ApiResult {
@@ -21,6 +22,7 @@ interface ApiResult {
   diagnostic?: Diagnostic;
   samples?: Array<{ post_id: string; reach?: number; likes?: number }>;
   errors?: string[];
+  failed_ids?: string[];
 }
 
 export function RefreshStatsButton() {
@@ -78,6 +80,9 @@ export function RefreshStatsButton() {
           <div>
             Succeeded: <span className="text-emerald-600">{result.diagnostic.succeeded}</span> · Failed:{' '}
             <span className="text-red-600">{result.diagnostic.failed}</span>
+            {result.diagnostic.marked_deleted && result.diagnostic.marked_deleted > 0 && (
+              <span className="ml-1 text-amber-600">· 🗑 marked deleted: {result.diagnostic.marked_deleted}</span>
+            )}
           </div>
           {result.samples && result.samples.length > 0 && (
             <div className="mt-2 border-t pt-1">
