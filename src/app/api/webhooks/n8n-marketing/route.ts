@@ -53,6 +53,7 @@ interface WebhookBody {
   scheduled_at?: string;
   published_at?: string;
   content_pillar?: string;
+  content_variant?: string;
   hashtags?: string[];
   ai_generated?: boolean;
   ai_prompt?: string;
@@ -141,6 +142,7 @@ export async function POST(req: Request) {
           media_type: body.media_type ?? undefined,
           media_urls: body.media_urls ?? undefined,
           content_pillar: body.content_pillar ?? undefined,
+          content_variant: body.content_variant ?? undefined,
           hashtags: body.hashtags ?? undefined,
           ai_generated: body.ai_generated ?? undefined,
           ai_prompt: body.ai_prompt ?? undefined,
@@ -171,6 +173,7 @@ export async function POST(req: Request) {
       external_post_id: body.external_post_id ?? null,
       published_at: body.published_at ?? null,
       content_pillar: body.content_pillar ?? null,
+      content_variant: body.content_variant ?? null,
       hashtags: body.hashtags ?? null,
       ai_generated: body.ai_generated ?? true,
       ai_prompt: body.ai_prompt ?? null,
