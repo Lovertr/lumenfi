@@ -18,6 +18,7 @@ interface PostRow {
   media_type: string;
   media_urls: string[] | null;
   content_pillar: string | null;
+  content_variant: string | null;
   hashtags: string[] | null;
   external_post_id: string | null;
   scheduled_at: string;
@@ -27,6 +28,27 @@ interface PostRow {
   error: string | null;
   created_at: string;
 }
+
+interface VariantAggregate {
+  variant: string;
+  count: number;
+  totalLikes: number;
+  totalComments: number;
+  totalShares: number;
+  totalReach: number;
+  totalClicks: number;
+  avgEngagement: number; // likes+comments+shares per post
+}
+
+const VARIANT_LABEL: Record<string, { th: string; emoji: string; color: string }> = {
+  number_hook: { th: 'Shocking number', emoji: '💥', color: 'bg-orange-100 text-orange-800' },
+  listicle: { th: 'Listicle (N ข้อ)', emoji: '📋', color: 'bg-blue-100 text-blue-800' },
+  contrarian: { th: 'Contrarian', emoji: '🎭', color: 'bg-purple-100 text-purple-800' },
+  question_hook: { th: 'คำถาม', emoji: '❓', color: 'bg-teal-100 text-teal-800' },
+  calculator: { th: 'สูตรคำนวณ', emoji: '🧮', color: 'bg-cyan-100 text-cyan-800' },
+  challenge: { th: 'Challenge (bait)', emoji: '🎯', color: 'bg-pink-100 text-pink-800' },
+  product_push: { th: 'Product push', emoji: '🎁', color: 'bg-rose-100 text-rose-800' },
+};
 
 interface StatsRow {
   post_id: string;
@@ -69,7 +91,7 @@ export default async function MarketingAdminPage({ params }: { params: Promise<{
   const [postsRes, statsRes] = await Promise.all([
     supabase
       .from('marketing_posts')
-      .select('id, platform, message, media_type, media_urls, content_pillar, hashtags, external_post_id, scheduled_at, published_at, status, ai_generated, error, created_at')
+      .select('id, platform, message, media_type, media_urls, content_pillar, content_variant, hashtags, external_post_id, scheduled_at, published_at, status, ai_generated, error, created_at')
       .eq('user_id', user.id)
       .gte('scheduled_at', since)
       .order('scheduled_at', { ascending: false })
@@ -102,6 +124,35 @@ export default async function MarketingAdminPage({ params }: { params: Promise<{
     }
   }
 
+  // A/B variant performance — all published posts with variant set
+  const variantMap = new Map<string, VariantAggregate>();
+  for (const p of posts) {
+    if (p.status !== 'published' || !p.content_variant) continue;
+    const v = p.content_variant;
+    const agg = variantMap.get(v) ?? {
+      variant: v, count: 0, totalLikes: 0, totalComments: 0, totalShares: 0,
+      totalReach: 0, totalClicks: 0, avgEngagement: 0,
+    };
+    agg.count++;
+    const s = statsMap.get(p.id);
+    if (s) {
+      agg.totalLikes += Number(s.likes ?? 0);
+      agg.totalComments += Number(s.comments ?? 0);
+      agg.totalShares += Number(s.shares ?? 0);
+      agg.totalReach += Number(s.reach ?? 0);
+      agg.totalClicks += Number(s.link_clicks ?? 0);
+    }
+    variantMap.set(v, agg);
+  }
+  for (const agg of variantMap.values()) {
+    agg.avgEngagement = agg.count > 0
+      ? (agg.totalLikes + agg.totalComments + agg.totalShares) / agg.count
+      : 0;
+  }
+  const variantRanking = [...variantMap.values()].sort((a, b) => b.avgEngagement - a.avgEngagement);
+  const bestVariant = variantRanking[0];
+  const worstVariant = variantRanking[variantRanking.length - 1];
+
   return (
     <div className="mx-auto max-w-5xl space-y-4 p-4 pt-6 lg:pt-10">
       <header className="flex items-center gap-2">
@@ -129,6 +180,97 @@ export default async function MarketingAdminPage({ params }: { params: Promise<{
         <SummaryTile label="Link clicks" value={totalClicks} icon="🔗" />
       </div>
 
+      {/* A/B Variant Performance — ranks content styles by engagement */}
+      {variantRanking.length > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <h2 className="flex items-center gap-1.5 text-sm font-bold">
+                  🧪 A/B Variant Performance
+                </h2>
+                <p className="text-[10px] text-muted-foreground">
+                  จัดอันดับสไตล์คอนเท้นตาม engagement (likes+comments+shares) เฉลี่ยต่อโพส · 30 วันที่ผ่านมา
+                </p>
+              </div>
+              {bestVariant && worstVariant && bestVariant !== worstVariant && (
+                <div className="text-right text-[10px]">
+                  <div className="text-emerald-700">
+                    🏆 ดีสุด: <span className="font-semibold">
+                      {VARIANT_LABEL[bestVariant.variant]?.th ?? bestVariant.variant}
+                    </span>
+                  </div>
+                  <div className="text-muted-foreground">
+                    แย่สุด: {VARIANT_LABEL[worstVariant.variant]?.th ?? worstVariant.variant}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b text-left text-[10px] uppercase text-muted-foreground">
+                    <th className="py-1.5 pr-2">Variant</th>
+                    <th className="py-1.5 pr-2 text-right">โพส</th>
+                    <th className="py-1.5 pr-2 text-right">👍 avg</th>
+                    <th className="py-1.5 pr-2 text-right">💬 avg</th>
+                    <th className="py-1.5 pr-2 text-right">🔄 avg</th>
+                    <th className="py-1.5 pr-2 text-right">🔗 avg</th>
+                    <th className="py-1.5 pr-2 text-right">Engage/post</th>
+                    <th className="py-1.5 pr-2 text-right">Bar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {variantRanking.map((v, idx) => {
+                    const label = VARIANT_LABEL[v.variant] ?? { th: v.variant, emoji: '📊', color: 'bg-gray-100 text-gray-700' };
+                    const barPct = bestVariant && bestVariant.avgEngagement > 0
+                      ? (v.avgEngagement / bestVariant.avgEngagement) * 100
+                      : 0;
+                    const avgLikes = v.count > 0 ? v.totalLikes / v.count : 0;
+                    const avgComments = v.count > 0 ? v.totalComments / v.count : 0;
+                    const avgShares = v.count > 0 ? v.totalShares / v.count : 0;
+                    const avgClicks = v.count > 0 ? v.totalClicks / v.count : 0;
+                    return (
+                      <tr key={v.variant} className="border-b last:border-0 hover:bg-muted/40">
+                        <td className="py-1.5 pr-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-semibold text-muted-foreground">#{idx + 1}</span>
+                            <span className={`rounded px-1.5 py-0.5 font-semibold ${label.color}`}>
+                              {label.emoji} {label.th}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums">{v.count}</td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums">{avgLikes.toFixed(1)}</td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums">{avgComments.toFixed(1)}</td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums">{avgShares.toFixed(1)}</td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums">{avgClicks.toFixed(1)}</td>
+                        <td className="py-1.5 pr-2 text-right font-semibold tabular-nums">
+                          {v.avgEngagement.toFixed(1)}
+                        </td>
+                        <td className="py-1.5 pr-2">
+                          <div className="ml-auto h-1.5 w-16 rounded-full bg-muted">
+                            <div
+                              className="h-full rounded-full bg-emerald-500"
+                              style={{ width: `${Math.max(barPct, 2)}%` }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {variantRanking.every((v) => v.avgEngagement === 0) && (
+              <p className="mt-2 text-[10px] text-amber-700">
+                ⚠️ ยังไม่มี engagement data — กด &ldquo;ดึงสถิติล่าสุด&rdquo; ด้านบน หรือรอ FB Insight (ต้องมี read_insights permission)
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Posts table */}
       <Card>
         <CardContent className="p-0">
@@ -147,11 +289,16 @@ export default async function MarketingAdminPage({ params }: { params: Promise<{
                   <li key={p.id} className="p-4 space-y-2 hover:bg-muted/30">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 text-[10px]">
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
                           <span className={`rounded px-1.5 py-0.5 font-semibold ${status.color}`}>{status.th}</span>
                           {pillar && (
                             <span className={`rounded px-1.5 py-0.5 font-semibold ${pillar.color}`}>
                               {pillar.emoji} {pillar.th}
+                            </span>
+                          )}
+                          {p.content_variant && VARIANT_LABEL[p.content_variant] && (
+                            <span className={`rounded px-1.5 py-0.5 font-semibold ${VARIANT_LABEL[p.content_variant].color}`}>
+                              {VARIANT_LABEL[p.content_variant].emoji} {VARIANT_LABEL[p.content_variant].th}
                             </span>
                           )}
                           <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">
