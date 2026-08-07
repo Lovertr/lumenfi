@@ -48,6 +48,19 @@ const VARIANT_LABEL: Record<string, { th: string; emoji: string; color: string }
   calculator: { th: 'สูตรคำนวณ', emoji: '🧮', color: 'bg-cyan-100 text-cyan-800' },
   challenge: { th: 'Challenge (bait)', emoji: '🎯', color: 'bg-pink-100 text-pink-800' },
   product_push: { th: 'Product push', emoji: '🎁', color: 'bg-rose-100 text-rose-800' },
+  fomo: { th: 'FOMO/Envy', emoji: '😱', color: 'bg-red-100 text-red-800' },
+  regret: { th: 'If only (regret)', emoji: '😔', color: 'bg-amber-100 text-amber-800' },
+  hope: { th: 'Hope/Aspiration', emoji: '✨', color: 'bg-yellow-100 text-yellow-800' },
+  news: { th: 'News jacking', emoji: '📰', color: 'bg-slate-100 text-slate-800' },
+  seasonal: { th: 'Seasonal', emoji: '📅', color: 'bg-emerald-100 text-emerald-800' },
+  meme: { th: 'Meme/Relatable', emoji: '😂', color: 'bg-fuchsia-100 text-fuchsia-800' },
+  comparison: { th: 'Comparison', emoji: '🏦', color: 'bg-indigo-100 text-indigo-800' },
+  ranking: { th: 'Ranking (Top N)', emoji: '🏆', color: 'bg-lime-100 text-lime-800' },
+  story: { th: 'User story', emoji: '📖', color: 'bg-stone-100 text-stone-800' },
+  founder: { th: 'Founder journey', emoji: '👨‍💻', color: 'bg-violet-100 text-violet-800' },
+  poll: { th: 'Poll/Vote', emoji: '🗳', color: 'bg-sky-100 text-sky-800' },
+  qa: { th: 'Q&A', emoji: '💬', color: 'bg-green-100 text-green-800' },
+  nostalgia: { th: 'Nostalgia (ราคา)', emoji: '🕰', color: 'bg-neutral-100 text-neutral-800' },
 };
 
 interface StatsRow {
